@@ -1,0 +1,231 @@
+"use client";
+
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import type { MemoryNode } from "@/lib/types";
+import styles from "./Exhibit.module.css";
+
+const timeFmt = new Intl.DateTimeFormat("ko-KR", {
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+  timeZone: "Asia/Seoul",
+});
+const hhmm = (iso: string) => timeFmt.format(new Date(iso));
+
+/** 대화 칸에서 지금 보이는 구간 하나 (main 기준 좌표) */
+interface Seg {
+  id: number;
+  top: number;
+  bottom: number;
+  /** 0~1, 얼마나 많이 보이는지 */
+  k: number;
+}
+
+interface Geo {
+  edgeX: number; // 대화 칸 오른쪽 끝
+  axisX: number; // 시간축 x
+  nodeY: Map<number, number>;
+  segs: Seg[];
+  w: number;
+  h: number;
+}
+
+const AXIS_PAD = 56;
+const FULL_AT = 160; // 이만큼(px) 보이면 빛이 가장 진해짐
+
+export default function Exhibit({ nodes, personaVersion }: { nodes: MemoryNode[]; personaVersion: number }) {
+  const sorted = useMemo(
+    () => [...nodes].sort((a, b) => a.createdAt.localeCompare(b.createdAt)),
+    [nodes],
+  );
+
+  const mainRef = useRef<HTMLElement>(null);
+  const chatRef = useRef<HTMLElement>(null);
+  const planeRef = useRef<HTMLElement>(null);
+  const itemRefs = useRef(new Map<number, HTMLElement>());
+  const [geo, setGeo] = useState<Geo | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+
+  // 노드의 세로 위치 = 시간 순서대로 고르게 (시각 비례로 두면 가까운 시각끼리 겹침)
+  const tRatio = useMemo(
+    () => new Map(sorted.map((n, i) => [n.id, sorted.length > 1 ? i / (sorted.length - 1) : 0.5])),
+    [sorted],
+  );
+
+  const measure = useCallback(() => {
+    const main = mainRef.current;
+    const chat = chatRef.current;
+    const plane = planeRef.current;
+    if (!main || !chat || !plane) return;
+    const m = main.getBoundingClientRect();
+    const c = chat.getBoundingClientRect();
+    const p = plane.getBoundingClientRect();
+
+    const viewTop = c.top - m.top;
+    const viewBottom = c.bottom - m.top;
+    const segs: Seg[] = [];
+    for (const n of sorted) {
+      const el = itemRefs.current.get(n.id);
+      if (!el) continue;
+      const r = el.getBoundingClientRect();
+      const top = Math.max(r.top - m.top, viewTop);
+      const bottom = Math.min(r.bottom - m.top, viewBottom);
+      if (bottom - top > 0) segs.push({ id: n.id, top, bottom, k: Math.min(1, (bottom - top) / FULL_AT) });
+    }
+
+    const usable = p.height - AXIS_PAD * 2;
+    const nodeY = new Map<number, number>();
+    for (const n of sorted) nodeY.set(n.id, p.top - m.top + AXIS_PAD + (tRatio.get(n.id) ?? 0) * usable);
+
+    setGeo({
+      edgeX: c.right - m.left,
+      axisX: p.left - m.left + Math.min(140, p.width * 0.28),
+      nodeY,
+      segs,
+      w: m.width,
+      h: m.height,
+    });
+  }, [sorted, tRatio]);
+
+  useLayoutEffect(() => {
+    measure();
+  }, [measure]);
+
+  useEffect(() => {
+    let raf = 0;
+    const schedule = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(measure);
+    };
+    const chat = chatRef.current;
+    chat?.addEventListener("scroll", schedule, { passive: true });
+    const ro = new ResizeObserver(schedule);
+    if (mainRef.current) ro.observe(mainRef.current);
+    return () => {
+      cancelAnimationFrame(raf);
+      chat?.removeEventListener("scroll", schedule);
+      ro.disconnect();
+    };
+  }, [measure]);
+
+  const lit = new Map(geo?.segs.map((s) => [s.id, s.k]) ?? []);
+
+  const jumpTo = (id: number) => {
+    setSelectedId(id);
+    itemRefs.current.get(id)?.scrollIntoView({ block: "center" });
+  };
+
+  return (
+    <div className={styles.shell}>
+      <header className={styles.header}>
+        <div className={styles.brand}>
+          <h1>꿈 시스템</h1>
+          <span className={styles.count}>오늘의 기억 {nodes.length}개</span>
+        </div>
+        <p className={styles.state}>
+          <span className={styles.awakeDot} aria-hidden="true" />
+          깨어 있어요 · 인격 v{personaVersion}
+        </p>
+      </header>
+
+      <main ref={mainRef} className={styles.main}>
+        <section ref={chatRef} className={styles.chat} aria-label="대화">
+          {sorted.map((n) => (
+            <article
+              key={n.id}
+              ref={(el) => {
+                if (el) itemRefs.current.set(n.id, el);
+                else itemRefs.current.delete(n.id);
+              }}
+              className={`${styles.pair} ${n.id === selectedId ? styles.pairSelected : ""}`}
+              data-node-id={n.id}
+            >
+              <div className={styles.meta}>
+                <span>기억 {n.order}</span>
+                <time dateTime={n.createdAt}>{hhmm(n.createdAt)}</time>
+              </div>
+              <p className={styles.user}>{n.user}</p>
+              <p className={styles.ai}>{n.ai}</p>
+            </article>
+          ))}
+        </section>
+
+        <section ref={planeRef} className={styles.plane} aria-label="기억 노드 시간축">
+          <p className={styles.hint}>지금 보이는 대화를 그 기억이 비춰요</p>
+        </section>
+
+        {/* 빛줄기: 대화 칸의 보이는 구간 → 그 기억 노드 */}
+        {geo && (
+          <svg className={styles.overlay} width={geo.w} height={geo.h} aria-hidden="true">
+            <line
+              className={styles.axis}
+              x1={geo.axisX}
+              x2={geo.axisX}
+              y1={(geo.nodeY.get(sorted[0]?.id) ?? 0) - 28}
+              y2={(geo.nodeY.get(sorted[sorted.length - 1]?.id) ?? 0) + 28}
+            />
+            {geo.segs.map((s) => {
+              const ny = geo.nodeY.get(s.id) ?? 0;
+              const y1 = s.top + 2;
+              const y2 = s.bottom - 2;
+              return (
+                <g key={s.id} className={styles.beam} data-beam={s.id}>
+                  <polygon
+                    points={`${geo.edgeX},${y1} ${geo.axisX},${ny} ${geo.edgeX},${y2}`}
+                    fillOpacity={0.09 * s.k}
+                  />
+                  <line x1={geo.edgeX} y1={y1} x2={geo.axisX} y2={ny} strokeOpacity={0.6 * s.k} />
+                  <line x1={geo.edgeX} y1={y2} x2={geo.axisX} y2={ny} strokeOpacity={0.6 * s.k} />
+                  <rect x={geo.edgeX - 1} y={y1} width={2} height={Math.max(0, y2 - y1)} opacity={0.3 + 0.7 * s.k} />
+                </g>
+              );
+            })}
+          </svg>
+        )}
+
+        {/* 노드는 버튼이라 빛줄기 위에 따로 둔다 */}
+        {geo &&
+          sorted.map((n) => {
+            const k = lit.get(n.id) ?? 0;
+            const on = k > 0;
+            return (
+              <button
+                key={n.id}
+                type="button"
+                className={`${styles.node} ${on ? styles.nodeOn : ""} ${n.id === selectedId ? styles.nodeSelected : ""}`}
+                style={{ left: geo.axisX, top: geo.nodeY.get(n.id), ["--k" as string]: k }}
+                aria-label={`기억 ${n.order}번: ${n.user}`}
+                onClick={() => jumpTo(n.id)}
+              >
+                <span className={styles.dot} aria-hidden="true" />
+                <span className={styles.nodeLabel}>
+                  <span className={styles.nodeTime}>{hhmm(n.createdAt)}</span>
+                  {n.user}
+                </span>
+              </button>
+            );
+          })}
+      </main>
+
+      {/* 입력·모델·잠들기는 2단계(채팅 연결)부터 동작한다 */}
+      <footer className={styles.footer}>
+        <label className={styles.field}>
+          <span>오늘 있었던 일을 적거나 말을 걸어 보세요</span>
+          <input type="text" placeholder="2단계에서 연결돼요" disabled />
+        </label>
+        <label className={styles.fieldSmall}>
+          <span>모델</span>
+          <select disabled defaultValue="flash">
+            <option value="flash">Gemini Flash</option>
+          </select>
+        </label>
+        <button type="button" className={styles.send} disabled>
+          보내기
+        </button>
+        <button type="button" className={styles.sleep} disabled>
+          잠들기
+        </button>
+      </footer>
+    </div>
+  );
+}

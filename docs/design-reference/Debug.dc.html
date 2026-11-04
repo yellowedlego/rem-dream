@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>꿈 시스템 · 디버그</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#F0A35E}a:hover{color:#F6C08C}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; background: #0B0E16; color: #E4E6EE; font-family: 'Noto Sans KR', system-ui, sans-serif; display: flex; flex-direction: column; font-size: 14px">
+
+  <header style="height: 64px; box-sizing: border-box; padding: 0 24px; display: flex; align-items: center; gap: 16px; border-bottom: 1px solid #232A3D">
+    <h1 style="margin: 0; font-size: 18px; font-weight: 700">디버그</h1>
+    <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #9AA1B8">/debug · 샘플 데이터</span>
+    <div style="flex: 1"></div>
+    <label for="mode" style="font-size: 13px; color: #9AA1B8">모드</label>
+    <select id="mode" style="height: 40px; padding: 0 10px; background: #141927; color: #E4E6EE; border: 1px solid #333B55; border-radius: 8px; font: inherit; font-size: 13px">
+      <option>모드 1 · 정리</option>
+      <option>모드 2 · 꿈</option>
+    </select>
+    <label for="temp" style="font-size: 13px; color: #9AA1B8">온도 0.7</label>
+    <input id="temp" type="range" min="0" max="2" step="0.1" value="0.7" style="width: 120px">
+    <button type="button" style="height: 40px; padding: 0 16px; background: #F0A35E; color: #0B0E16; border: 0; border-radius: 8px; font: inherit; font-size: 13px; font-weight: 700">REM 시작</button>
+    <button type="button" style="height: 40px; padding: 0 16px; background: transparent; color: #E4E6EE; border: 1px solid #333B55; border-radius: 8px; font: inherit; font-size: 13px">중단</button>
+    <button type="button" style="height: 40px; padding: 0 16px; background: transparent; color: #F28B82; border: 1px solid #5A2E2E; border-radius: 8px; font: inherit; font-size: 13px">전체 초기화</button>
+  </header>
+
+  <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 1px; background: #232A3D; border-bottom: 1px solid #232A3D">
+    <div style="background: #0B0E16; padding: 16px 20px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; color: #9AA1B8">기억 노드</span><span style="font-family: 'IBM Plex Mono', monospace; font-size: 22px">12</span></div>
+    <div style="background: #0B0E16; padding: 16px 20px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; color: #9AA1B8">통찰</span><span style="font-family: 'IBM Plex Mono', monospace; font-size: 22px">4</span></div>
+    <div style="background: #0B0E16; padding: 16px 20px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; color: #9AA1B8">인격 버전</span><span style="font-family: 'IBM Plex Mono', monospace; font-size: 22px">v3</span></div>
+    <div style="background: #0B0E16; padding: 16px 20px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; color: #9AA1B8">평균 응답 시간</span><span style="font-family: 'IBM Plex Mono', monospace; font-size: 22px">[ms]</span></div>
+    <div style="background: #0B0E16; padding: 16px 20px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; color: #9AA1B8">오늘 쓴 토큰</span><span style="font-family: 'IBM Plex Mono', monospace; font-size: 22px">[토큰]</span></div>
+    <div style="background: #0B0E16; padding: 16px 20px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; color: #9AA1B8">오류</span><span style="font-family: 'IBM Plex Mono', monospace; font-size: 22px; color: #F28B82">1</span></div>
+  </div>
+
+  <main style="flex: 1; display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); min-height: 0">
+    <section aria-label="실시간 로그" style="border-right: 1px solid #232A3D; display: flex; flex-direction: column; min-height: 0">
+      <div style="padding: 14px 24px; display: flex; justify-content: space-between; border-bottom: 1px solid #232A3D">
+        <h2 style="margin: 0; font-size: 14px; font-weight: 700">실시간 로그</h2>
+        <span style="font-size: 12px; color: #9AA1B8">최신이 위</span>
+      </div>
+      <ol style="margin: 0; padding: 8px 0; list-style: none; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; line-height: 1.5; overflow: hidden">
+        <sc-for list="{{logs}}" as="l" hint-placeholder-count="10">
+          <li style="padding: 7px 24px; display: grid; grid-template-columns: 76px 88px minmax(0, 1fr); gap: 12px; border-bottom: 1px solid #151A27">
+            <span style="color: #6F778F">{{l.t}}</span>
+            <span style="{{l.tagStyle}}">{{l.tag}}</span>
+            <span style="color: #C9CDE0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{l.msg}}</span>
+          </li>
+        </sc-for>
+      </ol>
+    </section>
+
+    <section aria-label="인격 버전" style="display: flex; flex-direction: column; min-height: 0">
+      <div style="padding: 14px 24px; border-bottom: 1px solid #232A3D">
+        <h2 style="margin: 0; font-size: 14px; font-weight: 700">인격(시스템 프롬프트) 버전</h2>
+      </div>
+      <ul style="margin: 0; padding: 0; list-style: none">
+        <li style="padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #151A27; background: #141927"><span><b style="font-family: 'IBM Plex Mono', monospace">v3</b> · 지금 쓰는 중 · 통찰 3개 근거</span><span style="font-size: 12px; color: #9AA1B8">14:40</span></li>
+        <li style="padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #151A27"><span><b style="font-family: 'IBM Plex Mono', monospace">v2</b> · 통찰 1개 근거</span><button type="button" style="height: 32px; padding: 0 12px; background: transparent; color: #E4E6EE; border: 1px solid #333B55; border-radius: 6px; font: inherit; font-size: 12px">되돌리기</button></li>
+        <li style="padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #151A27"><span><b style="font-family: 'IBM Plex Mono', monospace">v1</b> · 처음 인격</span><button type="button" style="height: 32px; padding: 0 12px; background: transparent; color: #E4E6EE; border: 1px solid #333B55; border-radius: 6px; font: inherit; font-size: 12px">되돌리기</button></li>
+      </ul>
+      <div style="padding: 16px 24px; display: flex; flex-direction: column; gap: 8px">
+        <span style="font-size: 12px; color: #9AA1B8">v2 → v3에서 달라진 부분</span>
+        <pre style="margin: 0; padding: 14px 16px; background: #141927; border-radius: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; line-height: 1.7; white-space: pre-wrap"><span style="color: #9AA1B8">  친절하게 대답하는 대화 상대.</span>
+<span style="color: #F28B82">- 질문에 바로 답한다.</span>
+<span style="color: #7FD1A8">+ 상대가 급해 보이면 먼저 할 일을 작게 나눠 준다.</span></pre>
+      </div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const tags = {
+      REM: 'color: #F0A35E',
+      CHAT: 'color: #8FA8FF',
+      SAVE: 'color: #7FD1A8',
+      ERROR: 'color: #F28B82'
+    };
+    const rows = [
+      ['14:41:08', 'REM', '모드 1 · 노드 #07 읽는 중 · 맥락: 통찰 #01~#03'],
+      ['14:41:06', 'REM', '통찰 #03 생성 · 근거 노드 #06'],
+      ['14:41:03', 'ERROR', '모델 응답 시간 초과 · 1회 재시도'],
+      ['14:40:59', 'REM', '통찰 #02 생성 · 근거 노드 #02, #05'],
+      ['14:40:55', 'REM', '노드 순서 섞기 · 03 01 05 02 06 07 …'],
+      ['14:40:54', 'REM', '잠들기 · 입력 차단 · 노드 12개'],
+      ['14:40:40', 'SAVE', '인격 v3 저장 · 사람 승인'],
+      ['14:39:12', 'SAVE', '노드 #12 저장'],
+      ['14:39:11', 'CHAT', '요청 → Gemini Flash · 인격 v2'],
+      ['14:38:47', 'SAVE', '노드 #11 저장'],
+      ['14:38:46', 'CHAT', '요청 → Gemini Flash · 인격 v2'],
+      ['14:37:02', 'SAVE', '노드 #10 저장']
+    ];
+    return {
+      logs: rows.map(function (r) {
+        return { t: r[0], tag: r[1], tagStyle: tags[r[1]], msg: r[2] };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

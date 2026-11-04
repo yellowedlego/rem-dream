@@ -1,0 +1,270 @@
+.shell {
+  height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 36px;
+  border-bottom: 1px solid var(--line);
+}
+
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+}
+.brand h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.count {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.state {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.awakeDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ok);
+}
+
+/* ── 가운데: 왼쪽 대화 / 오른쪽 시간축 ── */
+.main {
+  position: relative;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 52fr) minmax(0, 48fr);
+  overflow: hidden;
+}
+
+.chat {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px 0 40vh;
+  border-right: 1px solid var(--line);
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+.pair {
+  padding: 22px 36px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-bottom: 1px solid var(--line);
+  scroll-margin: 40px;
+}
+.pairSelected {
+  background: var(--accent-soft-bg);
+}
+
+.meta {
+  display: flex;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.user,
+.ai {
+  margin: 0;
+  max-width: 34em;
+  padding: 11px 16px;
+  font-size: 16px;
+  line-height: 1.6;
+  border-radius: 16px;
+}
+.user {
+  align-self: flex-end;
+  background: var(--panel);
+  border-bottom-right-radius: 4px;
+}
+.ai {
+  align-self: flex-start;
+  color: var(--accent-text);
+  border: 1px solid var(--line);
+  border-bottom-left-radius: 4px;
+}
+
+.plane {
+  position: relative;
+  min-height: 0;
+  background: radial-gradient(ellipse at 30% 50%, var(--plane-glow), transparent 70%);
+}
+
+.hint {
+  position: absolute;
+  right: 28px;
+  top: 16px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ── 빛줄기 ── */
+.overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.axis {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+.beam polygon {
+  fill: var(--accent);
+}
+.beam line {
+  stroke: var(--accent);
+  stroke-width: 1;
+}
+.beam rect {
+  fill: var(--accent);
+}
+
+/* ── 노드 ── */
+.node {
+  position: absolute;
+  translate: -11px -11px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 22px;
+  padding: 0 8px 0 0;
+  border: 0;
+  background: none;
+  color: var(--dim);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: 11px;
+}
+
+.dot {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 1px solid transparent;
+}
+.dot::after {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 1.5px solid var(--node-edge);
+}
+
+.nodeLabel {
+  max-width: 300px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.nodeTime {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  margin-right: 10px;
+}
+
+.nodeOn {
+  color: var(--text);
+}
+.nodeOn .dot {
+  border-color: color-mix(in srgb, var(--accent) calc(var(--k) * 100%), transparent);
+}
+.nodeOn .dot::after {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.node:hover,
+.node:focus-visible {
+  color: var(--text);
+}
+.node:hover .dot::after {
+  border-color: var(--accent);
+}
+.nodeSelected .dot {
+  border-color: var(--moon);
+}
+
+/* ── 아래 입력줄 ── */
+.footer {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 18px 36px 24px;
+  border-top: 1px solid var(--line);
+}
+
+.field,
+.fieldSmall {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.field {
+  flex: 1;
+}
+
+.field input,
+.fieldSmall select {
+  height: 48px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+}
+
+.send,
+.sleep {
+  height: 48px;
+  padding: 0 22px;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.send {
+  border: 0;
+  background: var(--text);
+  color: var(--bg);
+}
+.sleep {
+  border: 1.5px solid var(--moon);
+  background: transparent;
+  color: var(--moon);
+}
+
+.footer :disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

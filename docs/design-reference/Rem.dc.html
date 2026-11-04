@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>꿈 시스템 · 꿈꾸는 중</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#F0A35E}a:hover{color:#F6C08C}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; background: #080B13; color: #ECEAF4; font-family: 'Noto Sans KR', system-ui, sans-serif; display: flex; flex-direction: column">
+
+  <header style="height: 72px; box-sizing: border-box; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1E2436">
+    <div style="display: flex; align-items: baseline; gap: 16px">
+      <h1 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.02em">꿈 시스템</h1>
+      <span style="font-size: 14px; color: #9AA1B8">기억 7 / 12 읽는 중</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px; padding: 8px 16px; border: 1px solid #F0A35E; border-radius: 999px; font-size: 14px; color: #F0A35E">
+      <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <span>꿈꾸는 중 · 모드 1 정리</span>
+    </div>
+    <div style="width: 220px; height: 6px; background: #1E2436; border-radius: 3px; overflow: hidden" role="img" aria-label="진행률 12개 중 7개">
+      <div style="width: 58%; height: 100%; background: #F0A35E"></div>
+    </div>
+  </header>
+
+  <main style="flex: 1; display: flex; min-height: 0">
+    <section aria-label="꿈꾸는 기억 지도" style="flex: 1; position: relative; overflow: hidden">
+      <p style="position: absolute; left: 32px; top: 24px; margin: 0; font-size: 14px; color: #9AA1B8">자는 동안에는 말을 걸 수 없어요. AI가 오늘의 기억을 하나씩 다시 읽고 있어요.</p>
+
+      <svg aria-hidden="true" width="1040" height="660" style="position: absolute; left: 0; top: 0">
+        <line x1="612" y1="250" x2="470" y2="190" stroke="#F0A35E" stroke-opacity="0.35" stroke-width="1.5"/>
+        <line x1="612" y1="250" x2="742" y2="176" stroke="#F0A35E" stroke-opacity="0.35" stroke-width="1.5"/>
+        <line x1="612" y1="250" x2="660" y2="388" stroke="#F0A35E" stroke-opacity="0.35" stroke-width="1.5"/>
+        <line x1="400" y1="400" x2="280" y2="300" stroke="#F0A35E" stroke-width="1.5" stroke-dasharray="5 5"/>
+        <line x1="400" y1="400" x2="520" y2="470" stroke="#F0A35E" stroke-width="1.5" stroke-dasharray="5 5"/>
+        <line x1="400" y1="400" x2="660" y2="388" stroke="#F0A35E" stroke-width="1.5" stroke-dasharray="5 5"/>
+      </svg>
+
+      <sc-for list="{{nodes}}" as="n" hint-placeholder-count="12">
+        <div style="{{n.style}}">
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #C9CDE0">{{n.label}}</span>
+        </div>
+      </sc-for>
+
+      <div style="position: absolute; left: 592px; top: 230px; width: 40px; height: 40px; transform: rotate(45deg); background: rgba(240,163,94,0.10); border: 2px solid rgba(240,163,94,0.6); box-sizing: border-box"></div>
+      <div style="position: absolute; left: 380px; top: 380px; width: 40px; height: 40px; transform: rotate(45deg); background: rgba(240,163,94,0.22); border: 2px solid #F0A35E; box-sizing: border-box; box-shadow: 0 0 24px rgba(240,163,94,0.45)"></div>
+      <div style="position: absolute; left: 330px; top: 432px; font-size: 13px; color: #F0A35E; max-width: 220px; line-height: 1.4; text-align: center">새 통찰 · 급할수록 계획부터 세우려 함</div>
+    </section>
+
+    <aside aria-label="꿈 일지" style="width: 400px; box-sizing: border-box; border-left: 1px solid #1E2436; padding: 28px; display: flex; flex-direction: column; gap: 16px; overflow: hidden">
+      <h2 style="margin: 0; font-size: 18px; font-weight: 700">꿈 일지</h2>
+      <ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 12px">
+        <li style="display: flex; gap: 12px; font-size: 14px; line-height: 1.55"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #9AA1B8; padding-top: 2px">#03</span><span>급식 이야기를 할 때 말투가 밝아짐</span></li>
+        <li style="display: flex; gap: 12px; font-size: 14px; line-height: 1.55"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #9AA1B8; padding-top: 2px">#02</span><span>앞 통찰과 이어서 · 친구와의 일은 짧게 말하고 넘어감</span></li>
+        <li style="display: flex; gap: 12px; font-size: 14px; line-height: 1.55; color: #F0A35E"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; padding-top: 2px">#07</span><span>지금 읽는 중 · 급할수록 계획부터 세우려 함</span></li>
+      </ol>
+      <p style="margin: 0; font-size: 13px; color: #9AA1B8; line-height: 1.6">모드 1은 앞에서 얻은 통찰을 다음 기억을 읽을 때 함께 가져가요. 그래서 통찰이 점점 하나의 이야기로 모여요.</p>
+    </aside>
+  </main>
+
+  <div role="dialog" aria-labelledby="wake-title" style="position: absolute; left: 260px; top: 520px; width: 760px; box-sizing: border-box; padding: 24px 28px; background: #151A28; border: 1.5px solid #F0A35E; border-radius: 16px; display: flex; flex-direction: column; gap: 16px">
+    <div style="display: flex; justify-content: space-between; align-items: baseline">
+      <h2 id="wake-title" style="margin: 0; font-size: 18px; font-weight: 700">깨어나 보니, 이렇게 바뀌려 해요</h2>
+      <span style="font-size: 12px; color: #9AA1B8">깨어난 뒤에 뜨는 카드 · 근거 통찰 3개</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 12px; color: #9AA1B8">지금 인격</span>
+        <p style="margin: 0; padding: 12px 14px; border: 1px solid #262D42; border-radius: 10px; font-size: 14px; line-height: 1.6">친절하게 대답하는 대화 상대.</p>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 12px; color: #F0A35E">바뀔 인격</span>
+        <p style="margin: 0; padding: 12px 14px; border: 1px solid #F0A35E; border-radius: 10px; font-size: 14px; line-height: 1.6">친절하게 대답하되, 상대가 급해 보이면 먼저 할 일을 작게 나눠 준다.</p>
+      </div>
+    </div>
+    <div style="display: flex; justify-content: flex-end; gap: 12px">
+      <a href="Main.dc.html" style="height: 44px; box-sizing: border-box; padding: 0 20px; display: flex; align-items: center; border: 1px solid #39425E; border-radius: 10px; color: #ECEAF4; text-decoration: none; font-size: 15px">그대로 두기</a>
+      <a href="Main.dc.html" style="height: 44px; box-sizing: border-box; padding: 0 22px; display: flex; align-items: center; background: #F0A35E; border-radius: 10px; color: #0D111C; text-decoration: none; font-size: 15px; font-weight: 700">적용하기</a>
+    </div>
+  </div>
+
+  <footer style="height: 112px; box-sizing: border-box; padding: 20px 32px; border-top: 1px solid #1E2436; display: flex; align-items: center; gap: 16px; opacity: 0.45">
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 6px">
+      <label for="say2" style="font-size: 13px; color: #9AA1B8">자는 동안에는 입력이 닫혀 있어요</label>
+      <input id="say2" type="text" disabled placeholder="꿈꾸는 중…" style="height: 48px; box-sizing: border-box; padding: 0 16px; background: #151A28; color: #ECEAF4; border: 1px solid #39425E; border-radius: 12px; font: inherit; font-size: 15px">
+    </div>
+    <button type="button" disabled style="align-self: flex-end; height: 48px; padding: 0 24px; background: #ECEAF4; color: #0D111C; border: 0; border-radius: 12px; font: inherit; font-size: 15px; font-weight: 700">보내기</button>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const pts = [
+      ['01', 150, 150, 46], ['02', 280, 300, 40], ['03', 120, 420, 52],
+      ['04', 330, 520, 44], ['05', 470, 190, 56], ['06', 520, 470, 42],
+      ['07', 660, 388, 62], ['08', 742, 176, 48], ['09', 860, 300, 44],
+      ['10', 900, 500, 50], ['11', 360, 110, 38], ['12', 760, 560, 40]
+    ];
+    const done = ['01', '02', '03', '04', '05', '06'];
+    const nodes = pts.map(function (p) {
+      const now = p[0] === '07';
+      const read = done.indexOf(p[0]) >= 0;
+      const r = p[3] / 2;
+      return {
+        label: p[0],
+        style: 'position: absolute; left: ' + (p[1] - r) + 'px; top: ' + (p[2] - r) + 'px; width: ' + p[3] + 'px; height: ' + p[3] + 'px; box-sizing: border-box; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: ' + (now ? 'rgba(240,163,94,0.25)' : '#181E33') + '; border: ' + (now ? '2px solid #F0A35E' : (read ? '1.5px solid #6E7BB3' : '1.5px dashed #3A4363')) + '; box-shadow: ' + (now ? '0 0 32px rgba(240,163,94,0.55)' : 'none') + '; opacity: ' + (read || now ? '1' : '0.55')
+      };
+    });
+    return { nodes: nodes };
+  }
+}
+</script>
+</body>
+</html>

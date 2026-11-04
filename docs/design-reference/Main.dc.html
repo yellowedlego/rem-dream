@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>꿈 시스템 · 깨어 있을 때</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#F0A35E}a:hover{color:#F6C08C}
+.chat{scrollbar-width:thin;scrollbar-color:#39425E transparent}
+.chat::-webkit-scrollbar{width:6px}
+.chat::-webkit-scrollbar-track{background:transparent}
+.chat::-webkit-scrollbar-thumb{background:#39425E;border-radius:3px}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; background: #0D111C; color: #ECEAF4; font-family: 'Noto Sans KR', system-ui, sans-serif; display: flex; flex-direction: column">
+
+  <header style="height: 72px; box-sizing: border-box; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #262D42">
+    <div style="display: flex; align-items: baseline; gap: 16px">
+      <h1 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.02em">꿈 시스템</h1>
+      <span style="font-size: 14px; color: #9AA1B8">기억 노드 12개</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px; padding: 8px 16px; border: 1px solid #262D42; border-radius: 999px; font-size: 14px">
+      <span style="width: 8px; height: 8px; border-radius: 50%; background: #7FD1A8"></span>
+      <span>깨어 있음 · 이야기를 듣는 중</span>
+    </div>
+    <button type="button" style="height: 44px; padding: 0 18px; background: transparent; color: #ECEAF4; border: 1px solid #39425E; border-radius: 10px; font: inherit; font-size: 14px">새 관람객으로 초기화</button>
+  </header>
+
+  <main style="flex: 1; position: relative; display: flex; min-height: 0">
+
+    <section aria-label="대화" class="chat" onScroll="{{onScroll}}" style="width: 760px; height: 716px; box-sizing: border-box; overflow-y: auto; border-right: 1px solid #262D42">
+      <div style="height: 24px"></div>
+      <sc-for list="{{pairs}}" as="p" hint-placeholder-count="4">
+        <article style="{{p.blockStyle}}">
+          <div style="display: flex; align-items: center; gap: 10px; font-size: 12px; color: #9AA1B8">
+            <span style="{{p.dotStyle}}"></span>
+            <span style="font-family: 'IBM Plex Mono', monospace">#{{p.id}} · {{p.time}}</span>
+            <span>{{p.topic}}</span>
+          </div>
+          <div style="display: flex; justify-content: flex-end">
+            <p style="margin: 0; max-width: 520px; padding: 12px 16px; background: #1B2235; border-radius: 14px 14px 4px 14px; font-size: 15px; line-height: 24px">{{p.user}}</p>
+          </div>
+          <div style="display: flex; justify-content: flex-start">
+            <p style="margin: 0; max-width: 560px; padding: 12px 16px; border: 1px solid #262D42; border-radius: 14px 14px 14px 4px; font-size: 15px; line-height: 24px">{{p.ai}}</p>
+          </div>
+        </article>
+      </sc-for>
+      <div style="height: 24px"></div>
+    </section>
+
+    <section aria-label="기억 노드" style="flex: 1; position: relative; overflow: hidden">
+      <svg aria-hidden="true" width="680" height="716" style="position: absolute; left: 0; top: 0">
+        <defs>
+          <pattern id="plane-grid" x="10" y="16" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M40 0 L0 0 L0 40" fill="none" stroke="#171C2C" stroke-width="1"></path>
+          </pattern>
+        </defs>
+        <rect x="0" y="0" width="680" height="716" fill="url(#plane-grid)"></rect>
+        <line x1="250" y1="24" x2="250" y2="692" stroke="#39425E" stroke-width="1"></line>
+        <path d="M246 32 L250 24 L254 32" fill="none" stroke="#39425E" stroke-width="1"></path>
+        <text x="262" y="34" font-family="IBM Plex Mono, monospace" font-size="11" fill="#6F778F">t</text>
+      </svg>
+      <p style="position: absolute; right: 32px; top: 20px; margin: 0; font-size: 13px; color: #9AA1B8">보이는 대화를 해당 기억이 비춰요</p>
+      <sc-for list="{{nodes}}" as="n" hint-placeholder-count="12">
+        <div style="{{n.rowStyle}}">
+          <span style="{{n.idStyle}}">{{n.id}}</span>
+          <span style="width: 20px; height: 20px; position: relative; display: flex; align-items: center; justify-content: center">
+            <span style="{{n.ringStyle}}"></span>
+            <span style="{{n.dotStyle}}"></span>
+          </span>
+          <span style="{{n.labelStyle}}">{{n.time}} · {{n.topic}}</span>
+        </div>
+      </sc-for>
+    </section>
+
+    <sc-for list="{{beams}}" as="b" hint-placeholder-count="3">
+      <svg aria-hidden="true" width="1440" height="716" style="position: absolute; left: 0; top: 0; pointer-events: none">
+        <polygon points="{{b.points}}" fill="{{b.color}}" fill-opacity="{{b.fill}}"></polygon>
+        <line x1="{{b.x1}}" y1="{{b.y1}}" x2="{{b.nx}}" y2="{{b.ny}}" stroke="{{b.color}}" stroke-opacity="{{b.stroke}}" stroke-width="1"></line>
+        <line x1="{{b.x1}}" y1="{{b.y2}}" x2="{{b.nx}}" y2="{{b.ny}}" stroke="{{b.color}}" stroke-opacity="{{b.stroke}}" stroke-width="1"></line>
+      </svg>
+    </sc-for>
+
+    <sc-if value="{{showEdge}}" hint-placeholder-val="{{ true }}">
+      <sc-for list="{{beams}}" as="b" hint-placeholder-count="3">
+        <div style="{{b.edgeStyle}}"></div>
+      </sc-for>
+    </sc-if>
+  </main>
+
+  <footer style="height: 112px; box-sizing: border-box; padding: 20px 32px; border-top: 1px solid #262D42; display: flex; align-items: center; gap: 16px">
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 6px">
+      <label for="say" style="font-size: 13px; color: #9AA1B8">오늘 있었던 일을 적거나, 말을 걸어 보세요</label>
+      <input id="say" type="text" placeholder="예: 오늘 급식에 떡볶이가 나왔어" style="height: 48px; box-sizing: border-box; padding: 0 16px; background: #151A28; color: #ECEAF4; border: 1px solid #39425E; border-radius: 12px; font: inherit; font-size: 15px">
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <label for="model" style="font-size: 13px; color: #9AA1B8">모델</label>
+      <select id="model" style="height: 48px; padding: 0 12px; background: #151A28; color: #ECEAF4; border: 1px solid #39425E; border-radius: 12px; font: inherit; font-size: 14px">
+        <option>Gemini Flash</option>
+      </select>
+    </div>
+    <button type="button" style="align-self: flex-end; height: 48px; padding: 0 24px; background: #ECEAF4; color: #0D111C; border: 0; border-radius: 12px; font: inherit; font-size: 15px; font-weight: 700">보내기</button>
+    <a href="Rem.dc.html" style="align-self: flex-end; height: 48px; box-sizing: border-box; padding: 0 22px; display: flex; align-items: center; gap: 10px; border: 1.5px solid #F0A35E; color: #F0A35E; border-radius: 12px; font-size: 15px; font-weight: 700; text-decoration: none">
+      <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      잠들기
+    </a>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"showEdge":{"editor":"boolean","default":true},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { s: 0 };
+  }
+  renderVals() {
+    const self = this;
+    const colors = { '학교': '#8FA8FF', '일상': '#E8C468', '친구': '#7FD1A8', '시험': '#F28B82' };
+    const raw = [
+      ['01', '08:10', '일상', '오늘 아침에 늦잠 자서 밥도 못 먹고 나왔어.', '아침을 거르면 오전이 길게 느껴지지. 쉬는 시간에 간단히 뭐라도 먹을 수 있어?'],
+      ['02', '09:40', '학교', '1교시 국어 시간에 발표했는데 생각보다 떨렸어.', '떨렸는데도 끝까지 했다는 게 중요해. 어떤 부분이 제일 떨렸어?'],
+      ['03', '10:55', '친구', '친구가 내 발표 좋았다고 말해 줬어.', '그 말 듣고 기분이 좀 풀렸겠다. 그 친구랑은 자주 이야기해?'],
+      ['04', '12:30', '일상', '급식에 떡볶이 나왔어! 오늘 최고야.', '떡볶이 나오는 날은 학교 오는 맛이 있지. 많이 먹었어?'],
+      ['05', '13:20', '시험', '다음 주에 수학 시험인데 범위가 너무 넓어.', '범위를 단원별로 나눠서 적어 보면 생각보다 덜 막막할 수 있어. 몇 단원이야?'],
+      ['06', '14:05', '학교', '과학 실험에서 우리 조만 결과가 다르게 나왔어.', '다르게 나온 이유를 찾는 것도 실험의 일부야. 조건 중에 바뀐 게 있었을까?'],
+      ['07', '14:22', '시험', '내일 수학 수행평가인데 하나도 준비 못 했어.', '많이 급하겠다. 범위가 어디까지인지부터 같이 정리해 볼까? 오늘 할 수 있는 만큼만 나눠 보자.'],
+      ['08', '15:40', '친구', '친구랑 사소한 걸로 말다툼했어.', '사소한 일로 시작해도 마음이 계속 쓰이지. 지금은 좀 어때?'],
+      ['09', '16:30', '학교', '동아리에서 꿈 시스템 만든다고 발표했어.', '좋은 주제다. 친구들 반응은 어땠어?'],
+      ['10', '18:10', '일상', '집에 오는 길에 비가 와서 다 젖었어.', '우산 없을 때 오는 비는 정말 서럽지. 감기 안 걸리게 따뜻하게 있어.'],
+      ['11', '20:00', '시험', '수학 문제 몇 개 풀었는데 하나는 끝까지 못 풀었어.', '몇 개라도 풀었으면 오늘 계획은 지킨 거야. 막힌 문제는 내일 다시 보자.'],
+      ['12', '22:30', '친구', '아까 다툰 친구한테 먼저 연락했어.', '먼저 손 내미는 거 쉽지 않은데 잘했다. 답장은 왔어?']
+    ];
+    const lines = function (t) { return Math.max(1, Math.ceil(t.length / 28)); };
+    const H = 716, EDGE_X = 760, NX = 1010, R = 10;
+    const step = (H - 96) / (raw.length - 1);
+    let top = 24;
+    const pairs = [], nodes = [], beams = [];
+    raw.forEach(function (r, i) {
+      const c = colors[r[2]];
+      const h = 24 + 20 + 12 + (lines(r[3]) * 24 + 24) + 12 + (lines(r[4]) * 24 + 24) + 24;
+      pairs.push({
+        id: r[0], time: r[1], topic: r[2], user: r[3], ai: r[4],
+        blockStyle: 'height: ' + h + 'px; box-sizing: border-box; padding: 24px 32px 24px 32px; display: flex; flex-direction: column; gap: 12px; border-bottom: 1px solid #1A2032; overflow: hidden',
+        dotStyle: 'width: 8px; height: 8px; border-radius: 50%; background: ' + c
+      });
+      const segTop = top - self.state.s, segBot = top + h - self.state.s;
+      const vt = Math.max(segTop, 0), vb = Math.min(segBot, H), v = vb - vt;
+      const ny = 56 + i * step;
+      const k = v > 0 ? Math.min(1, v / 180) : 0;
+      const on = k > 0;
+      nodes.push({
+        id: r[0], time: r[1], topic: r[2],
+        rowStyle: 'position: absolute; left: ' + (NX - 760 - 10 - 44) + 'px; top: ' + (ny - 10) + 'px; display: flex; align-items: center; gap: 14px',
+        idStyle: 'width: 30px; text-align: right; font-family: \'IBM Plex Mono\', monospace; font-size: 12px; color: ' + (on ? '#ECEAF4' : '#5C647C'),
+        ringStyle: 'position: absolute; inset: 0; border-radius: 50%; border: 1px solid ' + c + '; opacity: ' + (on ? k.toFixed(2) : '0'),
+        dotStyle: 'width: 7px; height: 7px; border-radius: 50%; background: ' + (on ? c : '#0D111C') + '; border: 1px solid ' + (on ? c : '#4A5372') + '; box-sizing: border-box',
+        labelStyle: 'font-family: \'IBM Plex Mono\', monospace; font-size: 12px; color: ' + (on ? '#C9CDE0' : '#5C647C')
+      });
+      if (v > 0) {
+        const y1 = vt + 2, y2 = vb - 2;
+        beams.push({
+          color: c,
+          points: EDGE_X + ',' + y1 + ' ' + NX + ',' + ny + ' ' + EDGE_X + ',' + y2,
+          fill: (0.08 * k).toFixed(3),
+          stroke: (0.7 * k).toFixed(3),
+          x1: EDGE_X, y1: y1, y2: y2, nx: NX, ny: ny,
+          edgeStyle: 'position: absolute; left: ' + (EDGE_X - 1) + 'px; top: ' + y1 + 'px; width: 2px; height: ' + Math.max(0, y2 - y1) + 'px; background: ' + c + '; opacity: ' + (0.3 + 0.7 * k).toFixed(2) + '; pointer-events: none'
+        });
+      }
+      top += h;
+    });
+    return {
+      pairs: pairs, nodes: nodes, beams: beams,
+      showEdge: this.props.showEdge ?? true,
+      onScroll: function (e) { self.setState({ s: e.currentTarget.scrollTop }); }
+    };
+  }
+}
+</script>
+</body>
+</html>
