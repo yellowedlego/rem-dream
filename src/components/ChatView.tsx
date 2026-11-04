@@ -136,7 +136,6 @@ export default function ChatView() {
     chatRef: scrollRef,
     planeRef,
     scrollRef: moonScrollRef,
-    followLatest: true,
     itemRefs,
     // 빛줄기는 전시 화면처럼 대화 배경과 달창의 경계(벽의 왼쪽 끝)에서 시작한다
     edgeRef: planeRef,
@@ -359,7 +358,6 @@ export default function ChatView() {
           </form>
 
           <section ref={planeRef} className={styles.wall} aria-label="기억 노드 시간축" inert={!wallOpen}>
-            <p className={styles.hint}>지금 보이는 대화를 그 기억이 비춰요</p>
             <div ref={moonScrollRef} className={styles.wallScroll}>
               <MoonPlaneTrack sorted={sorted} geo={geo} selectedId={selectedId} onJump={jumpTo} labelMax={WALL_W - 140} />
             </div>
@@ -380,6 +378,8 @@ export default function ChatView() {
     </div>
   );
 }
+
+
 
 
 

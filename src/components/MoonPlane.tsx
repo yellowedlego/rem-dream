@@ -1,7 +1,8 @@
 ﻿"use client";
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useState, type RefObject } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from "react";
 import type { MemoryNode } from "@/lib/types";
+import { followCamera } from "./camera";
 import Moon from "./Moon";
 import styles from "./Exhibit.module.css";
 
@@ -52,9 +53,8 @@ export interface Geo {
 /** 달 사이 간격(px). 전시 화면에 원래 있던 간격이고, 노드가 많아져도 줄이지 않고 달창을 스크롤한다 */
 export const MOON_STEP = 32;
 const AXIS_PAD = 56;
-/** 달창 가운데에 가까운 달일수록 커진다 (배율 1 ~ 1+MAGNIFY, 퍼짐 MAGNIFY_SIGMA px) */
-const MAGNIFY = 0.5;
-const MAGNIFY_SIGMA = 90;
+/** 달창 위·아래 여백(높이 비율). 비추는 자리가 이 안쪽에 있으면 달창은 가만히 있는다 */
+const CAMERA_MARGIN = 0.25;
 const FULL_AT = 160; // 이만큼(px) 보이면 빛줄기가 가장 진해짐
 const MOON_REACH = 5; // 보이는 구간에서 기억 5개만큼 멀어지면 삭(새달)
 
@@ -108,6 +108,8 @@ export function useMoonPlane({
 }: Options) {
   const [geo, setGeo] = useState<Geo | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  // 대화 칸이 스크롤됐을 때만 달창 카메라가 따라간다 (달창을 직접 스크롤할 때는 따라가지 않는다)
+  const followNext = useRef(true);
 
   const measure = useCallback(() => {
     const main = mainRef.current;
@@ -146,6 +148,16 @@ export function useMoonPlane({
       return rects.length;
     };
 
+    // 마리오식 카메라: 대화가 비추는 자리(focus)가 달창 안쪽 여백(가장자리 25%)에 닿으면 그만큼만 달창이 따라간다.
+    // 반대로 가는 동안에는 여백 안쪽에서는 그대로 있다가, 다시 닿으면 따라간다.
+    if (followNext.current && sorted.length > 0) {
+      followNext.current = false;
+      const mid = Math.min(sorted.length - 0.5, Math.max(0.5, (posOf(viewTop) + posOf(viewBottom)) / 2));
+      const focusY = AXIS_PAD + (mid - 0.5) * MOON_STEP; // 달 목록(트랙) 안에서의 위치
+      const next = followCamera(focusY, sc.scrollTop, sc.clientHeight, sc.clientHeight * CAMERA_MARGIN, sc.scrollHeight - sc.clientHeight);
+      if (next !== sc.scrollTop) sc.scrollTop = next;
+    }
+
     // 달은 전시 화면의 원래 간격(MOON_STEP)으로 늘어놓고, 달창이 스크롤된 만큼 위치가 바뀐다
     const nodeY = new Map<number, number>();
     sorted.forEach((n, i) => nodeY.set(n.id, Math.round(s.top - m.top + AXIS_PAD + i * MOON_STEP - sc.scrollTop)));
@@ -168,6 +180,7 @@ export function useMoonPlane({
     });  }, [sorted, mainRef, chatRef, planeRef, scrollRef, itemRefs, edgeRef, edgeSide]);
 
   useLayoutEffect(() => {
+    followNext.current = true; // 기억이 바뀌었거나 처음 그릴 때도 비추는 자리를 보여 준다
     measure();
   }, [measure]);
 
@@ -177,15 +190,19 @@ export function useMoonPlane({
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(measure);
     };
+    const scheduleFollow = () => {
+      followNext.current = true;
+      schedule();
+    };
     const chat = chatRef.current;
     const sc = scrollRef.current;
-    chat?.addEventListener("scroll", schedule, { passive: true });
-    sc?.addEventListener("scroll", schedule, { passive: true }); // 달창은 대화 칸과 따로 스크롤된다
+    chat?.addEventListener("scroll", scheduleFollow, { passive: true }); // 대화가 움직이면 카메라가 따라간다
+    sc?.addEventListener("scroll", schedule, { passive: true }); // 달창은 따로 스크롤된다 (카메라는 안 따라감)
     const ro = new ResizeObserver(schedule);
     if (mainRef.current) ro.observe(mainRef.current);
     return () => {
       cancelAnimationFrame(raf);
-      chat?.removeEventListener("scroll", schedule);
+      chat?.removeEventListener("scroll", scheduleFollow);
       sc?.removeEventListener("scroll", schedule);
       ro.disconnect();
     };
@@ -250,8 +267,7 @@ export function MoonPlaneBeams({ sorted, geo }: { sorted: MemoryNode[]; geo: Geo
 }
 
 /**
- * 달창 안쪽(스크롤되는 칸의 내용): 시간축과 달. 달 간격은 늘 같고,
- * 달창 가운데에 가까운 달일수록 커져서 스크롤하는 자리가 또렷하게 보인다.
+ * 달창 안쪽(스크롤되는 칸의 내용): 시간축과 달. 달 간격은 늘 같다.
  */
 export function MoonPlaneTrack({
   sorted,
@@ -268,7 +284,6 @@ export function MoonPlaneTrack({
   labelMax?: number;
 }) {
   if (!geo || sorted.length === 0) return null;
-  const focus = (geo.planeTop + geo.planeBottom) / 2;
   return (
     <div className={styles.track} style={{ height: geo.trackH }}>
       <div
@@ -281,8 +296,6 @@ export function MoonPlaneTrack({
         const d = Math.max(0, lo - center, center - hi); // 보이는 대화 구간까지의 거리
         const lit = falloff(d);
         const side = center < lo ? "left" : "right"; // 지난 기억은 기우는 달, 앞선 기억은 차오르는 달
-        const dy = Math.abs((geo.nodeY.get(n.id) ?? 0) - focus);
-        const scale = 1 + MAGNIFY * Math.exp(-Math.pow(dy / MAGNIFY_SIGMA, 2)); // 달창 가운데에서 가장 크다
         return (
           <button
             key={n.id}
@@ -299,10 +312,7 @@ export function MoonPlaneTrack({
             aria-label={`기억 ${n.order}번: ${n.user}`}
             onClick={() => onJump(n.id)}
           >
-            {/* 달만 커진다. 옆 글자(미리보기)는 크기가 그대로다 */}
-            <span className={styles.moonWrap} style={{ transform: `scale(${scale.toFixed(3)})` }}>
-              <Moon lit={lit} side={side} selected={n.id === selectedId} />
-            </span>
+            <Moon lit={lit} side={side} selected={n.id === selectedId} />
             <span className={styles.nodeLabel} style={labelMax ? { maxWidth: labelMax } : undefined}>
               <span className={styles.nodeTime}>{hhmm(n.createdAt)}</span>
               {n.user}
@@ -313,5 +323,8 @@ export function MoonPlaneTrack({
     </div>
   );
 }
+
+
+
 
 

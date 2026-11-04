@@ -440,16 +440,17 @@
   right: 12px;
   z-index: 6;
   min-height: 32px;
-  padding: 0 12px;
+  padding: 0 14px;
   border: 0;
-  background: var(--bubble);
-  color: var(--text);
+  background: var(--accent); /* 강조 색: 어두운 벽·대화 배경 위에서도 눈에 띄게 */
+  color: var(--accent-ink);
   font: inherit;
   font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
 }
 .wallToggle:hover {
-  background: var(--bubble-ai);
+  background: color-mix(in srgb, var(--accent) 85%, white);
 }
 @media (max-width: 760px) {
   .wall {
