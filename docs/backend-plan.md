@@ -98,7 +98,24 @@ export interface ModelCall {
 }
 ```
 
-`Store`에는 `proposals: PersonaProposal[]`, `runs: RemRun[]`, `calls: ModelCall[]`를 더한다.
+```ts
+/** 긴 이야기 한 편 — 원문은 한 글자도 바꾸지 않고 보관한다 */
+export interface Story {
+  id: number;
+  sessionId: string;
+  /** 사용자가 넣은 원문 그대로 */
+  rawText: string;
+  /** 쪼개져 나온 노드 번호들 (순서대로) */
+  nodeIds: number[];
+  createdAt: string;
+}
+// MemoryNode에 선택 필드 추가:
+//   storyId?: number;                 // 이야기에서 나왔으면 그 번호
+//   storySpan?: [number, number];     // rawText 안의 [시작, 끝) 글자 위치
+//   topic?: string;                   // 쪼갠 조각의 한 줄 주제 (화면 표시용)
+```
+
+`Store`에는 `proposals: PersonaProposal[]`, `runs: RemRun[]`, `calls: ModelCall[]`, `stories: Story[]`를 더한다.
 (`runs`는 최근 N개만 보관, `calls`는 디버그용으로 최근 200건 정도만 보관해 파일이 커지지 않게 한다.)
 
 ## 5. API 명세 (`src/app/api/**/route.ts`)
@@ -109,6 +126,13 @@ export interface ModelCall {
 | --- | --- | --- |
 | `POST /api/chat` `{ sessionId, message, model? }` | 활성 인격으로 모델을 불러 답을 받고 노드 1개를 저장해 `{ node }` 반환. REM 실행 중이면 `409` | 2 |
 | `GET /api/state?sessionId=` | 그 세션의 `nodes`, `insights`, `proposals`, `activePersona`, 지금 `RemRun` 한 번에 반환 (화면이 불러올 때 쓰는 읽기용) | 2 |
+| `POST /api/story` `{ sessionId, text }` | 긴 이야기를 **맥락 단위로 쪼개 노드 여러 개**로 저장하고 `{ story, nodes }` 반환 (아래 "이야기 쪼개기 규칙" 참고) | 2 |
+| `GET /api/sessions` | 세션 목록 `[{ sessionId, nodeCount, lastAt, preview }]` (대화 화면 사이드바, 디버그 검색용) | 2 |
+| `GET /api/nodes?sessionId=&q=&limit=` | 세션·내용 검색. `q`는 세션 번호·유저 입력·AI 답변·주제에 부분 일치. `sessionId`를 안 주면 전체 | 2 |
+| `DELETE /api/nodes/[id]` | 노드 하나 삭제 (그 노드를 근거로 한 통찰은 남기되 근거 번호에서 뺌) | 2 |
+| `DELETE /api/stories/[id]` | 이야기와 거기서 나온 노드를 함께 삭제 | 2 |
+| `DELETE /api/sessions/[sessionId]` | 세션 통째 삭제 (노드·통찰·제안·이야기). `/api/session/reset`은 인격까지 첫 버전으로 되돌리는 관람객 교체용, 이쪽은 디버그용 삭제 | 2 |
+| `DELETE /api/insights/[id]` | 통찰 하나 삭제 (디버그용) | 3 |
 | `POST /api/rem/start` `{ sessionId, mode, temperature? }` | REM 시작, `202 { runId }`. 이미 실행 중이면 `409`. 노드 수는 상한(기본 12개)으로 자름 | 3 |
 | `GET /api/rem/status?runId=` | `RemRun` 반환. 화면은 0.5초마다 이 주소를 불러 진행을 그린다(처음엔 폴링, 실시간 스트림은 필요해지면 나중에) | 3 |
 | `POST /api/rem/stop` `{ runId }` | 실행 중단 (다음 모델 호출 전에 멈춤) | 3 |
@@ -118,6 +142,16 @@ export interface ModelCall {
 | `POST /api/session/reset` `{ sessionId }` | 그 세션의 노드·통찰·제안을 지움 (관람객 교체용). 인격은 첫 버전으로 되돌림 | 4 |
 | `GET /api/debug/calls`, `GET /api/debug/metrics` | `ModelCall` 목록, 노드·통찰 수·토큰 합계·평균 응답 시간·오류 횟수 | 6 |
 | `POST /api/debug/reset-all` | 전체 초기화(시드로 되돌림) | 6 |
+
+### 이야기 쪼개기 규칙 (`POST /api/story`) — 전처리, 정보를 잃지 않기
+
+긴 이야기를 모델에게 "요약"시키지 않고 **어디서 끊을지만** 정하게 한다.
+
+1. 모델은 `[{ start, end, topic }]`(원문 글자 위치와 한 줄 주제)만 돌려준다. 본문을 다시 쓰게 하지 않는다.
+2. 서버가 검증한다: 구간이 **빈틈·겹침 없이 원문 전체를 덮는지**, 첫 구간이 0에서 시작해 마지막이 `rawText.length`에서 끝나는지. 실패하면 한 번 다시 시키고, 그래도 안 되면 문단·문장 기준으로 직접 자른다(모델 없이도 항상 성공).
+3. 각 구간이 노드 하나가 된다. 노드의 `user`에는 **원문 조각을 그대로**(공백 포함) 넣는다. `ai`에는 그 조각에 대한 짧은 반응 한두 줄. 구간 글자를 이어 붙이면 `rawText`와 같아야 한다(테스트로 확인).
+4. 노드 수 상한(기본 12). 넘으면 인접한 구간을 합친다. 입력 길이 상한(기본 8,000자)을 넘으면 `413`.
+5. `rawText`는 `Story`에 따로 남아서, 노드를 지워도 원문은 남는다(`DELETE /api/stories/[id]`로만 사라짐).
 
 `sessionId`는 관람객 한 명 = 한 세션이다. `plan.md`의 미정 항목("관람객마다 기억을 따로 둘지")은 **기본값(따로)** 으로 간다.
 
@@ -131,6 +165,8 @@ src/lib/
   model/
     client.ts               모델 호출 한 곳. 입력: 프롬프트·온도 → 출력: 텍스트·토큰·시간. ModelCall 기록까지 여기서
     mock.ts                 MODEL_MOCK=1일 때 쓰는 가짜 응답
+  story/
+    split.ts                이야기 쪼개기: 모델이 준 구간 검증 + 모델 없이 문단·문장으로 자르는 대체 경로
   persona.ts                활성 인격 읽기, 제안 승인/되돌리기
   rem/
     types.ts                RemMode 인터페이스
@@ -171,8 +207,14 @@ export interface RemMode {
 - [ ] `src/lib/store.ts`: 런타임 저장소, 원자적 쓰기, `addNode()`
 - [ ] `src/lib/model/client.ts`, `mock.ts`
 - [ ] `src/app/api/chat/route.ts`, `src/app/api/state/route.ts`
-- [ ] `tests/api-chat.spec.ts` (MODEL_MOCK=1)
-- **끝 기준:** 채팅을 보내면 노드가 저장되고, 서버를 껐다 켜도(새로고침 포함) 남아 있다. 키 없이 `MODEL_MOCK=1`로도 같은 흐름이 돈다.
+- [ ] `src/app/api/story/route.ts`, `src/lib/story/split.ts` (5절의 이야기 쪼개기 규칙)
+- [ ] `src/app/api/{sessions,nodes,stories,sessions/[sessionId]}/…/route.ts` (검색·삭제, 디버그 화면용)
+- [ ] `tests/api-chat.spec.ts`, `tests/api-story.spec.ts` (MODEL_MOCK=1). 이야기 테스트는 "조각을 이어 붙이면 원문과 같다"를 확인
+- **끝 기준:** 채팅을 보내면 노드가 저장되고, 서버를 껐다 켜도(새로고침 포함) 남아 있다. 키 없이 `MODEL_MOCK=1`로도 같은 흐름이 돈다. 긴 이야기를 넣으면 원문이 그대로 보존된 노드 여러 개가 생긴다.
+
+> **프론트(B)가 먼저 만든 가짜 API:** 백엔드가 나오기 전에 화면이 돌도록 B가 `src/app/api-mock/**`에 같은 명세의 가짜 API를 둔다.
+> 실제 API가 완성되면 화면의 `NEXT_PUBLIC_API_BASE`를 `/api-mock`에서 `/api`로 바꾸고 `src/app/api-mock/`을 지운다.
+> 응답 모양은 이 문서와 같아야 하므로, 모양을 바꿀 때는 이 문서를 먼저 고친다.
 
 ### 3단계 — REM 모드 1 + 콘솔 검증 (핵심 가설)
 - [ ] `src/lib/rem/types.ts`, `registry.ts`, `runner.ts`, `modes/consolidate.ts`
