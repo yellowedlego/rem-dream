@@ -3,7 +3,7 @@
 import { useMemo, useRef } from "react";
 import type { MemoryNode } from "@/lib/types";
 import AppNav from "./AppNav";
-import { MoonPlaneLayers, hhmm, useMoonPlane } from "./MoonPlane";
+import { MoonPlaneBeams, MoonPlaneTrack, hhmm, useMoonPlane } from "./MoonPlane";
 import styles from "./Exhibit.module.css";
 
 export default function Exhibit({ nodes, personaVersion }: { nodes: MemoryNode[]; personaVersion: number }) {
@@ -15,8 +15,9 @@ export default function Exhibit({ nodes, personaVersion }: { nodes: MemoryNode[]
   const mainRef = useRef<HTMLElement>(null);
   const chatRef = useRef<HTMLElement>(null);
   const planeRef = useRef<HTMLElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef(new Map<number, HTMLElement>());
-  const { geo, lightById, selectedId, jumpTo } = useMoonPlane({ sorted, mainRef, chatRef, planeRef, itemRefs });
+  const { geo, lightById, selectedId, jumpTo } = useMoonPlane({ sorted, mainRef, chatRef, planeRef, scrollRef, itemRefs });
   return (
     <div className={styles.shell}>
       <header className={styles.header}>
@@ -60,9 +61,12 @@ export default function Exhibit({ nodes, personaVersion }: { nodes: MemoryNode[]
 
         <section ref={planeRef} className={styles.plane} aria-label="기억 노드 시간축">
           <p className={styles.hint}>지금 보이는 대화를 그 기억이 비춰요</p>
+          <div ref={scrollRef} className={styles.planeScroll}>
+            <MoonPlaneTrack sorted={sorted} geo={geo} selectedId={selectedId} onJump={jumpTo} />
+          </div>
         </section>
 
-        <MoonPlaneLayers sorted={sorted} geo={geo} selectedId={selectedId} onJump={jumpTo} />
+        <MoonPlaneBeams sorted={sorted} geo={geo} />
       </main>
 
       {/* 입력·모델·잠들기는 2단계(채팅 연결)부터 동작한다 */}
@@ -87,5 +91,6 @@ export default function Exhibit({ nodes, personaVersion }: { nodes: MemoryNode[]
     </div>
   );
 }
+
 
 

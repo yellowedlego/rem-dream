@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState, type RefObject } from "react";
 import type { MemoryNode } from "@/lib/types";
@@ -30,9 +30,15 @@ interface Seg {
 export interface Geo {
   edgeX: number; // 빛줄기가 시작하는 대화 칸 오른쪽 끝
   axisX: number; // 시간축 x (정수 픽셀)
+  /** 달의 화면상 세로 위치 (달창이 스크롤된 만큼 반영, main 기준 좌표) */
   nodeY: Map<number, number>;
-  /** 노드 한 줄의 높이 = 누르는 영역 (겹치지 않게 줄 간격, 짝수 정수, 최대 44px) */
-  rowH: number;
+  /** 달창(스크롤되는 칸)이 보이는 위·아래 끝 (main 기준 좌표) */
+  planeTop: number;
+  planeBottom: number;
+  /** 달창 안에서의 시간축 x */
+  axisLocal: number;
+  /** 달 목록 전체 높이 (달창 안쪽 길이) */
+  trackH: number;
   segs: Seg[];
   /** 보이는 대화 구간의 위·아래 끝을 "기억 번호 공간"의 연속 위치로 나타낸 값 (0 ~ 노드 수) */
   band: [number, number];
@@ -43,7 +49,12 @@ export interface Geo {
   h: number;
 }
 
+/** 달 사이 간격(px). 전시 화면에 원래 있던 간격이고, 노드가 많아져도 줄이지 않고 달창을 스크롤한다 */
+export const MOON_STEP = 32;
 const AXIS_PAD = 56;
+/** 달창 가운데에 가까운 달일수록 커진다 (배율 1 ~ 1+MAGNIFY, 퍼짐 MAGNIFY_SIGMA px) */
+const MAGNIFY = 0.5;
+const MAGNIFY_SIGMA = 90;
 const FULL_AT = 160; // 이만큼(px) 보이면 빛줄기가 가장 진해짐
 const MOON_REACH = 5; // 보이는 구간에서 기억 5개만큼 멀어지면 삭(새달)
 
@@ -70,32 +81,31 @@ interface Options {
   mainRef: RefObject<HTMLElement | null>;
   /** 대화가 스크롤되는 칸. 보이는 구간은 이 칸의 높이다 */
   chatRef: RefObject<HTMLElement | null>;
-  /** 달이 놓일 오른쪽 영역 */
+  /** 달이 놓일 오른쪽 영역 (스크롤되지 않는 바깥 상자) */
   planeRef: RefObject<HTMLElement | null>;
+  /** 달창 안의 스크롤되는 칸. 대화 칸과 따로 스크롤된다 */
+  scrollRef: RefObject<HTMLElement | null>;
+  /** 새 기억이 생기면 달창을 맨 아래로 내려 최신 달을 보여 줄지 */
+  followLatest?: boolean;
   /** 대화 한 쌍씩의 요소 (노드 번호 → 요소) */
   itemRefs: RefObject<Map<number, HTMLElement>>;
   /** 빛줄기가 시작하는 오른쪽 끝을 재는 요소. 없으면 chatRef의 오른쪽 끝 */
   edgeRef?: RefObject<HTMLElement | null>;
 }
 
-export function useMoonPlane({ sorted, mainRef, chatRef, planeRef, itemRefs, edgeRef }: Options) {
+export function useMoonPlane({ sorted, mainRef, chatRef, planeRef, scrollRef, itemRefs, edgeRef, followLatest = false }: Options) {
   const [geo, setGeo] = useState<Geo | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
-
-  // 노드의 세로 위치 = 시간 순서대로 고르게 (시각 비례로 두면 가까운 시각끼리 겹침)
-  const tRatio = useMemo(
-    () => new Map(sorted.map((n, i) => [n.id, sorted.length > 1 ? i / (sorted.length - 1) : 0.5])),
-    [sorted],
-  );
 
   const measure = useCallback(() => {
     const main = mainRef.current;
     const chat = chatRef.current;
     const plane = planeRef.current;
-    if (!main || !chat || !plane) return;
+    const sc = scrollRef.current;
+    if (!main || !chat || !plane || !sc) return;
     const m = main.getBoundingClientRect();
     const c = chat.getBoundingClientRect();
-    const p = plane.getBoundingClientRect();
+    const s = sc.getBoundingClientRect();
     const edge = (edgeRef?.current ?? chat).getBoundingClientRect();
 
     const viewTop = c.top - m.top;
@@ -124,25 +134,26 @@ export function useMoonPlane({ sorted, mainRef, chatRef, planeRef, itemRefs, edg
       return rects.length;
     };
 
-    const usable = p.height - AXIS_PAD * 2;
+    // 달은 전시 화면의 원래 간격(MOON_STEP)으로 늘어놓고, 달창이 스크롤된 만큼 위치가 바뀐다
     const nodeY = new Map<number, number>();
-    for (const n of sorted)
-      nodeY.set(n.id, Math.round(p.top - m.top + AXIS_PAD + (tRatio.get(n.id) ?? 0) * usable));
+    sorted.forEach((n, i) => nodeY.set(n.id, Math.round(s.top - m.top + AXIS_PAD + i * MOON_STEP - sc.scrollTop)));
+    const axisLocal = Math.round(Math.min(140, s.width * 0.28));
 
-    const step = sorted.length > 1 ? usable / (sorted.length - 1) : 44;
     setGeo({
-      rowH: Math.max(2, 2 * Math.floor(Math.min(44, step) / 2)),
       edgeX: edge.right - m.left,
-      axisX: Math.round(p.left - m.left + Math.min(140, p.width * 0.28)),
+      axisX: Math.round(s.left - m.left) + axisLocal,
+      axisLocal,
       nodeY,
+      planeTop: s.top - m.top,
+      planeBottom: s.bottom - m.top,
+      trackH: AXIS_PAD * 2 + Math.max(0, sorted.length - 1) * MOON_STEP,
       segs,
       band: [posOf(viewTop), posOf(viewBottom)],
       viewTop,
       viewBottom,
       w: m.width,
       h: m.height,
-    });
-  }, [sorted, tRatio, mainRef, chatRef, planeRef, itemRefs, edgeRef]);
+    });  }, [sorted, mainRef, chatRef, planeRef, scrollRef, itemRefs, edgeRef]);
 
   useLayoutEffect(() => {
     measure();
@@ -155,15 +166,28 @@ export function useMoonPlane({ sorted, mainRef, chatRef, planeRef, itemRefs, edg
       raf = requestAnimationFrame(measure);
     };
     const chat = chatRef.current;
+    const sc = scrollRef.current;
     chat?.addEventListener("scroll", schedule, { passive: true });
+    sc?.addEventListener("scroll", schedule, { passive: true }); // 달창은 대화 칸과 따로 스크롤된다
     const ro = new ResizeObserver(schedule);
     if (mainRef.current) ro.observe(mainRef.current);
     return () => {
       cancelAnimationFrame(raf);
       chat?.removeEventListener("scroll", schedule);
+      sc?.removeEventListener("scroll", schedule);
       ro.disconnect();
     };
-  }, [measure, chatRef, mainRef]);
+  }, [measure, chatRef, mainRef, scrollRef]);
+
+  // 새 기억이 생기면 달창을 최신 달로 내린다
+  const count = sorted.length;
+  useEffect(() => {
+    if (!followLatest) return;
+    const sc = scrollRef.current;
+    if (!sc) return;
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    sc.scrollTo({ top: sc.scrollHeight, behavior: reduce ? "auto" : "smooth" });
+  }, [count, followLatest, scrollRef]);
 
   // 빛은 전부 똑같이 들어오지 않는다: 보이는 칸의 위·아래 끝에 가까운 대화와 홈일수록 옅다.
   // lit = 대화 바닥에 드는 빛, glow = 그 대화 아래 홈에 드는 빛
@@ -188,8 +212,36 @@ export function useMoonPlane({ sorted, mainRef, chatRef, planeRef, itemRefs, edg
   return { geo, lightById, selectedId, jumpTo, measure };
 }
 
-/** 빛줄기와 달 (기준 상자 안에 겹쳐 그린다) */
-export function MoonPlaneLayers({
+const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+
+/** 빛줄기: 대화 칸의 보이는 구간 → 그 기억의 달 (기준 상자 위에 겹쳐 그린다). 달이 달창 밖이면 가까운 가장자리로 향한다 */
+export function MoonPlaneBeams({ sorted, geo }: { sorted: MemoryNode[]; geo: Geo | null }) {
+  if (!geo || sorted.length === 0) return null;
+  return (
+    <svg className={styles.overlay} width={geo.w} height={geo.h} aria-hidden="true">
+      {geo.segs.map((s) => {
+        const ny = clamp(geo.nodeY.get(s.id) ?? 0, geo.planeTop + 10, geo.planeBottom - 10);
+        const ax = geo.axisX + 0.5; // 달의 중심
+        const y1 = s.top + 2;
+        const y2 = s.bottom - 2;
+        return (
+          <g key={s.id} className={styles.beam} data-beam={s.id}>
+            <polygon points={`${geo.edgeX},${y1} ${ax},${ny} ${geo.edgeX},${y2}`} fillOpacity={0.09 * s.k} />
+            <line x1={geo.edgeX} y1={y1} x2={ax} y2={ny} strokeOpacity={0.6 * s.k} />
+            <line x1={geo.edgeX} y1={y2} x2={ax} y2={ny} strokeOpacity={0.6 * s.k} />
+            <rect x={geo.edgeX - 1} y={y1} width={2} height={Math.max(0, y2 - y1)} opacity={0.3 + 0.7 * s.k} />
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+/**
+ * 달창 안쪽(스크롤되는 칸의 내용): 시간축과 달. 달 간격은 늘 같고,
+ * 달창 가운데에 가까운 달일수록 커져서 스크롤하는 자리가 또렷하게 보인다.
+ */
+export function MoonPlaneTrack({
   sorted,
   geo,
   selectedId,
@@ -204,50 +256,31 @@ export function MoonPlaneLayers({
   labelMax?: number;
 }) {
   if (!geo || sorted.length === 0) return null;
+  const focus = (geo.planeTop + geo.planeBottom) / 2;
   return (
-    <>
-      {/* 빛줄기: 대화 칸의 보이는 구간 → 그 기억 노드 */}
-      <svg className={styles.overlay} width={geo.w} height={geo.h} aria-hidden="true">
-        <rect
-          className={styles.axis}
-          x={geo.axisX}
-          width={1}
-          y={(geo.nodeY.get(sorted[0].id) ?? 0) - 28}
-          height={(geo.nodeY.get(sorted[sorted.length - 1].id) ?? 0) - (geo.nodeY.get(sorted[0].id) ?? 0) + 56}
-        />
-        {geo.segs.map((s) => {
-          const ny = geo.nodeY.get(s.id) ?? 0;
-          const ax = geo.axisX + 0.5; // 달의 중심
-          const y1 = s.top + 2;
-          const y2 = s.bottom - 2;
-          return (
-            <g key={s.id} className={styles.beam} data-beam={s.id}>
-              <polygon points={`${geo.edgeX},${y1} ${ax},${ny} ${geo.edgeX},${y2}`} fillOpacity={0.09 * s.k} />
-              <line x1={geo.edgeX} y1={y1} x2={ax} y2={ny} strokeOpacity={0.6 * s.k} />
-              <line x1={geo.edgeX} y1={y2} x2={ax} y2={ny} strokeOpacity={0.6 * s.k} />
-              <rect x={geo.edgeX - 1} y={y1} width={2} height={Math.max(0, y2 - y1)} opacity={0.3 + 0.7 * s.k} />
-            </g>
-          );
-        })}
-      </svg>
-
-      {/* 노드(달)는 버튼이라 빛줄기 위에 따로 둔다 */}
+    <div className={styles.track} style={{ height: geo.trackH }}>
+      <div
+        className={styles.trackAxis}
+        style={{ left: geo.axisLocal, top: AXIS_PAD - 28, height: (sorted.length - 1) * MOON_STEP + 56 }}
+      />
       {sorted.map((n, i) => {
         const center = i + 0.5;
         const [lo, hi] = geo.band;
-        const d = Math.max(0, lo - center, center - hi); // 보이는 구간까지의 거리
+        const d = Math.max(0, lo - center, center - hi); // 보이는 대화 구간까지의 거리
         const lit = falloff(d);
         const side = center < lo ? "left" : "right"; // 지난 기억은 기우는 달, 앞선 기억은 차오르는 달
+        const dy = Math.abs((geo.nodeY.get(n.id) ?? 0) - focus);
+        const scale = 1 + MAGNIFY * Math.exp(-Math.pow(dy / MAGNIFY_SIGMA, 2)); // 달창 가운데에서 가장 크다
         return (
           <button
             key={n.id}
             type="button"
             className={styles.node}
             style={{
-              left: geo.axisX - 10, // 21px 달의 중심이 축 한가운데(axisX + 0.5)에 오도록
-              top: (geo.nodeY.get(n.id) ?? 0) - geo.rowH / 2,
-              height: geo.rowH,
-              pointerEvents: "auto",
+              left: geo.axisLocal - 10, // 21px 달의 중심이 축 한가운데에 오도록
+              top: AXIS_PAD + i * MOON_STEP - MOON_STEP / 2,
+              height: MOON_STEP,
+              transform: `scale(${scale.toFixed(3)})`,
               ["--lit" as string]: lit.toFixed(3),
             }}
             data-lit={lit.toFixed(2)}
@@ -263,6 +296,6 @@ export function MoonPlaneLayers({
           </button>
         );
       })}
-    </>
+    </div>
   );
 }

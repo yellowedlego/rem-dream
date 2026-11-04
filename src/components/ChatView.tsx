@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MemoryNode } from "@/lib/types";
 import { api, currentSessionId, startNewSession, switchSession, type SessionSummary } from "./api";
 import AppNav from "./AppNav";
-import { MoonPlaneLayers, useMoonPlane } from "./MoonPlane";
+import { MoonPlaneBeams, MoonPlaneTrack, useMoonPlane } from "./MoonPlane";
 import styles from "./ChatView.module.css";
 
 const timeFmt = new Intl.DateTimeFormat("ko-KR", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Seoul" });
@@ -63,6 +63,8 @@ export default function ChatView() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const columnRef = useRef<HTMLDivElement>(null);
   const planeRef = useRef<HTMLElement>(null);
+  const moonScrollRef = useRef<HTMLDivElement>(null);
+  const [wallPref, setWallPref] = useState<boolean | null>(null); // 사용자가 열고 닫은 선택. null이면 대화가 있을 때 자동으로 열림
   const itemRefs = useRef(new Map<number, HTMLElement>());
   const [area, setArea] = useState(0); // 대화 영역 폭 (벽이 대화 열을 얼마나 밀지 계산하려고)
   const taRef = useRef<HTMLTextAreaElement>(null);
@@ -125,7 +127,7 @@ export default function ChatView() {
 
   // 대화가 시작되면 오른쪽에서 벽이 밀고 들어온다.
   // 대화 열은 벽에 밀려 왼쪽으로 가다가, 왼쪽 끝(한계)에 닿으면 멈추고 벽만 ease-out으로 마저 들어온다.
-  const wallOpen = nodes.length > 0 || pending !== null;
+  const wallOpen = wallPref ?? (nodes.length > 0 || pending !== null);
   const sorted = useMemo(() => [...nodes].sort((a, b) => a.createdAt.localeCompare(b.createdAt)), [nodes]);
   // 오른쪽 벽의 내용은 전시 화면(/)의 오른쪽과 같은 것: 달 시간축 + 빛줄기 (MoonPlane 공용)
   const { geo, selectedId, jumpTo, measure } = useMoonPlane({
@@ -133,6 +135,8 @@ export default function ChatView() {
     mainRef: chatRef,
     chatRef: scrollRef,
     planeRef,
+    scrollRef: moonScrollRef,
+    followLatest: true,
     itemRefs,
     edgeRef: columnRef,
   });
@@ -345,14 +349,26 @@ export default function ChatView() {
 
           <section ref={planeRef} className={styles.wall} aria-label="기억 노드 시간축" inert={!wallOpen}>
             <p className={styles.hint}>지금 보이는 대화를 그 기억이 비춰요</p>
+            <div ref={moonScrollRef} className={styles.wallScroll}>
+              <MoonPlaneTrack sorted={sorted} geo={geo} selectedId={selectedId} onJump={jumpTo} labelMax={WALL_W - 140} />
+            </div>
           </section>
-          <div className={styles.layers}>
-            <MoonPlaneLayers sorted={sorted} geo={geo} selectedId={selectedId} onJump={jumpTo} labelMax={WALL_W - 140} />
+          <div className={styles.layers} style={{ opacity: wallOpen ? 1 : 0 }}>
+            <MoonPlaneBeams sorted={sorted} geo={geo} />
           </div>
+          <button
+            type="button"
+            className={styles.wallToggle}
+            aria-expanded={wallOpen}
+            onClick={() => setWallPref(!wallOpen)}
+          >
+            {wallOpen ? "달 창 닫기 ›" : "‹ 달 창 열기"}
+          </button>
         </section>
       </div>
     </div>
   );
 }
+
 
 

@@ -414,6 +414,33 @@
   inset: 0;
   z-index: 4;
   pointer-events: none;
+  transition: opacity 400ms ease;
+}
+/* 달창 안쪽: 대화 칸과 따로 스크롤된다 */
+.wallScroll {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bubble) transparent;
+}
+/* 벽을 열고 닫는 손잡이: 열려 있으면 벽 위쪽 모서리에, 닫혀 있으면 오른쪽 끝에 붙어 있다 */
+.wallToggle {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 6;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 0;
+  background: var(--bubble);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.wallToggle:hover {
+  background: var(--bubble-ai);
 }
 @media (max-width: 760px) {
   .wall {
@@ -425,4 +452,5 @@
     transition: none;
   }
 }
+
 

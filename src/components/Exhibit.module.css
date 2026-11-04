@@ -1,4 +1,4 @@
-/* 영역 구분은 선 대신 바닥 톤 차이(--bg / --surface)로 한다 */
+﻿/* 영역 구분은 선 대신 바닥 톤 차이(--bg / --surface)로 한다 */
 
 .shell {
   height: 100dvh;
@@ -269,4 +269,29 @@
 .footer :disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+/* ── 달창: 대화 칸과 따로 스크롤된다. 달 간격은 늘 같고(MOON_STEP), 가운데에 가까운 달이 커진다 ── */
+.planeScroll {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bubble) transparent;
+}
+.track {
+  position: relative;
+  width: 100%;
+}
+.trackAxis {
+  position: absolute;
+  width: 1px;
+  background: var(--node-edge);
+}
+.plane .hint {
+  z-index: 2;
+}
+.track .node {
+  transform-origin: 10px 50%; /* 달 중심이 축에 머물도록 달 중심을 기준으로 커진다 */
+  transition: transform 140ms ease-out;
 }
