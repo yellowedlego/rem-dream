@@ -5,6 +5,7 @@ import type { MemoryNode } from "@/lib/types";
 import { api, currentSessionId, startNewSession, switchSession, type SessionSummary } from "./api";
 import AppNav from "./AppNav";
 import { MoonPlaneBeams, MoonPlaneTrack, useMoonPlane } from "./MoonPlane";
+import { WALL_W, wallLayout } from "./wallLayout";
 import styles from "./ChatView.module.css";
 
 const timeFmt = new Intl.DateTimeFormat("ko-KR", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Seoul" });
@@ -42,8 +43,6 @@ function caretXY(ta: HTMLTextAreaElement): { x: number; y: number } {
   return { x, y };
 }
 
-const WALL_W = 380; // 오른쪽에서 밀고 들어오는 벽(달 목록)의 폭
-const WALL_GAP = 16; // 벽과 대화 열 사이에 남기는 공백
 
 interface Meteor {
   id: number;
@@ -118,7 +117,8 @@ export default function ChatView() {
   }, [nodes, pending]);
 
   useEffect(() => {
-    const el = chatRef.current;
+    // 대화 영역 폭 = 스크롤 칸의 안쪽 폭 (스크롤바 제외)
+    const el = scrollRef.current;
     if (!el) return;
     const ro = new ResizeObserver(([e]) => setArea(Math.round(e.contentRect.width)));
     ro.observe(el);
@@ -130,7 +130,7 @@ export default function ChatView() {
   const wallOpen = wallPref ?? (nodes.length > 0 || pending !== null);
   const sorted = useMemo(() => [...nodes].sort((a, b) => a.createdAt.localeCompare(b.createdAt)), [nodes]);
   // 오른쪽 벽의 내용은 전시 화면(/)의 오른쪽과 같은 것: 달 시간축 + 빛줄기 (MoonPlane 공용)
-  const { geo, selectedId, jumpTo, measure } = useMoonPlane({
+  const { geo, lightById, selectedId, jumpTo, measure } = useMoonPlane({
     sorted,
     mainRef: chatRef,
     chatRef: scrollRef,
@@ -138,7 +138,9 @@ export default function ChatView() {
     scrollRef: moonScrollRef,
     followLatest: true,
     itemRefs,
-    edgeRef: columnRef,
+    // 빛줄기는 전시 화면처럼 대화 배경과 달창의 경계(벽의 왼쪽 끝)에서 시작한다
+    edgeRef: planeRef,
+    edgeSide: "left",
   });
   // 벽이 들어오고 나가는 동안은 벽과 대화 열이 계속 움직이므로 매 프레임 다시 잰다
   useEffect(() => {
@@ -152,16 +154,16 @@ export default function ChatView() {
     return () => cancelAnimationFrame(raf);
   }, [wallOpen, measure]);
 
-  const colW = Math.min(760, area);
-  const half = Math.max(0, (area - colW) / 2); // 대화 열 양옆의 공백
+  // 대화 열의 왼쪽 끝과 폭은 벽이 들어온 길이에 정비례한다 (계산식: wallLayout.ts, 테스트: tests/unit)
+  const lay = wallLayout(area);
   const send = async () => {
     const msg = text.trim();
     if (!msg || !sessionId || pending) return;
-    // 별똥별: 보내기 버튼 위쪽 가운데에서 떠서 대화 쪽으로 날아간다 (움직임 줄이기 설정이면 생략)
+    // 별똥별: 보내기 버튼 가운데(버튼 뒤)에서 떠서 수직으로 올라간다 (움직임 줄이기 설정이면 생략)
     const btn = sendRef.current;
     if (btn && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
       const id = ++meteorSeq.current;
-      setMeteors((m) => [...m, { id, x: btn.offsetLeft + btn.offsetWidth / 2, y: btn.offsetTop }]);
+      setMeteors((m) => [...m, { id, x: btn.offsetLeft + btn.offsetWidth / 2, y: btn.offsetTop + btn.offsetHeight / 2 }]);
     }
     setError(null);
     setPending(msg);
@@ -229,10 +231,14 @@ export default function ChatView() {
         <section
           ref={chatRef}
           className={styles.chat}
+          data-measured={area > 0 ? "" : undefined}
           style={{
             ["--wall" as string]: wallOpen ? `${WALL_W}px` : "0px",
-            ["--slack" as string]: `${Math.max(0, half - WALL_GAP)}px`, // 벽이 이만큼 들어오기 전까지는 열이 안 밀린다
-            ["--maxShift" as string]: `${half}px`, // 열이 왼쪽으로 갈 수 있는 한계
+            ["--area" as string]: `${area}px`,
+            ["--l0" as string]: `${lay.l0.toFixed(2)}px`,
+            ["--lk" as string]: lay.lk.toFixed(5),
+            ["--w0" as string]: `${lay.w0.toFixed(2)}px`,
+            ["--wk" as string]: lay.wk.toFixed(5),
           }}
         >
           <div ref={scrollRef} className={styles.scroll} role="log" aria-live="polite" aria-label="대화 내용">
@@ -247,6 +253,11 @@ export default function ChatView() {
                 <article
                   key={n.id}
                   className={styles.pair}
+                  // 전시 화면과 같은 음각 연출: 이 대화를 비추는 빛(lit)과 아래 홈에 드는 빛(glow)
+                  style={{
+                    ["--lit" as string]: (lightById.get(n.id)?.lit ?? 0).toFixed(3),
+                    ["--glow" as string]: (lightById.get(n.id)?.glow ?? 0).toFixed(3),
+                  }}
                   ref={(el) => {
                     if (el) itemRefs.current.set(n.id, el);
                     else itemRefs.current.delete(n.id);
@@ -369,6 +380,10 @@ export default function ChatView() {
     </div>
   );
 }
+
+
+
+
 
 
 

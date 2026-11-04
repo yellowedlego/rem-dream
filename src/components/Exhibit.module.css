@@ -291,7 +291,10 @@
 .plane .hint {
   z-index: 2;
 }
-.track .node {
-  transform-origin: 10px 50%; /* 달 중심이 축에 머물도록 달 중심을 기준으로 커진다 */
+/* 달만 확대한다 (달 중심 기준이라 축에서 벗어나지 않는다) */
+.moonWrap {
+  display: block;
+  flex: none;
   transition: transform 140ms ease-out;
 }
+

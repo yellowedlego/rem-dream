@@ -89,11 +89,23 @@ interface Options {
   followLatest?: boolean;
   /** 대화 한 쌍씩의 요소 (노드 번호 → 요소) */
   itemRefs: RefObject<Map<number, HTMLElement>>;
-  /** 빛줄기가 시작하는 오른쪽 끝을 재는 요소. 없으면 chatRef의 오른쪽 끝 */
+  /** 빛줄기가 시작하는 경계를 재는 요소. 없으면 chatRef의 오른쪽 끝 */
   edgeRef?: RefObject<HTMLElement | null>;
+  /** edgeRef의 어느 쪽 끝이 경계인지 (대화 화면은 벽의 왼쪽 끝) */
+  edgeSide?: "left" | "right";
 }
 
-export function useMoonPlane({ sorted, mainRef, chatRef, planeRef, scrollRef, itemRefs, edgeRef, followLatest = false }: Options) {
+export function useMoonPlane({
+  sorted,
+  mainRef,
+  chatRef,
+  planeRef,
+  scrollRef,
+  itemRefs,
+  edgeRef,
+  edgeSide = "right",
+  followLatest = false,
+}: Options) {
   const [geo, setGeo] = useState<Geo | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
@@ -140,7 +152,7 @@ export function useMoonPlane({ sorted, mainRef, chatRef, planeRef, scrollRef, it
     const axisLocal = Math.round(Math.min(140, s.width * 0.28));
 
     setGeo({
-      edgeX: edge.right - m.left,
+      edgeX: (edgeSide === "left" ? edge.left : edge.right) - m.left,
       axisX: Math.round(s.left - m.left) + axisLocal,
       axisLocal,
       nodeY,
@@ -153,7 +165,7 @@ export function useMoonPlane({ sorted, mainRef, chatRef, planeRef, scrollRef, it
       viewBottom,
       w: m.width,
       h: m.height,
-    });  }, [sorted, mainRef, chatRef, planeRef, scrollRef, itemRefs, edgeRef]);
+    });  }, [sorted, mainRef, chatRef, planeRef, scrollRef, itemRefs, edgeRef, edgeSide]);
 
   useLayoutEffect(() => {
     measure();
@@ -280,7 +292,6 @@ export function MoonPlaneTrack({
               left: geo.axisLocal - 10, // 21px 달의 중심이 축 한가운데에 오도록
               top: AXIS_PAD + i * MOON_STEP - MOON_STEP / 2,
               height: MOON_STEP,
-              transform: `scale(${scale.toFixed(3)})`,
               ["--lit" as string]: lit.toFixed(3),
             }}
             data-lit={lit.toFixed(2)}
@@ -288,7 +299,10 @@ export function MoonPlaneTrack({
             aria-label={`기억 ${n.order}번: ${n.user}`}
             onClick={() => onJump(n.id)}
           >
-            <Moon lit={lit} side={side} selected={n.id === selectedId} />
+            {/* 달만 커진다. 옆 글자(미리보기)는 크기가 그대로다 */}
+            <span className={styles.moonWrap} style={{ transform: `scale(${scale.toFixed(3)})` }}>
+              <Moon lit={lit} side={side} selected={n.id === selectedId} />
+            </span>
             <span className={styles.nodeLabel} style={labelMax ? { maxWidth: labelMax } : undefined}>
               <span className={styles.nodeTime}>{hhmm(n.createdAt)}</span>
               {n.user}
@@ -299,3 +313,5 @@ export function MoonPlaneTrack({
     </div>
   );
 }
+
+

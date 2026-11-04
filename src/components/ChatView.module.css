@@ -114,8 +114,6 @@
   scrollbar-color: var(--bubble) transparent;
 }
 .column {
-  /* 벽이 --slack 넘게 들어오면 밀리기 시작하고, --maxShift에서 멈춘다 */
-  transform: translateX(calc(-1 * clamp(0px, calc(var(--wall) - var(--slack)), var(--maxShift))));
   max-width: 760px;
   margin: 0 auto;
   padding: 28px 24px 12px;
@@ -207,7 +205,6 @@
 
 /* ── 입력줄 ── */
 .composer {
-  transform: translateX(calc(-1 * clamp(0px, calc(var(--wall) - var(--slack)), var(--maxShift))));
   max-width: 760px;
   width: 100%;
   margin: 0 auto;
@@ -233,19 +230,32 @@
   /* 빛이 마우스·타이핑 커서를 따라 부드럽게 움직인다 (--gx, --gy는 ChatView가 넣고 globals.css에 등록) */
   transition: --gx 140ms ease-out, --gy 140ms ease-out;
 }
+/* 빛나는 테두리: 입력창 안쪽은 칠하지 않고, 테두리(1.5px)에만 마스킹해서 마우스·타이핑 커서 자리가 가장 밝다 */
 .field::before {
   content: "";
   position: absolute;
   inset: 0;
+  z-index: 1;
+  padding: 1.5px;
   pointer-events: none;
   opacity: 0;
   transition: opacity 260ms ease;
-  background: radial-gradient(
-    170px circle at var(--gx) var(--gy),
-    rgb(239 223 166 / 0.3),
-    rgb(239 223 166 / 0.1) 45%,
-    transparent 75%
-  );
+  background:
+    radial-gradient(
+      150px circle at var(--gx) var(--gy),
+      rgb(255 247 214 / 1),
+      rgb(239 223 166 / 0.55) 35%,
+      rgb(239 223 166 / 0.18) 70%,
+      rgb(239 223 166 / 0.18)
+    );
+  /* 안쪽(content-box)을 빼고 테두리만 남긴다 */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
 }
 .field[data-glow="on"]::before {
   opacity: 1;
@@ -263,10 +273,10 @@
   line-height: 1.5;
   resize: none;
   field-sizing: content;
-  transition: background-color 200ms ease;
 }
-.field textarea:focus {
-  background: color-mix(in srgb, var(--bubble) 90%, var(--accent) 10%);
+/* 테두리 빛이 초점 표시를 대신한다 (초점이 있으면 빛 테두리가 늘 켜져 있다) */
+.field textarea:focus-visible {
+  outline: none;
 }
 .field textarea::placeholder {
   color: var(--muted);
@@ -322,53 +332,52 @@
   }
 }
 
-/* ── 보내기 별똥별: 아주 작게, 보내기 버튼에서 떠서 대화 쪽(위·왼쪽)으로 날아간다.
-   꼬리는 머리에서 멀어질수록 색이 빠져 120px(버튼 높이 48px의 2.5배) 안에서 완전히 사라진다. ── */
+/* ── 보내기 별똥별: 아주 작은 네 방향 별이 보내기 버튼 뒤에서 수직으로 올라간다 (ease-in: 천천히 떠서 점점 빨라짐).
+   꼬리는 버튼 뒤로 들어가 있고, 머리에서 멀어질수록 색이 빠져 120px(버튼 높이 48px의 2.5배) 안에서 사라진다. ── */
 .meteor {
   position: absolute;
   width: 0;
   height: 0;
-  z-index: 2;
+  z-index: 1; /* 보내기 버튼(z-index 2) 뒤 */
   pointer-events: none;
-  animation: fly 800ms cubic-bezier(0.45, 0, 0.85, 0.55) forwards;
+  animation: fly 900ms cubic-bezier(0.32, 0, 0.67, 0) forwards;
 }
 .meteorTail {
   position: absolute;
-  left: -2px;
+  left: -1.5px;
   top: 0;
-  width: 4px;
+  width: 3px;
   height: 120px;
-  transform-origin: 50% 0;
-  transform: rotate(-12deg); /* 날아가는 방향(위·왼쪽)의 반대로 꼬리가 늘어진다 */
   background: linear-gradient(
     to bottom,
-    rgb(255 247 214 / 0.95) 0%,
-    rgb(239 223 166 / 0.5) 14%,
-    rgb(239 223 166 / 0.14) 55%,
+    rgb(255 247 214 / 0.9) 0%,
+    rgb(239 223 166 / 0.45) 14%,
+    rgb(239 223 166 / 0.12) 55%,
     rgb(239 223 166 / 0) 100%
   );
-  clip-path: polygon(0 0, 100% 0, 62% 100%, 38% 100%);
+  clip-path: polygon(0 0, 100% 0, 65% 100%, 35% 100%);
 }
+/* 네 방향 별 */
 .meteorHead {
   position: absolute;
-  left: -3px;
-  top: -3px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
+  left: -6px;
+  top: -6px;
+  width: 12px;
+  height: 12px;
   background: #fff7d6;
-  box-shadow: 0 0 8px 2px rgb(239 223 166 / 0.75);
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+  filter: drop-shadow(0 0 4px rgb(239 223 166 / 0.9));
 }
 @keyframes fly {
   0% {
-    transform: translate(0, 0);
+    transform: translateY(0);
     opacity: 1;
   }
-  70% {
+  75% {
     opacity: 1;
   }
   100% {
-    transform: translate(-70px, -330px);
+    transform: translateY(-380px);
     opacity: 0;
   }
 }
@@ -453,4 +462,75 @@
   }
 }
 
+
+
+
+/* ── 대화 열과 입력줄: 벽이 들어온 길이(--wall)에 정비례해서 왼쪽 끝과 폭이 바뀐다 (wallLayout.ts의 식과 같다).
+   폭을 명시하므로 글 길이가 열을 밀어내지 못한다. 크기를 재기 전에는 위의 기본(가운데, 최대 760px)을 쓴다. ── */
+.chat[data-measured] .column,
+.chat[data-measured] .composer {
+  max-width: none;
+  margin-left: calc(var(--l0) + var(--wall) * var(--lk));
+  margin-right: 0;
+  width: calc(var(--w0) + var(--wall) * var(--wk));
+}
+
+
+
+/* ── 음각 연출 (전시 화면과 같다): 대화 한 쌍마다 아래에 얇은 홈을 파고, 빛이 들어오는 오른쪽(벽 경계)부터 밝아진다.
+   홈과 빛은 대화 열 밖으로 넓혀서 대화 영역 왼쪽 끝부터 벽 경계까지 깔린다. --lit, --glow는 ChatView가 넣는다. ── */
+.column {
+  gap: 0;
+}
+.pair {
+  position: relative;
+  padding: 22px 0 26px;
+  --lit: 0;
+  --glow: 0;
+  /* 대화 열 안쪽(좌우 패딩 24px)에서 대화 영역 왼쪽 끝 / 벽 경계까지의 거리 */
+  --to-left: 24px;
+  --to-wall: 24px;
+}
+.chat[data-measured] .pair {
+  --to-left: calc(var(--l0) + var(--wall) * var(--lk) + 24px);
+  --to-wall: calc(
+    var(--area) - var(--wall) - (var(--l0) + var(--wall) * var(--lk)) - (var(--w0) + var(--wall) * var(--wk)) + 24px
+  );
+}
+.pair::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(-1 * var(--to-left));
+  right: calc(-1 * var(--to-wall));
+  pointer-events: none;
+  background: linear-gradient(
+    to left,
+    rgb(239 223 166 / calc(var(--lit) * 0.17)) 0%,
+    rgb(239 223 166 / calc(var(--lit) * 0.07)) 40%,
+    rgb(239 223 166 / 0) 85%
+  );
+}
+.pair::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  height: 3px;
+  left: calc(-1 * var(--to-left));
+  right: calc(-1 * var(--to-wall));
+  pointer-events: none;
+  background:
+    linear-gradient(
+      to left,
+      rgb(239 223 166 / calc(var(--glow) * 0.95)) 0%,
+      rgb(239 223 166 / calc(var(--glow) * 0.5)) 45%,
+      rgb(239 223 166 / calc(var(--glow) * 0.08)) 100%
+    ),
+    linear-gradient(to bottom, #0f0c17 0 2px, rgb(255 255 255 / 0.035) 2px 3px);
+  box-shadow: 0 0 14px 1px rgb(239 223 166 / calc(var(--glow) * 0.22));
+}
+.pair:last-of-type::after {
+  display: none;
+}
 
