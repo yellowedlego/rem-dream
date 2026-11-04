@@ -65,15 +65,43 @@
   scrollbar-color: var(--bubble) transparent;
 }
 
+/* 대화 칸은 음각: 대화 사이를 가르는 얇은 홈을 파고, 빛이 비추면 빛이 들어오는 오른쪽부터 그라데이션으로 밝아진다.
+   --lit(0~1)은 Exhibit.tsx가 빛줄기와 같은 값으로 넣어 준다. */
 .pair {
-  padding: 18px 36px 22px;
+  position: relative;
+  padding: 26px 36px 30px;
   display: flex;
   flex-direction: column;
   gap: 10px;
   scroll-margin: 40px;
+  --lit: 0;
 }
-.pair + .pair {
-  margin-top: 12px;
+/* 빛: 오른쪽 끝에서 왼쪽으로 옅어진다 */
+.pair::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to left,
+    rgb(239 223 166 / calc(var(--lit) * 0.17)) 0%,
+    rgb(239 223 166 / calc(var(--lit) * 0.07)) 40%,
+    rgb(239 223 166 / 0) 85%
+  );
+}
+/* 홈: 진한 선 1px + 그 아래 아주 옅은 면 1px (눈에 띄지 않게) */
+.pair::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  pointer-events: none;
+  background: linear-gradient(to bottom, #0f0c17 0 1px, rgb(255 255 255 / 0.035) 1px 2px);
+}
+.pair:last-child::after {
+  display: none;
 }
 .pairSelected {
   background: var(--point-wash);

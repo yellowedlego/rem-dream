@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { MemoryNode } from "@/lib/types";
+import AppNav from "./AppNav";
 import GlyphField from "./GlyphField";
 import Moon from "./Moon";
 import styles from "./Exhibit.module.css";
@@ -135,6 +136,8 @@ export default function Exhibit({ nodes, personaVersion }: { nodes: MemoryNode[]
     };
   }, [measure]);
 
+  const litById = useMemo(() => new Map((geo?.segs ?? []).map((s) => [s.id, s.k])), [geo]);
+
   const jumpTo = (id: number) => {
     setSelectedId(id);
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -148,6 +151,7 @@ export default function Exhibit({ nodes, personaVersion }: { nodes: MemoryNode[]
           <h1>꿈 시스템</h1>
           <span className={styles.count}>오늘의 기억 {nodes.length}개</span>
         </div>
+        <AppNav />
         <p className={styles.state}>
           <span className={styles.awakeDot} aria-hidden="true" />
           깨어 있어요 · 인격 v{personaVersion}
@@ -165,6 +169,8 @@ export default function Exhibit({ nodes, personaVersion }: { nodes: MemoryNode[]
               }}
               className={`${styles.pair} ${n.id === selectedId ? styles.pairSelected : ""}`}
               data-node-id={n.id}
+              // 이 대화를 비추는 빛의 세기(0~1). 빛줄기와 같은 값을 써서 칸이 오른쪽(빛이 들어오는 쪽)부터 밝아진다
+              style={{ ["--lit" as string]: (litById.get(n.id) ?? 0).toFixed(3) }}
             >
               <div className={styles.meta}>
                 <span>기억 {n.order}</span>
