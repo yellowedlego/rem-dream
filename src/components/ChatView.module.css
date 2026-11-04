@@ -107,11 +107,34 @@
   /* 벽이 들어오는 길이: 처음엔 빠르고 끝에서 천천히 (ease-out) */
   transition: --wall 900ms cubic-bezier(0.22, 1, 0.36, 1);
 }
+/* 대화 칸은 입력줄 밑까지 깔린다. 입력창이 커져도 대화·빛 배경의 크기가 바뀌지 않고, 입력줄은 그 위에 얹힌다 */
 .scroll {
+  grid-row: 1 / 3;
+  grid-column: 1;
   min-height: 0;
   overflow-y: auto;
+  /* 맨 아래 끝(입력줄 아래 여백)에서만 살짝 사라지게: 입력줄 밑으로 대화 글이 보이지 않게 */
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent 100%);
+  /* scrollIntoView(맨 아래로 내리기 등)가 입력줄에 가려지는 만큼을 비우고 멈추게 */
+  scroll-padding-bottom: var(--composer-h, 96px);
   scrollbar-width: thin;
-  scrollbar-color: var(--bubble) transparent;
+  scrollbar-color: rgb(239 223 166 / 0.3) transparent;
+}
+.scroll::-webkit-scrollbar,
+.field textarea::-webkit-scrollbar {
+  width: 8px;
+}
+.scroll::-webkit-scrollbar-track,
+.field textarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scroll::-webkit-scrollbar-thumb,
+.field textarea::-webkit-scrollbar-thumb {
+  background: rgb(239 223 166 / 0.3);
+}
+.scroll::-webkit-scrollbar-thumb:hover,
+.field textarea::-webkit-scrollbar-thumb:hover {
+  background: rgb(239 223 166 / 0.55);
 }
 .column {
   max-width: 760px;
@@ -205,6 +228,10 @@
 
 /* ── 입력줄 ── */
 .composer {
+  grid-row: 2;
+  grid-column: 1;
+  position: relative;
+  z-index: 2;
   max-width: 760px;
   width: 100%;
   margin: 0 auto;
@@ -222,6 +249,8 @@
   display: flex;
   gap: 10px;
   align-items: flex-end;
+  /* 입력창이 커져도 입력줄은 한 덩어리의 막대: 뒤로 지나가는 대화 글이 입력창 옆 빈 칸으로 비치지 않게 */
+  background: var(--bubble);
 }
 .field {
   flex: 1;
@@ -273,6 +302,9 @@
   line-height: 1.5;
   resize: none;
   field-sizing: content;
+  /* 글이 길어져 입력창 안에서 스크롤될 때의 막대도 전체 스타일에 맞춘다 (각진 연한 달빛) */
+  scrollbar-width: thin;
+  scrollbar-color: rgb(239 223 166 / 0.3) transparent;
 }
 /* 테두리 빛이 초점 표시를 대신한다 (초점이 있으면 빛 테두리가 늘 켜져 있다) */
 .field textarea:focus-visible {
@@ -482,6 +514,8 @@
    홈과 빛은 대화 열 밖으로 넓혀서 대화 영역 왼쪽 끝부터 벽 경계까지 깔린다. --lit, --glow는 ChatView가 넣는다. ── */
 .column {
   gap: 0;
+  /* 마지막 대화가 입력줄에 가려지지 않게 입력줄 높이만큼 비운다 */
+  padding-bottom: calc(var(--composer-h, 96px) + 12px);
 }
 .pair {
   position: relative;
@@ -536,17 +570,23 @@
 }
 
 /* ── 달이 태어나는 동안 이 대화에 드는 빛 (ChatView의 data-birth, 달 연출과 같은 박자) ──
-   charging: 달이 어둠에서 차오르는 만큼 대화 바닥 빛도 같이 차오른다
-   flash: 답이 온 순간 이 대화가 잠깐 더 밝아지고, 빛이 위아래 대화까지 살짝 번진다 */
-.pair[data-birth="charging"]::before {
-  animation: pairCharge 7s cubic-bezier(0.2, 0.6, 0.3, 1) 520ms both;
+   charging: 달이 삭인 동안은 이 대화에 아직 빛이 없다
+   flash: 답이 오면 달이 차오르는 만큼 이 대화에 빛이 켜지고 한 번 더 밝아졌다가 제 밝기로 돌아간다.
+   빛이 위아래 대화까지 살짝 번진다(.birthGlow) */
+.pair[data-birth="charging"]::before,
+.pair[data-birth="charging"]::after {
+  opacity: 0;
 }
-@keyframes pairCharge {
+.pair[data-birth="flash"]::before,
+.pair[data-birth="flash"]::after {
+  animation: pairLightIn 1100ms ease-out both;
+}
+@keyframes pairLightIn {
   from {
-    opacity: 0.1;
+    opacity: 0;
   }
   to {
-    opacity: 0.8;
+    opacity: 1;
   }
 }
 .pair[data-birth="flash"] .ai {
@@ -587,6 +627,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .pair[data-birth]::before,
+  .pair[data-birth]::after,
   .pair[data-birth] .ai,
   .birthGlow {
     animation: none;

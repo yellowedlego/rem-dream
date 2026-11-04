@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from "react";
 import type { MemoryNode } from "@/lib/types";
-import { followCamera } from "./camera";
+import { followCamera, pushFocus } from "./camera";
 import Moon from "./Moon";
 import styles from "./Exhibit.module.css";
 
@@ -16,6 +16,13 @@ const timeFmt = new Intl.DateTimeFormat("ko-KR", {
   timeZone: "Asia/Seoul",
 });
 export const hhmm = (iso: string) => timeFmt.format(new Date(iso));
+
+/**
+ * 시간순 비교. createdAt은 "+09:00"처럼 시간대 표기가 섞여 있을 수 있어서 글자로 비교하면 순서가 틀어진다
+ * (시드는 +09:00, 새 기억은 Z). 반드시 시각(ms)으로 비교하고, 같으면 세션 순서·번호로 가른다.
+ */
+export const byTime = (a: MemoryNode, b: MemoryNode) =>
+  Date.parse(a.createdAt) - Date.parse(b.createdAt) || a.order - b.order || a.id - b.id;
 
 /** 대화 칸에서 지금 보이는 구간 하나 (main 기준 좌표) */
 interface Seg {
@@ -55,6 +62,8 @@ export const MOON_STEP = 32;
 const AXIS_PAD = 56;
 /** 달창 위·아래 여백(높이 비율). 비추는 자리가 이 안쪽에 있으면 달창은 가만히 있는다 */
 const CAMERA_MARGIN = 0.25;
+/** 휠·터치가 있은 뒤 이 시간(ms) 안의 달창 스크롤만 사람이 굴린 것으로 본다 */
+const USER_INPUT_MS = 250;
 const FULL_AT = 160; // 이만큼(px) 보이면 빛줄기가 가장 진해짐
 const MOON_REACH = 5; // 보이는 구간에서 기억 5개만큼 멀어지면 삭(새달)
 
@@ -93,6 +102,11 @@ interface Options {
   edgeRef?: RefObject<HTMLElement | null>;
   /** edgeRef의 어느 쪽 끝이 경계인지 (대화 화면은 벽의 왼쪽 끝) */
   edgeSide?: "left" | "right";
+  /**
+   * 대화 칸 아래를 덮는 요소(입력줄). 대화 칸은 입력줄 밑까지 깔려 있어서, 글이 실제로 보이는 구간은
+   * 이 요소의 윗변까지다. 입력창이 커지면 보이는 구간도 그만큼 줄어든다.
+   */
+  bottomInsetRef?: RefObject<HTMLElement | null>;
 }
 
 export function useMoonPlane({
@@ -104,12 +118,17 @@ export function useMoonPlane({
   itemRefs,
   edgeRef,
   edgeSide = "right",
+  bottomInsetRef,
   followLatest = false,
 }: Options) {
   const [geo, setGeo] = useState<Geo | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   // 대화 칸이 스크롤됐을 때만 달창 카메라가 따라간다 (달창을 직접 스크롤할 때는 따라가지 않는다)
   const followNext = useRef(true);
+  // 달창을 사람이 굴릴 때 대화를 따라가게 하는 함수 (아래에서 매 렌더 최신 상태로 갱신)
+  const followChatRef = useRef<() => void>(() => {});
+  // 방금 대화를 코드로 움직였는지: 그 스크롤 때문에 달창 카메라가 다시 움직이지 않게 한 번 건너뛴다
+  const chatMovedByCode = useRef(false);
 
   const measure = useCallback(() => {
     const main = mainRef.current;
@@ -123,7 +142,9 @@ export function useMoonPlane({
     const edge = (edgeRef?.current ?? chat).getBoundingClientRect();
 
     const viewTop = c.top - m.top;
-    const viewBottom = c.bottom - m.top;
+    // 입력줄이 덮은 아래쪽은 보이는 구간이 아니다
+    const inset = bottomInsetRef?.current;
+    const viewBottom = (inset ? Math.min(c.bottom, inset.getBoundingClientRect().top) : c.bottom) - m.top;
     const segs: Seg[] = [];
     const rects: { top: number; bottom: number }[] = [];
     for (const n of sorted) {
@@ -177,7 +198,7 @@ export function useMoonPlane({
       viewBottom,
       w: m.width,
       h: m.height,
-    });  }, [sorted, mainRef, chatRef, planeRef, scrollRef, itemRefs, edgeRef, edgeSide]);
+    });  }, [sorted, mainRef, chatRef, planeRef, scrollRef, itemRefs, edgeRef, edgeSide, bottomInsetRef]);
 
   useLayoutEffect(() => {
     followNext.current = true; // 기억이 바뀌었거나 처음 그릴 때도 비추는 자리를 보여 준다
@@ -196,17 +217,59 @@ export function useMoonPlane({
     };
     const chat = chatRef.current;
     const sc = scrollRef.current;
-    chat?.addEventListener("scroll", scheduleFollow, { passive: true }); // 대화가 움직이면 카메라가 따라간다
-    sc?.addEventListener("scroll", schedule, { passive: true }); // 달창은 따로 스크롤된다 (카메라는 안 따라감)
+    // 달창을 사람이 굴렸을 때만 센다. 카메라가 따라가느라 scrollTop을 바꾼 것(프로그램 스크롤)과 구별하려고
+    // 휠·터치가 방금(USER_INPUT_MS 안에) 있었거나 스크롤바를 잡고 있는 동안만 사람이 굴린 것으로 본다.
+    // (표시가 오래 남으면 대화를 굴릴 때 카메라가 움직인 달창을 사람이 굴린 줄 알고 대화를 되돌려 버린다)
+    let lastInput = -Infinity;
+    let dragging = false;
+    const markUser = () => {
+      lastInput = performance.now();
+    };
+    const onPlaneScroll = () => {
+      schedule();
+      if (!dragging && performance.now() - lastInput > USER_INPUT_MS) return;
+      // 거꾸로 마리오식 카메라: 비추는 자리가 달창 여백에 닿으면 그만큼 대화가 따라간다
+      followChatRef.current();
+    };
+    const onChatScroll = () => {
+      if (chatMovedByCode.current) {
+        // 달창을 굴려서 대화가 따라온 스크롤: 달창 카메라는 다시 움직이지 않고 빛줄기·달 모양만 갱신
+        chatMovedByCode.current = false;
+        schedule();
+        return;
+      }
+      scheduleFollow();
+    };
+    chat?.addEventListener("scroll", onChatScroll, { passive: true }); // 대화가 움직이면 카메라가 따라간다
+    sc?.addEventListener("scroll", onPlaneScroll, { passive: true }); // 달창은 따로 스크롤된다 (카메라는 안 따라감)
+    sc?.addEventListener("wheel", markUser, { passive: true });
+    sc?.addEventListener("touchmove", markUser, { passive: true });
+    // 눌러 끌기는 스크롤바를 잡았을 때만 (달 버튼을 눌러 이동한 뒤의 카메라 스크롤을 사람이 굴린 것으로 착각하지 않게)
+    const onPointerDown = (e: PointerEvent) => {
+      if (e.target === sc) dragging = true;
+    };
+    const onPointerUp = () => {
+      if (dragging) {
+        dragging = false;
+        markUser(); // 놓은 뒤 이어지는 마지막 스크롤 이벤트도 사람이 굴린 것으로
+      }
+    };
+    sc?.addEventListener("pointerdown", onPointerDown, { passive: true });
+    window.addEventListener("pointerup", onPointerUp, { passive: true });
+    // 대화 칸·달창·입력줄의 크기가 바뀌어도(입력창이 커질 때 등) 보이는 구간과 빛줄기를 다시 잰다
     const ro = new ResizeObserver(schedule);
-    if (mainRef.current) ro.observe(mainRef.current);
+    for (const el of [mainRef.current, chat, sc, bottomInsetRef?.current]) if (el) ro.observe(el);
     return () => {
       cancelAnimationFrame(raf);
-      chat?.removeEventListener("scroll", scheduleFollow);
-      sc?.removeEventListener("scroll", schedule);
+      chat?.removeEventListener("scroll", onChatScroll);
+      sc?.removeEventListener("scroll", onPlaneScroll);
+      sc?.removeEventListener("wheel", markUser);
+      sc?.removeEventListener("touchmove", markUser);
+      sc?.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("pointerup", onPointerUp);
       ro.disconnect();
     };
-  }, [measure, chatRef, mainRef, scrollRef]);
+  }, [measure, chatRef, mainRef, scrollRef, bottomInsetRef]);
 
   // 새 기억이 생기면 달창을 최신 달로 내린다
   const count = sorted.length;
@@ -238,6 +301,56 @@ export function useMoonPlane({
     itemRefs.current.get(id)?.scrollIntoView({ block: "center", behavior: reduce ? "auto" : "smooth" });
   };
 
+  // 달창을 사람이 굴릴 때: 대화가 비추는 자리(달 목록 위의 한 점)가 달창 위·아래 여백(25%)에 닿으면,
+  // 그 점이 여백에 머물도록 대화를 그만큼 움직인다. 여백 안쪽에서는 대화가 가만히 있다.
+  // (대화 → 달창 카메라의 거꾸로. 코드는 measure의 posOf·focusY 계산과 짝이다)
+  useEffect(() => {
+    followChatRef.current = () => {
+      const chat = chatRef.current;
+      const sc = scrollRef.current;
+      const main = mainRef.current;
+      const n = sorted.length;
+      if (!chat || !sc || !main || n === 0) return;
+      const m = main.getBoundingClientRect();
+      const c = chat.getBoundingClientRect();
+      const rects: { top: number; bottom: number }[] = [];
+      for (const nd of sorted) {
+        const el = itemRefs.current.get(nd.id);
+        if (!el) return;
+        const r = el.getBoundingClientRect();
+        rects.push({ top: r.top - m.top, bottom: r.bottom - m.top });
+      }
+      const posOf = (y: number) => {
+        if (y <= rects[0].top) return 0;
+        for (let i = 0; i < n; i++) {
+          const { top, bottom } = rects[i];
+          if (y < bottom) return y >= top ? i + (y - top) / (bottom - top) : i;
+        }
+        return n;
+      };
+      const viewTop = c.top - m.top;
+      const inset = bottomInsetRef?.current;
+      const viewBottom = (inset ? Math.min(c.bottom, inset.getBoundingClientRect().top) : c.bottom) - m.top;
+      const midNow = Math.min(n - 0.5, Math.max(0.5, (posOf(viewTop) + posOf(viewBottom)) / 2));
+      const focusY = AXIS_PAD + (midNow - 0.5) * MOON_STEP;
+      const target = pushFocus(focusY, sc.scrollTop, sc.clientHeight, sc.clientHeight * CAMERA_MARGIN);
+      if (Math.abs(target - focusY) < 0.5) return; // 여백 안쪽: 대화는 그대로
+      const midTarget = Math.min(n - 0.5, Math.max(0.5, (target - AXIS_PAD) / MOON_STEP + 0.5));
+      // 대화 칸을 delta(px)만큼 옮겼을 때의 중간 위치가 midTarget이 되도록 맞춘다 (몇 번 되풀이해서 수렴)
+      const rowPx = (i: number) => (rects[Math.min(n - 1, i + 1)].top - rects[i].top) || rects[i].bottom - rects[i].top;
+      let delta = 0;
+      for (let k = 0; k < 6; k++) {
+        const cur = (posOf(viewTop + delta) + posOf(viewBottom + delta)) / 2;
+        const err = midTarget - cur;
+        if (Math.abs(err) < 0.002) break;
+        delta += err * rowPx(Math.min(n - 1, Math.max(0, Math.floor(cur))));
+      }
+      const before = chat.scrollTop;
+      chat.scrollTop = before + delta;
+      if (chat.scrollTop !== before) chatMovedByCode.current = true;
+    };
+  });
+
   return { geo, lightById, selectedId, jumpTo, measure };
 }
 
@@ -252,6 +365,31 @@ export interface Birth {
   phase: "charging" | "flash";
 }
 const birthOf = (birth: Birth | null | undefined, id: number) => (birth?.id === id ? birth.phase : undefined);
+
+/** 답이 온 순간 달이 삭에서 제 모양까지 차오르는 시간(ms) */
+const RISE_MS = 900;
+
+/**
+ * 태어나는 달: 답을 기다리는 동안은 삭(새달)이고, 답이 오면 삭에서 제 밝기까지 차오른다.
+ * 번쩍임(밝기·크기)은 CSS(data-birth="flash")가 맡고, 여기서는 달의 모양(lit)만 움직인다.
+ */
+function BornMoon({ lit, side, phase, selected }: { lit: number; side: "left" | "right"; phase: "charging" | "flash"; selected: boolean }) {
+  const [k, setK] = useState(0); // 0 → 1: 얼마나 차올랐나
+  useEffect(() => {
+    if (phase !== "flash") return;
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const t0 = performance.now();
+    let raf = 0;
+    const tick = (now: number) => {
+      const p = reduce ? 1 : Math.min(1, (now - t0) / RISE_MS);
+      setK(1 - Math.pow(1 - p, 3)); // ease-out
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [phase]);
+  return <Moon lit={phase === "flash" ? lit * k : 0} side={side} selected={selected} />;
+}
 
 /** 빛줄기: 대화 칸의 보이는 구간 → 그 기억의 달 (기준 상자 위에 겹쳐 그린다). 달이 달창 밖이면 가까운 가장자리로 향한다 */
 export function MoonPlaneBeams({ sorted, geo, birth }: { sorted: MemoryNode[]; geo: Geo | null; birth?: Birth | null }) {
@@ -327,7 +465,11 @@ export function MoonPlaneTrack({
             aria-label={`기억 ${n.order}번: ${n.user}`}
             onClick={() => onJump(n.id)}
           >
-            <Moon lit={lit} side={side} selected={n.id === selectedId} />
+            {birthOf(birth, n.id) ? (
+              <BornMoon lit={lit} side={side} phase={birthOf(birth, n.id)!} selected={n.id === selectedId} />
+            ) : (
+              <Moon lit={lit} side={side} selected={n.id === selectedId} />
+            )}
             <span className={styles.nodeLabel} style={labelMax ? { maxWidth: labelMax } : undefined}>
               <span className={styles.nodeTime}>{hhmm(n.createdAt)}</span>
               {n.user}

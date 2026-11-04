@@ -71,6 +71,8 @@ export default function ChatView() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const columnRef = useRef<HTMLDivElement>(null);
   const planeRef = useRef<HTMLElement>(null);
+  const composerRef = useRef<HTMLFormElement>(null);
+  const [composerH, setComposerH] = useState(96); // 입력줄 높이: 대화 칸 아래 여백과 보이는 구간 계산에 쓴다
   const moonScrollRef = useRef<HTMLDivElement>(null);
   const [wallPref, setWallPref] = useState<boolean | null>(null); // 사용자가 열고 닫은 선택. null이면 대화가 있을 때 자동으로 열림
   const itemRefs = useRef(new Map<number, HTMLElement>());
@@ -137,13 +139,16 @@ export default function ChatView() {
   // 대화가 시작되면 오른쪽에서 벽이 밀고 들어온다.
   // 대화 열은 벽에 밀려 왼쪽으로 가다가, 왼쪽 끝(한계)에 닿으면 멈추고 벽만 ease-out으로 마저 들어온다.
   const wallOpen = wallPref ?? (nodes.length > 0 || pending !== null);
+  // 대화 칸과 달창이 똑같은 순서를 쓴다: 한 세션 안에서는 대화가 이어진 순서(order).
+  // (시각으로 정렬하면 시드처럼 시각이 앞서 있는 기억 사이에 새 대화가 끼어든다)
+  const ordered = useMemo(() => [...nodes].sort((a, b) => a.order - b.order || a.id - b.id), [nodes]);
   // 답을 기다리는 대화도 맨 끝에 임시 노드로 넣어서, 달 자리와 빛줄기가 답보다 먼저 생기게 한다
   const sorted = useMemo(() => {
-    const list = [...nodes].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+    const list = [...ordered];
     if (pending !== null && sessionId)
-      list.push({ id: PENDING_ID, sessionId, order: 0, createdAt: pendingAt, user: pending, ai: "" });
+      list.push({ id: PENDING_ID, sessionId, order: Number.MAX_SAFE_INTEGER, createdAt: pendingAt, user: pending, ai: "" });
     return list;
-  }, [nodes, pending, pendingAt, sessionId]);
+  }, [ordered, pending, pendingAt, sessionId]);
   // 오른쪽 벽의 내용은 전시 화면(/)의 오른쪽과 같은 것: 달 시간축 + 빛줄기 (MoonPlane 공용)
   const { geo, lightById, selectedId, jumpTo, measure } = useMoonPlane({
     sorted,
@@ -155,7 +160,16 @@ export default function ChatView() {
     // 빛줄기는 전시 화면처럼 대화 배경과 달창의 경계(벽의 왼쪽 끝)에서 시작한다
     edgeRef: planeRef,
     edgeSide: "left",
+    // 대화 칸은 입력줄 밑까지 깔려 있으므로, 글이 보이는 구간은 입력줄 윗변까지
+    bottomInsetRef: composerRef,
   });
+  useEffect(() => {
+    const el = composerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setComposerH(Math.round(el.offsetHeight)));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   // 벽이 들어오고 나가는 동안은 벽과 대화 열이 계속 움직이므로 매 프레임 다시 잰다
   useEffect(() => {
     const start = performance.now();
@@ -257,6 +271,7 @@ export default function ChatView() {
           style={{
             ["--wall" as string]: wallOpen ? `${WALL_W}px` : "0px",
             ["--area" as string]: `${area}px`,
+            ["--composer-h" as string]: `${composerH}px`,
             ["--l0" as string]: `${lay.l0.toFixed(2)}px`,
             ["--lk" as string]: lay.lk.toFixed(5),
             ["--w0" as string]: `${lay.w0.toFixed(2)}px`,
@@ -271,7 +286,7 @@ export default function ChatView() {
                   <p>말을 걸면 대화 한 번이 기억 노드 하나로 쌓여요.</p>
                 </div>
               )}
-              {nodes.map((n) => (
+              {ordered.map((n) => (
                 <article
                   key={n.id}
                   className={styles.pair}
@@ -321,6 +336,7 @@ export default function ChatView() {
           </div>
 
           <form
+            ref={composerRef}
             className={styles.composer}
             onSubmit={(e) => {
               e.preventDefault();

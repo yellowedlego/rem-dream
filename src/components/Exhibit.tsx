@@ -3,14 +3,11 @@
 import { useMemo, useRef } from "react";
 import type { MemoryNode } from "@/lib/types";
 import AppNav from "./AppNav";
-import { MoonPlaneBeams, MoonPlaneTrack, hhmm, useMoonPlane } from "./MoonPlane";
+import { MoonPlaneBeams, MoonPlaneTrack, byTime, hhmm, useMoonPlane } from "./MoonPlane";
 import styles from "./Exhibit.module.css";
 
 export default function Exhibit({ nodes, personaVersion }: { nodes: MemoryNode[]; personaVersion: number }) {
-  const sorted = useMemo(
-    () => [...nodes].sort((a, b) => a.createdAt.localeCompare(b.createdAt)),
-    [nodes],
-  );
+  const sorted = useMemo(() => [...nodes].sort(byTime), [nodes]);
 
   const mainRef = useRef<HTMLElement>(null);
   const chatRef = useRef<HTMLElement>(null);
