@@ -75,6 +75,7 @@
   gap: 10px;
   scroll-margin: 40px;
   --lit: 0;
+  --glow: 0;
 }
 /* 빛: 오른쪽 끝에서 왼쪽으로 옅어진다 */
 .pair::before {
@@ -89,16 +90,26 @@
     rgb(239 223 166 / 0) 85%
   );
 }
-/* 홈: 진한 선 1px + 그 아래 아주 옅은 면 1px (눈에 띄지 않게) */
+/* 홈: 안 비칠 땐 약간 진한 선(눈에 띄지 않게). 파인 곳이라 빛이 비추면 바닥면보다 훨씬 많이 받아
+   오른쪽(빛이 들어오는 쪽)에서 가장 환하게 빛나고 왼쪽으로 옅어진다. */
 .pair::after {
   content: "";
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  height: 2px;
+  height: 3px;
   pointer-events: none;
-  background: linear-gradient(to bottom, #0f0c17 0 1px, rgb(255 255 255 / 0.035) 1px 2px);
+  background:
+    linear-gradient(
+      to left,
+      rgb(239 223 166 / calc(var(--glow) * 0.95)) 0%,
+      rgb(239 223 166 / calc(var(--glow) * 0.5)) 45%,
+      rgb(239 223 166 / calc(var(--glow) * 0.08)) 100%
+    ),
+    linear-gradient(to bottom, #0f0c17 0 2px, rgb(255 255 255 / 0.035) 2px 3px);
+  /* 홈에서 번지는 빛: 비칠 때만 */
+  box-shadow: 0 0 14px 1px rgb(239 223 166 / calc(var(--glow) * 0.22));
 }
 .pair:last-child::after {
   display: none;

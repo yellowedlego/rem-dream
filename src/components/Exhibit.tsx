@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { MemoryNode } from "@/lib/types";
 import AppNav from "./AppNav";
-import GlyphField from "./GlyphField";
 import Moon from "./Moon";
 import styles from "./Exhibit.module.css";
 
@@ -22,6 +21,8 @@ interface Seg {
   bottom: number;
   /** 0~1, 얼마나 많이 보이는지 */
   k: number;
+  /** 이 대화의 실제 아래 끝(= 아래 홈의 위치). 잘리지 않은 값 */
+  pairBottom: number;
 }
 
 interface Geo {
@@ -33,6 +34,9 @@ interface Geo {
   segs: Seg[];
   /** 보이는 대화 구간의 위·아래 끝을 "기억 번호 공간"의 연속 위치로 나타낸 값 (0 ~ 노드 수) */
   band: [number, number];
+  /** 대화 칸이 보이는 위·아래 끝 (main 기준 좌표) */
+  viewTop: number;
+  viewBottom: number;
   w: number;
   h: number;
 }
@@ -43,6 +47,19 @@ const MOON_REACH = 5; // 보이는 구간에서 기억 5개만큼 멀어지면 �
 
 /** 보이는 구간에서 d(기억 개수)만큼 떨어진 노드의 밝기. 코사인으로 부드럽게 1→0. */
 const falloff = (d: number) => 0.5 * (1 + Math.cos(Math.PI * Math.min(d / MOON_REACH, 1)));
+
+/**
+ * 보이는 대화 칸의 위·아래 끝에서 멀수록 1, 끝에서는 0.2. y가 끝에서 칸 높이의 45% 이상 안쪽이면 1.
+ * (부드럽게 이어지도록 smoothstep)
+ */
+const EDGE_REACH = 0.45;
+const EDGE_MIN = 0.2;
+function edgeFade(y: number, viewTop: number, viewBottom: number) {
+  const reach = (viewBottom - viewTop) * EDGE_REACH;
+  if (reach <= 0) return EDGE_MIN;
+  const t = Math.min(1, Math.max(0, Math.min(y - viewTop, viewBottom - y) / reach));
+  return EDGE_MIN + (1 - EDGE_MIN) * t * t * (3 - 2 * t);
+}
 
 export default function Exhibit({ nodes, personaVersion }: { nodes: MemoryNode[]; personaVersion: number }) {
   const sorted = useMemo(
@@ -83,7 +100,8 @@ export default function Exhibit({ nodes, personaVersion }: { nodes: MemoryNode[]
       rects.push({ top: r.top - m.top, bottom: r.bottom - m.top });
       const top = Math.max(r.top - m.top, viewTop);
       const bottom = Math.min(r.bottom - m.top, viewBottom);
-      if (bottom - top > 0) segs.push({ id: n.id, top, bottom, k: Math.min(1, (bottom - top) / FULL_AT) });
+      if (bottom - top > 0)
+        segs.push({ id: n.id, top, bottom, k: Math.min(1, (bottom - top) / FULL_AT), pairBottom: r.bottom - m.top });
     }
 
     // y 좌표가 "몇 번째 기억의 어디쯤"인지를 연속 값으로 (i + 그 안에서의 비율)
@@ -110,6 +128,8 @@ export default function Exhibit({ nodes, personaVersion }: { nodes: MemoryNode[]
       nodeY,
       segs,
       band: [posOf(viewTop), posOf(viewBottom)],
+      viewTop,
+      viewBottom,
       w: m.width,
       h: m.height,
     });
@@ -136,7 +156,19 @@ export default function Exhibit({ nodes, personaVersion }: { nodes: MemoryNode[]
     };
   }, [measure]);
 
-  const litById = useMemo(() => new Map((geo?.segs ?? []).map((s) => [s.id, s.k])), [geo]);
+  // 빛은 전부 똑같이 들어오지 않는다: 보이는 칸의 위·아래 끝에 가까운 대화와 홈일수록 옅다.
+  // lit = 대화 바닥에 드는 빛, glow = 그 대화 아래 홈에 드는 빛
+  const lightById = useMemo(() => {
+    const m = new Map<number, { lit: number; glow: number }>();
+    if (!geo) return m;
+    for (const s of geo.segs) {
+      m.set(s.id, {
+        lit: s.k * edgeFade((s.top + s.bottom) / 2, geo.viewTop, geo.viewBottom),
+        glow: edgeFade(s.pairBottom, geo.viewTop, geo.viewBottom),
+      });
+    }
+    return m;
+  }, [geo]);
 
   const jumpTo = (id: number) => {
     setSelectedId(id);
@@ -170,7 +202,10 @@ export default function Exhibit({ nodes, personaVersion }: { nodes: MemoryNode[]
               className={`${styles.pair} ${n.id === selectedId ? styles.pairSelected : ""}`}
               data-node-id={n.id}
               // 이 대화를 비추는 빛의 세기(0~1). 빛줄기와 같은 값을 써서 칸이 오른쪽(빛이 들어오는 쪽)부터 밝아진다
-              style={{ ["--lit" as string]: (litById.get(n.id) ?? 0).toFixed(3) }}
+              style={{
+                ["--lit" as string]: (lightById.get(n.id)?.lit ?? 0).toFixed(3),
+                ["--glow" as string]: (lightById.get(n.id)?.glow ?? 0).toFixed(3),
+              }}
             >
               <div className={styles.meta}>
                 <span>기억 {n.order}</span>
@@ -183,7 +218,6 @@ export default function Exhibit({ nodes, personaVersion }: { nodes: MemoryNode[]
         </section>
 
         <section ref={planeRef} className={styles.plane} aria-label="기억 노드 시간축">
-          <GlyphField host={mainRef} />
           <p className={styles.hint}>지금 보이는 대화를 그 기억이 비춰요</p>
         </section>
 
