@@ -34,16 +34,17 @@ export async function POST(request: Request) {
     let order = nextOrder(s, sessionId);
     const now = Date.now();
     const nodes: MemoryNode[] = pieces.map((p, i) => {
-      const piece = text.slice(p.start, p.end);
+      // 원문 조각 그대로 (공백 포함). 같은 주제의 떨어진 구간이 여럿이면 줄바꿈 하나로만 이어 붙인다.
+      const piece = p.spans.map(([s, e]) => text.slice(s, e)).join("\n");
       return {
         id: id++,
         sessionId,
         order: order++,
         createdAt: new Date(now + i).toISOString(),
-        user: piece, // 원문 조각 그대로 (공백 포함)
+        user: piece,
         ai: mockReply(piece.trim()),
         storyId,
-        storySpan: [p.start, p.end],
+        storySpans: p.spans,
         topic: p.topic,
       };
     });

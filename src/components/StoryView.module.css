@@ -1,4 +1,4 @@
-.shell {
+﻿.shell {
   min-height: 100dvh;
   display: grid;
   grid-template-rows: auto 1fr;
@@ -81,6 +81,7 @@
 
 .bar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
   margin-top: 12px;
@@ -160,11 +161,29 @@
 .seg {
   padding: 2px 0;
 }
+/* 같은 주제(같은 노드)는 같은 색. 뒤섞인 이야기에서 떨어진 구간이 같은 색으로 보인다 */
 .seg[data-alt="0"] {
-  background: var(--accent-wash);
+  background: rgb(239 223 166 / 0.12);
 }
 .seg[data-alt="1"] {
-  background: var(--point-wash);
+  background: rgb(185 163 245 / 0.16);
+}
+.seg[data-alt="2"] {
+  background: rgb(143 214 180 / 0.13);
+}
+.seg[data-alt="3"] {
+  background: rgb(242 163 139 / 0.14);
+}
+.seg[data-alt="4"] {
+  background: rgb(130 180 240 / 0.15);
+}
+.seg[data-alt="5"] {
+  background: rgb(220 150 200 / 0.14);
+}
+.gap {
+  color: var(--accent);
+  font-style: normal;
+  font-weight: 600;
 }
 .seg sup {
   margin-right: 4px;
@@ -241,3 +260,4 @@
     position: static;
   }
 }
+

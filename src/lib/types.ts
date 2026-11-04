@@ -17,8 +17,12 @@ export interface MemoryNode {
   ai: string;
   /** 긴 이야기에서 쪼개져 나온 노드면 그 이야기 번호 */
   storyId?: number;
-  /** 원문(Story.rawText) 안의 [시작, 끝) 글자 위치 */
-  storySpan?: [number, number];
+  /**
+   * 원문(Story.rawText) 안의 [시작, 끝) 글자 위치들. 이야기가 A→B→A처럼 뒤섞였으면
+   * 같은 주제(A)의 떨어진 구간이 한 노드에 여러 개 들어간다. 이야기 하나의 모든 노드의 구간을
+   * 합치면 원문 전체가 빈틈·겹침 없이 덮여야 한다.
+   */
+  storySpans?: [number, number][];
   /** 쪼갠 조각의 한 줄 주제 (화면 표시용) */
   topic?: string;
 }

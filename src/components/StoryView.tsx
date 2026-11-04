@@ -1,37 +1,43 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import type { MemoryNode, Story } from "@/lib/types";
 import { api, currentSessionId } from "./api";
 import AppNav from "./AppNav";
+import { STORY_SAMPLES } from "./storySamples";
 import styles from "./StoryView.module.css";
 
 const MAX_CHARS = 8000;
-const SAMPLE = `아침에 알람을 세 번 끄고 겨우 일어났다. 아침을 못 먹고 버스를 탔는데, 빈속이라 오전이 유난히 길게 느껴졌다.
-
-1교시에 영어 단어 시험을 봤다. 반은 찍었다. 그래도 국어 시간에 발표를 했고, 목소리는 떨렸지만 끝까지 했다. 쉬는 시간에 친구가 발표 좋았다고 말해 줘서 기분이 풀렸다.
-
-점심에는 급식에 떡볶이가 나왔다. 오늘 최고다. 점심시간에는 도서관에서 만화책을 봤다.
-
-오후에는 다음 주 수학 시험 범위가 너무 넓어서 걱정이 됐다. 단원별로 나눠 적어 보니 덜 막막했다.`;
 
 interface Result {
   story: Story;
   nodes: MemoryNode[];
 }
 
-/** 조각을 이어 붙이면 원문과 정확히 같은지 확인한다 (정보를 잃지 않았다는 증거) */
+/**
+ * 정보를 잃지 않았는지 확인한다: 모든 노드의 원문 구간을 합치면 원문 전체가 빈틈·겹침 없이 덮이고,
+ * 각 노드 글이 자기 구간의 원문 그대로여야 한다.
+ */
 function verify({ story, nodes }: Result) {
-  const joined = nodes.map((n) => n.user).join("");
+  const raw = story.rawText;
+  const spans = nodes
+    .flatMap((n, i) => (n.storySpans ?? []).map(([s, e]) => ({ s, e, i })))
+    .sort((a, b) => a.s - b.s);
   let pos = 0;
   let contiguous = true;
-  for (const n of nodes) {
-    const [s, e] = n.storySpan ?? [-1, -1];
+  for (const { s, e } of spans) {
     if (s !== pos || e <= s) contiguous = false;
     pos = e;
   }
-  const same = joined === story.rawText;
-  return { ok: same && contiguous && pos === story.rawText.length, chars: joined.length, total: story.rawText.length };
+  const nodeTextOk = nodes.every(
+    (n) => n.user === (n.storySpans ?? []).map(([s, e]) => raw.slice(s, e)).join("\n"),
+  );
+  return {
+    ok: contiguous && pos === raw.length && nodeTextOk,
+    chars: spans.reduce((n, x) => n + x.e - x.s, 0),
+    total: raw.length,
+    spans,
+  };
 }
 
 export default function StoryView() {
@@ -89,9 +95,11 @@ export default function StoryView() {
             <span className={`${styles.count} ${tooLong ? styles.over : ""}`}>
               {text.length.toLocaleString()} / {MAX_CHARS.toLocaleString()}자
             </span>
-            <button type="button" className={styles.ghost} onClick={() => setText(SAMPLE)} disabled={busy}>
-              예시 넣기
-            </button>
+            {STORY_SAMPLES.map((s) => (
+              <button key={s.id} type="button" className={styles.ghost} onClick={() => setText(s.text)} disabled={busy}>
+                예시: {s.label}
+              </button>
+            ))}
             <button type="button" className={styles.primary} onClick={() => void analyze()} disabled={!text.trim() || tooLong || busy}>
               {busy ? "나누는 중…" : "분석하기"}
             </button>
@@ -114,21 +122,18 @@ export default function StoryView() {
           {result && check && (
             <>
               <p className={`${styles.verify} ${check.ok ? styles.ok : styles.bad}`} role="status">
-                {check.ok ? "원문 보존 확인됨" : "원문과 다름 — 확인 필요"} · 조각 {result.nodes.length}개 · 글자{" "}
+                {check.ok ? "원문 보존 확인됨" : "원문과 다름 — 확인 필요"} · 조각 {result.nodes.length}개 · 원문 구간 {check.spans.length}군데 · 글자{" "}
                 {check.chars.toLocaleString()} / {check.total.toLocaleString()}
               </p>
 
               <h3>원문에서 나눈 자리</h3>
               <p className={styles.raw}>
-                {result.nodes.map((n, i) => {
-                  const [s, e] = n.storySpan ?? [0, 0];
-                  return (
-                    <span key={n.id} className={styles.seg} data-alt={i % 2} title={n.topic}>
-                      <sup>{i + 1}</sup>
-                      {result.story.rawText.slice(s, e)}
-                    </span>
-                  );
-                })}
+                {check.spans.map((sp, k) => (
+                  <span key={k} className={styles.seg} data-alt={sp.i % 6} title={result.nodes[sp.i].topic}>
+                    <sup>{sp.i + 1}</sup>
+                    {result.story.rawText.slice(sp.s, sp.e)}
+                  </span>
+                ))}
               </p>
 
               <h3>만들어진 기억 노드</h3>
@@ -142,7 +147,14 @@ export default function StoryView() {
                         기억 #{n.id} · {n.user.trim().length}자
                       </span>
                     </div>
-                    <p className={styles.piece}>{n.user.trim()}</p>
+                    <p className={styles.piece}>
+                      {(n.storySpans ?? []).map(([s, e], j) => (
+                        <span key={j}>
+                          {j > 0 && <i className={styles.gap}> ⋯ </i>}
+                          {result.story.rawText.slice(s, e).trim()}
+                        </span>
+                      ))}
+                    </p>
                     <p className={styles.reply}>{n.ai}</p>
                   </li>
                 ))}
@@ -157,3 +169,5 @@ export default function StoryView() {
     </div>
   );
 }
+
+
