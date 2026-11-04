@@ -113,7 +113,7 @@ export default function DebugConsole() {
       <header className={styles.header}>
         <h1>디버그</h1>
         <AppNav />
-        <span className={styles.sub}>가짜 API · data/runtime/mock-store.json</span>
+        <span className={styles.sub}>API · data/runtime/store.json</span>
         <div className={styles.controls}>
           {/* REM 조작은 3단계(REM)부터 동작한다 */}
           <select disabled aria-label="REM 모드">

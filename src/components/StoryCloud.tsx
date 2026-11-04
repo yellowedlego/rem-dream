@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { MemoryNode } from "@/lib/types";
-import type { Meaning } from "./api";
+import type { Meaning } from "@/lib/types";
 import { MOON_R, MoonShape } from "./Moon";
 import styles from "./StoryCloud.module.css";
 

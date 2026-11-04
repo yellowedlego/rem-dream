@@ -1,8 +1,8 @@
 // 화면이 서버와 이야기하는 곳은 여기 하나. 주소·응답 모양은 docs/backend-plan.md 5절과 같다.
-// 실제 백엔드가 나오면 NEXT_PUBLIC_API_BASE=/api 로 바꾸고 src/app/api-mock/ 을 지운다.
-import type { Insight, MemoryNode, PersonaVersion, Story } from "@/lib/types";
+// 서버는 src/app/api/ (진짜 백엔드). 모양이 다른 곳은 아래 api 객체 안에서 화면이 쓰던 모양으로 맞춘다.
+import type { Insight, Meaning, MemoryNode, PersonaVersion, SplitMethod, Story } from "@/lib/types";
 
-const BASE = process.env.NEXT_PUBLIC_API_BASE ?? "/api-mock";
+const BASE = process.env.NEXT_PUBLIC_API_BASE ?? "/api";
 
 export class ApiError extends Error {
   constructor(
@@ -29,27 +29,14 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
   return data as T;
 }
 
-/**
- * 의미 파일(별): 이야기 노드들을 합쳐 뽑은 의미. 인격은 승인된 의미 파일들로 구성한다.
- * 계약은 docs/backend-plan.md "의미 파일(별)". 백엔드가 확정하면 src/lib/types.ts로 옮긴다.
- */
-export interface Meaning {
-  id: number;
-  storyId: number;
-  sessionId: string;
-  nodeIds: number[];
-  title: string;
-  essence: string;
-  keywords: string[];
-  createdAt: string;
-}
-
-/** 이야기를 나눈 방법: AI가 맥락을 읽었는지, 규칙으로 임시 분리했는지 */
-export type SplitMethod = "ai" | "rule";
+export type { Meaning, SplitMethod };
 
 export interface StoryResult {
   story: Story;
   nodes: MemoryNode[];
+  /** 서버가 준 의미 파일 전부 (0개일 수 있다: 모델이 의미를 못 뽑았을 때) */
+  meanings: Meaning[];
+  /** 지금 화면은 별 하나만 그린다: meanings[0], 없으면 빈 의미 */
   meaning: Meaning;
   method: SplitMethod;
 }
@@ -71,6 +58,24 @@ export interface DebugState {
   personas: PersonaVersion[];
   activePersona: number;
   stories: StoryMeta[];
+  meanings: Meaning[];
+}
+
+/** GET /api/state 의 실제 응답 (원문 rawText는 빼고 length만 온다) */
+interface ServerState {
+  nodes: MemoryNode[];
+  insights: Insight[];
+  personas: PersonaVersion[];
+  activePersona: number;
+  stories: (Omit<Story, "rawText"> & { length: number })[];
+  meanings: Meaning[];
+}
+
+interface ServerStoryResult {
+  story: Story;
+  nodes: MemoryNode[];
+  meanings: Meaning[];
+  method: SplitMethod;
 }
 
 const qs = (o: Record<string, string | undefined>) => {
@@ -83,15 +88,39 @@ const qs = (o: Record<string, string | undefined>) => {
 export const api = {
   chat: (sessionId: string, message: string) =>
     call<{ node: MemoryNode }>("/chat", { method: "POST", body: JSON.stringify({ sessionId, message }) }),
-  story: (sessionId: string, text: string) =>
-    call<StoryResult>("/story", { method: "POST", body: JSON.stringify({ sessionId, text }) }),
-  sessions: () => call<{ sessions: SessionSummary[] }>("/sessions"),
-  nodes: (o: { sessionId?: string; q?: string } = {}) => call<{ nodes: MemoryNode[] }>(`/nodes${qs(o)}`),
-  state: () => call<DebugState>("/state"),
+  story: async (sessionId: string, text: string): Promise<StoryResult> => {
+    const r = await call<ServerStoryResult>("/story", { method: "POST", body: JSON.stringify({ sessionId, text }) });
+    const empty: Meaning = {
+      id: 0,
+      storyId: r.story.id,
+      sessionId,
+      nodeIds: r.nodes.map((n) => n.id),
+      title: "",
+      essence: "",
+      keywords: [],
+      createdAt: r.story.createdAt,
+    };
+    return { ...r, meaning: r.meanings[0] ?? empty };
+  },
+  // 서버는 배열 그대로 준다
+  sessions: async () => ({ sessions: await call<SessionSummary[]>("/sessions") }),
+  // 서버 기본 limit은 50이라 화면이 전부 볼 수 있게 상한(500)으로 요청한다
+  nodes: (o: { sessionId?: string; q?: string } = {}) => call<{ nodes: MemoryNode[] }>(`/nodes${qs({ ...o, limit: "500" })}`),
+  state: async (): Promise<DebugState> => {
+    const s = await call<ServerState>("/state");
+    return {
+      nodeCount: s.nodes.length,
+      insights: s.insights,
+      personas: s.personas,
+      activePersona: s.activePersona,
+      stories: s.stories.map(({ length, ...rest }) => ({ ...rest, chars: length })),
+      meanings: s.meanings,
+    };
+  },
   deleteNode: (id: number) => call<{ ok: true }>(`/nodes/${id}`, { method: "DELETE" }),
-  deleteStory: (id: number) => call<{ ok: true; removedNodes: number }>(`/stories/${id}`, { method: "DELETE" }),
+  deleteStory: (id: number) => call<{ ok: true }>(`/stories/${id}`, { method: "DELETE" }),
   deleteSession: (sessionId: string) =>
-    call<{ ok: true; removedNodes: number }>(`/sessions/${encodeURIComponent(sessionId)}`, { method: "DELETE" }),
+    call<{ ok: true }>(`/sessions/${encodeURIComponent(sessionId)}`, { method: "DELETE" }),
   deleteInsight: (id: number) => call<{ ok: true }>(`/insights/${id}`, { method: "DELETE" }),
   resetAll: () => call<{ ok: true }>("/debug/reset-all", { method: "POST" }),
 };
