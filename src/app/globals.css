@@ -45,6 +45,44 @@ body {
   outline-offset: 2px;
 }
 
+/* 글을 선택(드래그, Ctrl+A)했을 때의 기본 파랑 대신 연한 달빛 */
+::selection {
+  background: rgb(239 223 166 / 0.3);
+  color: var(--text);
+}
+input,
+textarea,
+select {
+  accent-color: var(--accent);
+  color-scheme: dark;
+}
+/* 모델·세션 선택창: 열었을 때 목록과 고른 항목·마우스 올린 항목도 파랑 대신 연한 달빛 (지원하는 브라우저만) */
+@supports (appearance: base-select) {
+  select,
+  select::picker(select) {
+    appearance: base-select;
+  }
+  select::picker(select) {
+    background: var(--panel);
+    border: 1px solid var(--node-edge);
+    padding: 4px;
+  }
+  select option {
+    padding: 8px 12px;
+    color: var(--text);
+  }
+  select option:hover,
+  select option:focus-visible {
+    background: rgb(239 223 166 / 0.16);
+  }
+  select option:checked {
+    background: rgb(239 223 166 / 0.28);
+  }
+  select::picker-icon {
+    color: var(--muted);
+  }
+}
+
 /* 채팅 입력창 빛이 마우스·타이핑 커서를 부드럽게 따라가도록 (값이 숫자 사이를 이어서 움직이게 등록) */
 @property --gx {
   syntax: "<length>";

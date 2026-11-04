@@ -55,6 +55,10 @@ export const MOON_STEP = 32;
 const AXIS_PAD = 56;
 /** 달창 위·아래 여백(높이 비율). 비추는 자리가 이 안쪽에 있으면 달창은 가만히 있는다 */
 const CAMERA_MARGIN = 0.25;
+/** 달창을 굴리다 이만큼(ms) 멈추면 가운데 달의 대화로 포커스가 옮겨간다 */
+const SETTLE_MS = 450;
+/** 휠·터치가 있은 뒤 이 시간(ms) 안의 달창 스크롤만 사람이 굴린 것으로 본다 */
+const USER_INPUT_MS = 250;
 const FULL_AT = 160; // 이만큼(px) 보이면 빛줄기가 가장 진해짐
 const MOON_REACH = 5; // 보이는 구간에서 기억 5개만큼 멀어지면 삭(새달)
 
@@ -110,6 +114,8 @@ export function useMoonPlane({
   const [selectedId, setSelectedId] = useState<number | null>(null);
   // 대화 칸이 스크롤됐을 때만 달창 카메라가 따라간다 (달창을 직접 스크롤할 때는 따라가지 않는다)
   const followNext = useRef(true);
+  // 달창이 멈췄을 때 실행할 "가운데 달로 포커스" (아래에서 매 렌더 최신 상태로 갱신)
+  const settleRef = useRef<() => void>(() => {});
 
   const measure = useCallback(() => {
     const main = mainRef.current;
@@ -196,14 +202,53 @@ export function useMoonPlane({
     };
     const chat = chatRef.current;
     const sc = scrollRef.current;
-    chat?.addEventListener("scroll", scheduleFollow, { passive: true }); // 대화가 움직이면 카메라가 따라간다
-    sc?.addEventListener("scroll", schedule, { passive: true }); // 달창은 따로 스크롤된다 (카메라는 안 따라감)
+    // 달창을 사람이 굴렸을 때만 센다. 카메라가 따라가느라 scrollTop을 바꾼 것(프로그램 스크롤)과 구별하려고
+    // 휠·터치가 방금(USER_INPUT_MS 안에) 있었거나 스크롤바를 잡고 있는 동안만 사람이 굴린 것으로 본다.
+    // (표시가 오래 남으면 대화를 굴릴 때 카메라가 움직인 달창을 사람이 굴린 줄 알고 대화를 되돌려 버린다)
+    let lastInput = -Infinity;
+    let dragging = false;
+    let settleTimer: ReturnType<typeof setTimeout> | undefined;
+    const markUser = () => {
+      lastInput = performance.now();
+    };
+    const onPlaneScroll = () => {
+      schedule();
+      if (!dragging && performance.now() - lastInput > USER_INPUT_MS) return;
+      // 대화는 그대로 두고, 달창이 잠깐 멈추면 가운데 달의 대화로 포커스를 옮긴다
+      clearTimeout(settleTimer);
+      settleTimer = setTimeout(() => settleRef.current(), SETTLE_MS);
+    };
+    const onChatScroll = () => {
+      clearTimeout(settleTimer); // 대화를 직접 굴리기 시작하면 달 쪽 포커스 이동은 취소한다
+      scheduleFollow();
+    };
+    chat?.addEventListener("scroll", onChatScroll, { passive: true }); // 대화가 움직이면 카메라가 따라간다
+    sc?.addEventListener("scroll", onPlaneScroll, { passive: true }); // 달창은 따로 스크롤된다 (카메라는 안 따라감)
+    sc?.addEventListener("wheel", markUser, { passive: true });
+    sc?.addEventListener("touchmove", markUser, { passive: true });
+    // 눌러 끌기는 스크롤바를 잡았을 때만 (달 버튼을 눌러 이동한 뒤의 카메라 스크롤을 사람이 굴린 것으로 착각하지 않게)
+    const onPointerDown = (e: PointerEvent) => {
+      if (e.target === sc) dragging = true;
+    };
+    const onPointerUp = () => {
+      if (dragging) {
+        dragging = false;
+        markUser(); // 놓은 뒤 이어지는 마지막 스크롤 이벤트도 사람이 굴린 것으로
+      }
+    };
+    sc?.addEventListener("pointerdown", onPointerDown, { passive: true });
+    window.addEventListener("pointerup", onPointerUp, { passive: true });
     const ro = new ResizeObserver(schedule);
     if (mainRef.current) ro.observe(mainRef.current);
     return () => {
       cancelAnimationFrame(raf);
-      chat?.removeEventListener("scroll", scheduleFollow);
-      sc?.removeEventListener("scroll", schedule);
+      clearTimeout(settleTimer);
+      chat?.removeEventListener("scroll", onChatScroll);
+      sc?.removeEventListener("scroll", onPlaneScroll);
+      sc?.removeEventListener("wheel", markUser);
+      sc?.removeEventListener("touchmove", markUser);
+      sc?.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("pointerup", onPointerUp);
       ro.disconnect();
     };
   }, [measure, chatRef, mainRef, scrollRef]);
@@ -237,6 +282,18 @@ export function useMoonPlane({
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
     itemRefs.current.get(id)?.scrollIntoView({ block: "center", behavior: reduce ? "auto" : "smooth" });
   };
+
+  // 달창을 굴리다 멈추면: 달창 세로 한가운데에 있는 달의 대화로 포커스를 옮긴다 (아직 답을 기다리는 임시 노드는 건너뜀)
+  useEffect(() => {
+    settleRef.current = () => {
+      const sc = scrollRef.current;
+      if (!sc || sorted.length === 0) return;
+      const centerY = sc.scrollTop + sc.clientHeight / 2;
+      const i = Math.min(sorted.length - 1, Math.max(0, Math.round((centerY - AXIS_PAD) / MOON_STEP)));
+      const node = sorted[i];
+      if (node && node.id >= 0) jumpTo(node.id);
+    };
+  });
 
   return { geo, lightById, selectedId, jumpTo, measure };
 }
