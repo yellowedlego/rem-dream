@@ -1,4 +1,4 @@
-.shell {
+﻿.shell {
   height: 100dvh;
   display: grid;
   grid-template-rows: auto 1fr;
@@ -98,10 +98,14 @@
 
 /* ── 오른쪽: 대화 ── */
 .chat {
+  position: relative;
+  overflow: hidden; /* 벽이 영역 밖에서 들어오는 동안 가로 스크롤이 생기지 않게 */
   min-height: 0;
   display: grid;
   grid-template-rows: 1fr auto;
   background: var(--surface);
+  /* 벽이 들어오는 길이: 처음엔 빠르고 끝에서 천천히 (ease-out) */
+  transition: --wall 900ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .scroll {
   min-height: 0;
@@ -110,6 +114,8 @@
   scrollbar-color: var(--bubble) transparent;
 }
 .column {
+  /* 벽이 --slack 넘게 들어오면 밀리기 시작하고, --maxShift에서 멈춘다 */
+  transform: translateX(calc(-1 * clamp(0px, calc(var(--wall) - var(--slack)), var(--maxShift))));
   max-width: 760px;
   margin: 0 auto;
   padding: 28px 24px 12px;
@@ -201,6 +207,7 @@
 
 /* ── 입력줄 ── */
 .composer {
+  transform: translateX(calc(-1 * clamp(0px, calc(var(--wall) - var(--slack)), var(--maxShift))));
   max-width: 760px;
   width: 100%;
   margin: 0 auto;
@@ -214,6 +221,7 @@
   font-size: 14px;
 }
 .row {
+  position: relative; /* 별똥별이 보내기 버튼 자리에서 시작하도록 */
   display: flex;
   gap: 10px;
   align-items: flex-end;
@@ -221,6 +229,26 @@
 .field {
   flex: 1;
   display: flex;
+  position: relative;
+  /* 빛이 마우스·타이핑 커서를 따라 부드럽게 움직인다 (--gx, --gy는 ChatView가 넣고 globals.css에 등록) */
+  transition: --gx 140ms ease-out, --gy 140ms ease-out;
+}
+.field::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 260ms ease;
+  background: radial-gradient(
+    170px circle at var(--gx) var(--gy),
+    rgb(239 223 166 / 0.3),
+    rgb(239 223 166 / 0.1) 45%,
+    transparent 75%
+  );
+}
+.field[data-glow="on"]::before {
+  opacity: 1;
 }
 .field textarea {
   width: 100%;
@@ -235,6 +263,10 @@
   line-height: 1.5;
   resize: none;
   field-sizing: content;
+  transition: background-color 200ms ease;
+}
+.field textarea:focus {
+  background: color-mix(in srgb, var(--bubble) 90%, var(--accent) 10%);
 }
 .field textarea::placeholder {
   color: var(--muted);
@@ -289,3 +321,108 @@
     width: 180px;
   }
 }
+
+/* ── 보내기 별똥별: 아주 작게, 보내기 버튼에서 떠서 대화 쪽(위·왼쪽)으로 날아간다.
+   꼬리는 머리에서 멀어질수록 색이 빠져 120px(버튼 높이 48px의 2.5배) 안에서 완전히 사라진다. ── */
+.meteor {
+  position: absolute;
+  width: 0;
+  height: 0;
+  z-index: 2;
+  pointer-events: none;
+  animation: fly 800ms cubic-bezier(0.45, 0, 0.85, 0.55) forwards;
+}
+.meteorTail {
+  position: absolute;
+  left: -2px;
+  top: 0;
+  width: 4px;
+  height: 120px;
+  transform-origin: 50% 0;
+  transform: rotate(-12deg); /* 날아가는 방향(위·왼쪽)의 반대로 꼬리가 늘어진다 */
+  background: linear-gradient(
+    to bottom,
+    rgb(255 247 214 / 0.95) 0%,
+    rgb(239 223 166 / 0.5) 14%,
+    rgb(239 223 166 / 0.14) 55%,
+    rgb(239 223 166 / 0) 100%
+  );
+  clip-path: polygon(0 0, 100% 0, 62% 100%, 38% 100%);
+}
+.meteorHead {
+  position: absolute;
+  left: -3px;
+  top: -3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fff7d6;
+  box-shadow: 0 0 8px 2px rgb(239 223 166 / 0.75);
+}
+@keyframes fly {
+  0% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-70px, -330px);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .meteor {
+    display: none;
+  }
+}
+
+/* ── 오른쪽에서 밀고 들어오는 벽 = 전시 화면의 오른쪽(달 시간축). 난간에서 낭떠러지 쪽을 보는 느낌: 왼쪽 모서리가 파인 홈처럼 어둡다 ── */
+.wall {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 380px;
+  z-index: 3;
+  background: var(--bg);
+  transform: translateX(calc(380px - var(--wall)));
+  box-shadow: inset 14px 0 18px -12px #0b0910;
+}
+.wall::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(to right, #0b0910 0 2px, rgb(255 255 255 / 0.04) 2px 3px);
+  pointer-events: none;
+}
+.hint {
+  position: absolute;
+  right: 20px;
+  top: 16px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+/* 빛줄기·달은 벽 위에 그린다 (전시 화면과 같은 부품) */
+.layers {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+@media (max-width: 760px) {
+  .wall {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chat {
+    transition: none;
+  }
+}
+
