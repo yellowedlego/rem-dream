@@ -45,3 +45,8 @@ next-env.d.ts
 /playwright-report/
 /.playwright-mcp/
 /.taste-skill/
+
+# graphify 결과, 실행 중 저장소
+/graphify-out/
+/src/graphify-out/
+/data/runtime/
