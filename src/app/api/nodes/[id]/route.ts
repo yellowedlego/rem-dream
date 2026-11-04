@@ -37,6 +37,12 @@ export async function DELETE(
       }
     }
 
+    // 의미 파일의 nodeIds에서도 빼고, 근거 노드가 하나도 안 남은 의미는 지운다
+    if (Array.isArray(store.meanings)) {
+      for (const m of store.meanings) m.nodeIds = m.nodeIds.filter((nid) => nid !== numId);
+      store.meanings = store.meanings.filter((m) => m.nodeIds.length > 0);
+    }
+
     return { found: true };
   });
 

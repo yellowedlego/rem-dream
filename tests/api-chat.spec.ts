@@ -145,6 +145,13 @@ test.describe("Stage 2: Chat & State API (/api/chat, /api/state)", () => {
       expect(body).toHaveProperty("error");
     });
 
+    test("POST /api/chat rejects messages over 2,000 characters with 413", async ({ request }) => {
+      const res = await request.post("/api/chat", {
+        data: { sessionId: makeSessionId("too-long"), message: "가".repeat(2001) },
+      });
+      expect(res.status()).toBe(413);
+    });
+
     test("POST /api/chat preserves special characters, emojis, and multiline text", async ({ request }) => {
       const sessionId = makeSessionId("special-chars");
       const complexMessage = `특수문자 테스트: 🌙✨ <script>alert("xss")</script> & 'quotes' "double" \\ / \n\t 끝!`;
@@ -160,7 +167,7 @@ test.describe("Stage 2: Chat & State API (/api/chat, /api/state)", () => {
 
     test("POST /api/chat handles large message payload gracefully", async ({ request }) => {
       const sessionId = makeSessionId("large-payload");
-      const largeMessage = "가나다라마바사 ".repeat(1500); // ~12KB text
+      const largeMessage = "가나다라마바사 ".repeat(240); // 1,920자: 2,000자 제한 바로 안쪽
 
       const res = await request.post("/api/chat", {
         data: { sessionId, message: largeMessage },

@@ -97,6 +97,7 @@ async function doEnsureStore(): Promise<void> {
     if (!seedStore.proposals) seedStore.proposals = [];
     if (!seedStore.runs) seedStore.runs = [];
     if (!seedStore.stories) seedStore.stories = [];
+    if (!seedStore.meanings) seedStore.meanings = [];
     await atomicWriteStore(seedStore);
   } else {
     // Runtime store exists: check for orphan runs left by previous server crash
@@ -108,6 +109,7 @@ async function doEnsureStore(): Promise<void> {
       if (!store.proposals) { store.proposals = []; changed = true; }
       if (!store.runs) { store.runs = []; changed = true; }
       if (!store.stories) { store.stories = []; changed = true; }
+      if (!store.meanings) { store.meanings = []; changed = true; }
       const runChanged = recoverDanglingRuns(store);
       if (changed || runChanged) {
         await atomicWriteStore(store);
@@ -122,6 +124,7 @@ async function doEnsureStore(): Promise<void> {
       if (!seedStore.proposals) seedStore.proposals = [];
       if (!seedStore.runs) seedStore.runs = [];
       if (!seedStore.stories) seedStore.stories = [];
+    if (!seedStore.meanings) seedStore.meanings = [];
       await atomicWriteStore(seedStore);
     }
   }
@@ -147,6 +150,7 @@ export async function readStore(): Promise<Store> {
       const raw = await fs.readFile(RUNTIME_STORE_PATH, "utf8");
       const parsed = JSON.parse(raw) as Store;
       if (!parsed.stories) parsed.stories = [];
+      if (!parsed.meanings) parsed.meanings = [];
       return parsed;
     } catch (err: unknown) {
       attempts++;
@@ -266,6 +270,7 @@ export async function resetStore(): Promise<Store> {
     store.runs = seed.runs ?? [];
     store.calls = seed.calls ?? [];
     store.stories = seed.stories ?? [];
+    store.meanings = seed.meanings ?? [];
     return store;
   });
 }

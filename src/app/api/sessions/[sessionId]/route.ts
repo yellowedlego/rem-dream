@@ -32,6 +32,11 @@ export async function DELETE(
       store.stories = store.stories.filter((s) => s.sessionId !== targetSessionId);
     }
 
+    // 4-1. Delete meanings for this session
+    if (Array.isArray(store.meanings)) {
+      store.meanings = store.meanings.filter((m) => m.sessionId !== targetSessionId);
+    }
+
     // 5. Delete insights belonging to this session (linked via runId or sourceNodeIds)
     const sessionRunInsightIds = new Set(
       (store.runs || [])

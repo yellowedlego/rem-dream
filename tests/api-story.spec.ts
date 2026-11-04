@@ -24,6 +24,8 @@ test.describe("Milestone 1B: Story Splitting, Query & Deletion APIs", () => {
       const body = await res.json();
       expect(body).toHaveProperty("story");
       expect(body).toHaveProperty("nodes");
+      expect(Array.isArray(body.meanings)).toBe(true);
+      expect(["ai", "rule"]).toContain(body.method);
 
       const story: Story = body.story;
       const nodes: MemoryNode[] = body.nodes;
@@ -47,10 +49,10 @@ test.describe("Milestone 1B: Story Splitting, Query & Deletion APIs", () => {
         const node = nodes[i];
         expect(node.sessionId).toBe(sessionId);
         expect(node.storyId).toBe(story.id);
-        expect(Array.isArray(node.storySpan)).toBe(true);
-        expect(node.storySpan).toBeDefined();
+        expect(Array.isArray(node.storySpans)).toBe(true);
+        expect(node.storySpans!.length).toBeGreaterThan(0);
 
-        const [start, end] = node.storySpan!;
+        const [start, end] = node.storySpans![0];
         expect(start).toBe(lastEnd);
         expect(end).toBeGreaterThan(start);
         expect(rawText.slice(start, end)).toBe(node.user);
@@ -62,6 +64,39 @@ test.describe("Milestone 1B: Story Splitting, Query & Deletion APIs", () => {
         expect(node.order).toBe(i + 1);
       }
       expect(lastEnd).toBe(rawText.length);
+    });
+
+    test("POST /api/story returns meanings that point at the new nodes, and deletes cascade", async ({ request }) => {
+      const sessionId = makeSessionId("meanings");
+      const res = await request.post("/api/story", {
+        data: { sessionId, text: "오늘은 비가 왔다.\n\n친구와 영화를 봤다.\n\n집에 와서 일찍 잤다." },
+      });
+      expect(res.status()).toBe(200);
+      const body = await res.json();
+      const nodeIds = new Set(body.nodes.map((n: MemoryNode) => n.id));
+      for (const m of body.meanings) {
+        expect(m.storyId).toBe(body.story.id);
+        expect(m.sessionId).toBe(sessionId);
+        expect(m.title.length).toBeGreaterThan(0);
+        expect(m.nodeIds.length).toBeGreaterThan(0);
+        for (const id of m.nodeIds) expect(nodeIds.has(id)).toBe(true);
+      }
+
+      const listed = await (await request.get(`/api/meanings?sessionId=${sessionId}`)).json();
+      expect(listed.meanings.length).toBe(body.meanings.length);
+      const state = await (await request.get(`/api/state?sessionId=${sessionId}`)).json();
+      expect(state.meanings.length).toBe(body.meanings.length);
+      expect(state.stories[0]).not.toHaveProperty("rawText");
+
+      if (body.meanings.length > 0) {
+        const one = body.meanings[0];
+        expect((await request.delete(`/api/meanings/${one.id}`)).status()).toBe(200);
+        expect((await request.delete(`/api/meanings/${one.id}`)).status()).toBe(404);
+      }
+
+      await request.delete(`/api/stories/${body.story.id}`);
+      const after = await (await request.get(`/api/meanings?sessionId=${sessionId}`)).json();
+      expect(after.meanings.length).toBe(0);
     });
 
     test("GET /api/sessions returns accurate session list with nodeCount and preview", async ({ request }) => {

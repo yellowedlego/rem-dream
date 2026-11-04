@@ -46,6 +46,15 @@ export async function GET(req: Request) {
     );
   }
 
+  // 5-1. 이야기(원문 제외 요약)와 의미 파일
+  const stories = (sessionId
+    ? (store.stories ?? []).filter((s) => s.sessionId === sessionId)
+    : store.stories ?? []
+  ).map(({ rawText, ...rest }) => ({ ...rest, length: rawText.length }));
+  const meanings = sessionId
+    ? (store.meanings ?? []).filter((m) => m.sessionId === sessionId)
+    : store.meanings ?? [];
+
   // 6. Resolve active run (status: "running" for this session or globally)
   const activeRun =
     store.runs?.find(
@@ -62,6 +71,8 @@ export async function GET(req: Request) {
       proposals,
       activePersona: store.activePersona,
       activeRun,
+      stories,
+      meanings,
     },
     { status: 200 }
   );

@@ -47,6 +47,11 @@ export async function DELETE(
       }
     }
 
+    // 이 이야기에서 나온 의미 파일도 지운다
+    if (Array.isArray(store.meanings)) {
+      store.meanings = store.meanings.filter((m) => m.storyId !== numId);
+    }
+
     return { found: true };
   });
 

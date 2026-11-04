@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { updateStore } from "@/lib/store";
-import { splitStory, PayloadTooLargeError } from "@/lib/story/split";
-import type { MemoryNode, Story } from "@/lib/types";
+import { extractMeanings, splitWithModel } from "@/lib/story/preprocess";
+import { pieceText, type MeaningDraft, type Piece } from "@/lib/story/groups";
+import type { Meaning, MemoryNode, SplitMethod, Story } from "@/lib/types";
 
 interface StoryRequestBody {
   sessionId?: unknown;
@@ -50,59 +51,42 @@ export async function POST(req: Request) {
     );
   }
 
-  // 5. Split story into spans
-  let splitResult;
+  // 5. 모델 호출은 updateStore 밖에서 한다 (callModel이 기록을 쓰려고 updateStore를 부른다 → 안에서 부르면 대기열이 막힘)
+  let pieces: Piece[];
+  let method: SplitMethod;
+  let drafts: MeaningDraft[];
   try {
-    splitResult = await splitStory(text);
+    ({ pieces, method } = await splitWithModel(text));
+    drafts = await extractMeanings(text, pieces);
   } catch (err) {
-    if (err instanceof PayloadTooLargeError || (err as { status?: number })?.status === 413) {
-      return NextResponse.json(
-        { error: "Payload exceeds 8000 character limit" },
-        { status: 413 }
-      );
-    }
-    console.error("[/api/story] splitStory error:", err);
-    return NextResponse.json(
-      { error: "Failed to split story" },
-      { status: 500 }
-    );
+    console.error("[/api/story] preprocess error:", err);
+    return NextResponse.json({ error: "Failed to split story" }, { status: 500 });
   }
 
-  const { spans } = splitResult;
-
-  // 6. Atomically persist Story and MemoryNodes in runtime store
+  // 6. 한 번의 updateStore로 이야기·노드·의미를 같이 저장
   try {
     const result = await updateStore((store) => {
-      if (!store.stories) {
-        store.stories = [];
-      }
+      if (!store.stories) store.stories = [];
+      if (!store.meanings) store.meanings = [];
 
-      const maxStoryId = store.stories.reduce((max, s) => Math.max(max, s.id), 0);
-      const storyId = maxStoryId + 1;
-
+      const storyId = store.stories.reduce((max, s) => Math.max(max, s.id), 0) + 1;
       let nextNodeId = store.nodes.reduce((max, n) => Math.max(max, n.id), 0) + 1;
-      const sessionNodes = store.nodes.filter((n) => n.sessionId === sessionId);
-      let nextOrder = sessionNodes.reduce((max, n) => Math.max(max, n.order), 0) + 1;
-
+      let nextOrder =
+        store.nodes.filter((n) => n.sessionId === sessionId).reduce((max, n) => Math.max(max, n.order), 0) + 1;
       const now = new Date().toISOString();
-      const createdNodes: MemoryNode[] = [];
 
-      for (const span of spans) {
-        const userSlice = text.slice(span.start, span.end);
-        const node: MemoryNode = {
-          id: nextNodeId++,
-          sessionId,
-          order: nextOrder++,
-          createdAt: now,
-          user: userSlice,
-          ai: "이야기 잘 들었어요.",
-          storyId,
-          storySpan: [span.start, span.end],
-          topic: span.topic,
-        };
-        store.nodes.push(node);
-        createdNodes.push(node);
-      }
+      const createdNodes: MemoryNode[] = pieces.map((piece) => ({
+        id: nextNodeId++,
+        sessionId,
+        order: nextOrder++,
+        createdAt: now,
+        user: pieceText(text, piece),
+        ai: piece.reply ?? "이야기 잘 들었어요.",
+        storyId,
+        storySpans: piece.spans,
+        topic: piece.topic,
+      }));
+      store.nodes.push(...createdNodes);
 
       const story: Story = {
         id: storyId,
@@ -111,21 +95,27 @@ export async function POST(req: Request) {
         nodeIds: createdNodes.map((n) => n.id),
         createdAt: now,
       };
-
       store.stories.push(story);
 
-      return {
-        story,
-        nodes: createdNodes,
-      };
+      let nextMeaningId = store.meanings.reduce((max, m) => Math.max(max, m.id), 0) + 1;
+      const createdMeanings: Meaning[] = drafts.map((d) => ({
+        id: nextMeaningId++,
+        storyId,
+        sessionId,
+        nodeIds: d.pieceIndexes.map((i) => createdNodes[i].id),
+        title: d.title,
+        essence: d.essence,
+        keywords: d.keywords,
+        createdAt: now,
+      }));
+      store.meanings.push(...createdMeanings);
+
+      return { story, nodes: createdNodes, meanings: createdMeanings, method };
     });
 
     return NextResponse.json(result, { status: 200 });
   } catch (err) {
     console.error("[/api/story] Persistence error:", err);
-    return NextResponse.json(
-      { error: "Failed to persist story" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to persist story" }, { status: 500 });
   }
 }
