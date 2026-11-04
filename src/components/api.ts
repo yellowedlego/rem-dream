@@ -34,10 +34,8 @@ export type { Meaning, SplitMethod };
 export interface StoryResult {
   story: Story;
   nodes: MemoryNode[];
-  /** 서버가 준 의미 파일 전부 (0개일 수 있다: 모델이 의미를 못 뽑았을 때) */
+  /** 의미 파일(별)들. 0개일 수 있다 (모델이 의미를 못 뽑았을 때) */
   meanings: Meaning[];
-  /** 지금 화면은 별 하나만 그린다: meanings[0], 없으면 빈 의미 */
-  meaning: Meaning;
   method: SplitMethod;
 }
 
@@ -71,13 +69,6 @@ interface ServerState {
   meanings: Meaning[];
 }
 
-interface ServerStoryResult {
-  story: Story;
-  nodes: MemoryNode[];
-  meanings: Meaning[];
-  method: SplitMethod;
-}
-
 const qs = (o: Record<string, string | undefined>) => {
   const p = new URLSearchParams();
   for (const [k, v] of Object.entries(o)) if (v) p.set(k, v);
@@ -88,20 +79,8 @@ const qs = (o: Record<string, string | undefined>) => {
 export const api = {
   chat: (sessionId: string, message: string) =>
     call<{ node: MemoryNode }>("/chat", { method: "POST", body: JSON.stringify({ sessionId, message }) }),
-  story: async (sessionId: string, text: string): Promise<StoryResult> => {
-    const r = await call<ServerStoryResult>("/story", { method: "POST", body: JSON.stringify({ sessionId, text }) });
-    const empty: Meaning = {
-      id: 0,
-      storyId: r.story.id,
-      sessionId,
-      nodeIds: r.nodes.map((n) => n.id),
-      title: "",
-      essence: "",
-      keywords: [],
-      createdAt: r.story.createdAt,
-    };
-    return { ...r, meaning: r.meanings[0] ?? empty };
-  },
+  story: (sessionId: string, text: string) =>
+    call<StoryResult>("/story", { method: "POST", body: JSON.stringify({ sessionId, text }) }),
   // 서버는 배열 그대로 준다
   sessions: async () => ({ sessions: await call<SessionSummary[]>("/sessions") }),
   // 서버 기본 limit은 50이라 화면이 전부 볼 수 있게 상한(500)으로 요청한다

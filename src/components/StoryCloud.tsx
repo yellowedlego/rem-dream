@@ -59,10 +59,19 @@ interface Body {
   fy: number | null;
 }
 
-/** 힘 계산 한 프레임. bodies[0..n-1]은 달, bodies[n]은 별. */
-function step(bs: Body[], n: number, rest: number[], radii: number[], width: number, alpha: number) {
+/** 별 s와 달 i를 잇는 선 하나 (의미 파일 s의 근거 노드가 i) */
+interface Link {
+  s: number;
+  i: number;
+}
+
+/** 별 s가 머무는 자리의 x: 별이 여러 개면 칸을 고르게 나눠 선다 */
+const starHomeX = (s: number, k: number, width: number) => (width * (s + 1)) / (k + 1);
+
+/** 힘 계산 한 프레임. bodies[0..n-1]은 달, bodies[n..n+k-1]은 별. */
+function step(bs: Body[], n: number, links: Link[], rest: number[], radii: number[], width: number, alpha: number) {
   const m = bs.length;
-  const star = bs[n];
+  const k = m - n;
   const ax = new Array<number>(m).fill(0);
   const ay = new Array<number>(m).fill(0);
   const cx = width / 2;
@@ -75,9 +84,9 @@ function step(bs: Body[], n: number, rest: number[], radii: number[], width: num
       const dy = bs[i].y - bs[j].y;
       const d2 = Math.max(dx * dx + dy * dy, 4);
       const d = Math.sqrt(d2);
-      let push = (i === n || j === n ? REPEL_STAR : REPEL) / d2;
-      const ri = i === n ? STAR_OUTER : radii[i];
-      const rj = j === n ? STAR_OUTER : radii[j];
+      let push = (i >= n || j >= n ? REPEL_STAR : REPEL) / d2;
+      const ri = i >= n ? STAR_OUTER : radii[i];
+      const rj = j >= n ? STAR_OUTER : radii[j];
       const minD = ri + rj + 10;
       if (d < minD) push += ((minD - d) / d) * 0.6; // 닿으면 확 밀어낸다
       ax[i] += (dx / d) * push;
@@ -87,21 +96,25 @@ function step(bs: Body[], n: number, rest: number[], radii: number[], width: num
     }
   }
 
-  // 별과 달을 잇는 용수철 (옵시디언의 링크)
-  for (let i = 0; i < n; i++) {
+  // 별과 달을 잇는 용수철 (옵시디언의 링크). 한 달이 여러 별에 이어질 수 있다
+  for (const { s, i } of links) {
+    const star = bs[n + s];
     const dx = bs[i].x - star.x;
     const dy = bs[i].y - star.y;
     const d = Math.max(Math.hypot(dx, dy), 1);
     const pull = (d - rest[i]) * SPRING;
     ax[i] -= (dx / d) * pull;
     ay[i] -= (dy / d) * pull;
-    ax[n] += (dx / d) * pull * 0.5;
-    ay[n] += (dy / d) * pull * 0.5;
+    ax[n + s] += (dx / d) * pull * 0.5;
+    ay[n + s] += (dy / d) * pull * 0.5;
   }
 
-  // 한가운데로 살짝 모으기
-  ax[n] += (cx - star.x) * GRAVITY_STAR;
-  ay[n] += (cy - star.y) * GRAVITY_STAR;
+  // 별은 자기 자리로, 달은 한가운데로 살짝 모으기
+  for (let s = 0; s < k; s++) {
+    const star = bs[n + s];
+    ax[n + s] += (starHomeX(s, k, width) - star.x) * GRAVITY_STAR;
+    ay[n + s] += (cy - star.y) * GRAVITY_STAR;
+  }
   for (let i = 0; i < n; i++) {
     ax[i] += (cx - bs[i].x) * GRAVITY_NODE;
     ay[i] += (cy - bs[i].y) * GRAVITY_NODE;
@@ -134,15 +147,28 @@ function step(bs: Body[], n: number, rest: number[], radii: number[], width: num
 
 export default function StoryCloud({
   nodes,
-  meaning,
+  meanings,
   storyId,
 }: {
   nodes: MemoryNode[];
-  meaning: Meaning;
+  /** 의미 파일(별)들. 0개일 수도 있다 (모델이 의미를 못 뽑았을 때는 달만 떠 있다) */
+  meanings: Meaning[];
   storyId: number;
 }) {
   const uid = useId().replace(/:/g, "");
   const n = nodes.length;
+  const k = meanings.length;
+  // 별 s ↔ 달 i 연결. 노드 번호를 이 화면의 달 순서로 바꾼다 (모르는 번호는 버린다)
+  const links = useMemo(() => {
+    const at = new Map(nodes.map((nd, i) => [nd.id, i]));
+    return meanings.flatMap((m, s) =>
+      m.nodeIds.flatMap((id) => {
+        const i = at.get(id);
+        return i === undefined ? [] : [{ s, i }];
+      }),
+    );
+  }, [nodes, meanings]);
+  const linkCount = links.length;
   const boxRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const [w, setW] = useState(0);
@@ -174,7 +200,7 @@ export default function StoryCloud({
     lines: [] as (SVGLineElement | null)[],
     grads: [] as (SVGLinearGradientElement | null)[],
     pulses: [] as (SVGCircleElement | null)[],
-    star: null as SVGGElement | null,
+    stars: [] as (SVGGElement | null)[],
   });
 
   // 그래프 폭 = 칸 폭
@@ -207,15 +233,19 @@ export default function StoryCloud({
 
     const paint = (now: number) => {
       const bs = bodies.current;
-      const star = bs[n];
-      if (!star) return;
-      e.star?.setAttribute("transform", `translate(${star.x.toFixed(1)} ${star.y.toFixed(1)})`);
+      if (bs.length !== n + k) return;
+      for (let s = 0; s < k; s++) {
+        const star = bs[n + s];
+        e.stars[s]?.setAttribute("transform", `translate(${star.x.toFixed(1)} ${star.y.toFixed(1)})`);
+      }
       for (let i = 0; i < n; i++) {
         const b = bs[i];
         e.nodes[i]?.setAttribute("transform", `translate(${b.x.toFixed(1)} ${b.y.toFixed(1)})`);
-        const line = e.lines[i];
-        const grad = e.grads[i];
-        for (const el of [line, grad]) {
+      }
+      links.forEach(({ s, i }, li) => {
+        const b = bs[i];
+        const star = bs[n + s];
+        for (const el of [e.lines[li], e.grads[li]]) {
           if (!el) continue;
           el.setAttribute("x1", b.x.toFixed(1));
           el.setAttribute("y1", b.y.toFixed(1));
@@ -223,11 +253,11 @@ export default function StoryCloud({
           el.setAttribute("y2", star.y.toFixed(1));
         }
         // 빛 알갱이: 선이 움직여도 선을 따라간다
-        const pulse = e.pulses[i];
+        const pulse = e.pulses[li];
         if (pulse) {
-          const k = (now - gatherAt.current - (PULSE_DELAY + i * STEP_MS)) / PULSE_MS;
-          if (phaseRef.current === 2 && k > 0 && k < 1) {
-            const t = easeInOut(k);
+          const p = (now - gatherAt.current - (PULSE_DELAY + li * STEP_MS)) / PULSE_MS;
+          if (phaseRef.current === 2 && p > 0 && p < 1) {
+            const t = easeInOut(p);
             pulse.setAttribute("cx", (b.x + (star.x - b.x) * t).toFixed(1));
             pulse.setAttribute("cy", (b.y + (star.y - b.y) * t).toFixed(1));
             pulse.setAttribute("opacity", "1");
@@ -235,10 +265,10 @@ export default function StoryCloud({
             pulse.setAttribute("opacity", "0");
           }
         }
-      }
+      });
     };
 
-    // 처음 모양: 달은 왼쪽(이야기 글 쪽)에서 오른쪽으로 튕겨 나가고, 별은 가운데에서 기다린다
+    // 처음 모양: 달은 왼쪽(이야기 글 쪽)에서 오른쪽으로 튕겨 나가고, 별은 자기 자리에서 기다린다
     const cy = H / 2;
     bodies.current = [
       ...nodes.map(
@@ -251,7 +281,9 @@ export default function StoryCloud({
           fy: null,
         }),
       ),
-      { x: width / 2, y: cy, vx: 0, vy: 0, fx: null, fy: null },
+      ...meanings.map(
+        (_, s): Body => ({ x: starHomeX(s, k, width), y: cy, vx: 0, vy: 0, fx: null, fy: null }),
+      ),
     ];
     alpha.current = 1;
 
@@ -259,7 +291,7 @@ export default function StoryCloud({
       // 움직임 줄이기: 다 가라앉은 모양을 한 번에 계산해서 보여 준다
       let a = 1;
       for (let it = 0; it < 400; it++) {
-        step(bodies.current, n, rest, radii, width, a);
+        step(bodies.current, n, links, rest, radii, width, a);
         a *= 1 - ALPHA_DECAY;
       }
       alpha.current = 0;
@@ -271,7 +303,7 @@ export default function StoryCloud({
       raf.current = 0;
       const held = dragging.current !== null;
       if (alpha.current > ALPHA_MIN || held) {
-        step(bodies.current, n, rest, radii, widthRef.current, held ? Math.max(alpha.current, 0.3) : alpha.current);
+        step(bodies.current, n, links, rest, radii, widthRef.current, held ? Math.max(alpha.current, 0.3) : alpha.current);
         if (!held) alpha.current *= 1 - ALPHA_DECAY;
       }
       paint(now);
@@ -288,7 +320,7 @@ export default function StoryCloud({
       raf.current = 0;
       kick.current = () => {};
     };
-  }, [ready, nodes, n, storyId, look]);
+  }, [ready, nodes, n, k, meanings, links, storyId, look]);
 
   // 연출 단계 (CSS 전환이 쓰는 값). 2단계가 시작되면 빛 알갱이를 움직이려고 엔진을 깨운다.
   useEffect(() => {
@@ -299,14 +331,14 @@ export default function StoryCloud({
       });
       return;
     }
-    const lastArrival = GATHER_AT + PULSE_DELAY + (n - 1) * STEP_MS + PULSE_MS;
+    const lastArrival = GATHER_AT + PULSE_DELAY + Math.max(linkCount - 1, 0) * STEP_MS + PULSE_MS;
     const timers = [
       setTimeout(() => setPhase(1), 60),
       setTimeout(() => setPhase(2), GATHER_AT),
       setTimeout(() => setPhase(3), lastArrival),
     ];
     return () => timers.forEach(clearTimeout);
-  }, [n]);
+  }, [linkCount]);
 
   useEffect(() => {
     phaseRef.current = phase;
@@ -366,7 +398,7 @@ export default function StoryCloud({
             height={H}
             viewBox={`0 0 ${w} ${H}`}
             role="img"
-            aria-label={`이야기 노드 ${n}개가 별 하나로 모이는 그래프. 달과 별은 끌어서 움직일 수 있어요.`}
+            aria-label={`이야기 노드 ${n}개가 별 ${k}개로 모이는 그래프. 달과 별은 끌어서 움직일 수 있어요.`}
           >
             <defs>
               <radialGradient id={`${uid}-glow`}>
@@ -374,46 +406,46 @@ export default function StoryCloud({
                 <stop offset="45%" stopColor={ACCENT} stopOpacity="0.16" />
                 <stop offset="100%" stopColor={ACCENT} stopOpacity="0" />
               </radialGradient>
-              {look.map((l, i) => (
+              {links.map(({ s, i }, li) => (
                 // 노드에서 별로 갈수록 밝아지는 선: 빛이 별에 모이는 방향이 보이게 (좌표는 프레임마다 물리가 넣는다)
                 <linearGradient
-                  key={nodes[i].id}
-                  id={`${uid}-g${i}`}
+                  key={`${s}-${i}`}
+                  id={`${uid}-g${li}`}
                   ref={(el) => {
-                    els.current.grads[i] = el;
+                    els.current.grads[li] = el;
                   }}
                   gradientUnits="userSpaceOnUse"
                 >
-                  <stop offset="0%" stopColor={l.color} stopOpacity="0.1" />
-                  <stop offset="55%" stopColor={l.color} stopOpacity="0.5" />
+                  <stop offset="0%" stopColor={look[i].color} stopOpacity="0.1" />
+                  <stop offset="55%" stopColor={look[i].color} stopOpacity="0.5" />
                   <stop offset="100%" stopColor={ACCENT} stopOpacity="1" />
                 </linearGradient>
               ))}
             </defs>
 
-            {/* 선 */}
-            {look.map((_, i) => (
+            {/* 선: 별 하나와 그 별의 근거 달 하나마다 한 줄 */}
+            {links.map(({ s, i }, li) => (
               <line
-                key={nodes[i].id}
+                key={`${s}-${i}`}
                 ref={(el) => {
-                  els.current.lines[i] = el;
+                  els.current.lines[li] = el;
                 }}
-                stroke={`url(#${uid}-g${i})`}
+                stroke={`url(#${uid}-g${li})`}
                 strokeWidth={1.4}
                 strokeLinecap="round"
                 pathLength={1}
                 strokeDasharray={1}
                 strokeDashoffset={phase >= 2 ? 0 : 1}
-                style={{ transition: t(`stroke-dashoffset 900ms ease-out ${i * STEP_MS}ms`) }}
+                style={{ transition: t(`stroke-dashoffset 900ms ease-out ${li * STEP_MS}ms`) }}
               />
             ))}
 
             {/* 선을 따라 별로 모이는 빛 (위치는 물리 루프가 선 위에 놓는다) */}
-            {look.map((_, i) => (
+            {links.map(({ s, i }, li) => (
               <circle
-                key={nodes[i].id}
+                key={`${s}-${i}`}
                 ref={(el) => {
-                  els.current.pulses[i] = el;
+                  els.current.pulses[li] = el;
                 }}
                 r={2.4}
                 fill="#fff7d6"
@@ -421,39 +453,56 @@ export default function StoryCloud({
               />
             ))}
 
-            {/* 별 (의미 파일): 노드들 사이, 가장 큰 달의 1.5배. 끌 수 있다 */}
-            <g
-              ref={(el) => {
-                els.current.star = el;
-              }}
-              className={styles.grab}
-              data-body={n}
-              onPointerDown={onDown}
-              onPointerMove={onMove}
-              onPointerUp={onUp}
-              onPointerCancel={onUp}
-            >
-              <circle r={STAR_OUTER + 10} fill="transparent" />
-              <circle
-                r={STAR_OUTER * 3.4}
-                fill={`url(#${uid}-glow)`}
-                pointerEvents="none"
-                style={{
-                  opacity: phase >= 3 ? 1 : phase === 2 ? 0.3 : 0,
-                  transform: `scale(${phase >= 3 ? 1 : 0.6})`,
-                  transition: t("opacity 900ms ease, transform 900ms ease"),
+            {/* 별 (의미 파일): 근거 노드들 사이, 가장 큰 달의 1.5배. 번호는 아래 설명과 같다. 끌 수 있다 */}
+            {meanings.map((m, s) => (
+              <g
+                key={m.id || `m${s}`}
+                ref={(el) => {
+                  els.current.stars[s] = el;
                 }}
-              />
-              <polygon
-                points={starPoints(STAR_OUTER, STAR_INNER)}
-                fill={ACCENT}
-                style={{
-                  opacity: phase >= 3 ? 1 : phase === 2 ? 0.6 : 0.2,
-                  transform: `scale(${phase >= 3 ? 1 : phase === 2 ? 0.85 : 0.6}) rotate(${phase >= 3 ? 0 : -24}deg)`,
-                  transition: t("opacity 700ms ease, transform 900ms cubic-bezier(0.34, 1.56, 0.64, 1)"),
-                }}
-              />
-            </g>
+                className={styles.grab}
+                data-body={n + s}
+                onPointerDown={onDown}
+                onPointerMove={onMove}
+                onPointerUp={onUp}
+                onPointerCancel={onUp}
+              >
+                <title>{m.title}</title>
+                <circle r={STAR_OUTER + 10} fill="transparent" />
+                <circle
+                  r={STAR_OUTER * 3.4}
+                  fill={`url(#${uid}-glow)`}
+                  pointerEvents="none"
+                  style={{
+                    opacity: phase >= 3 ? 1 : phase === 2 ? 0.3 : 0,
+                    transform: `scale(${phase >= 3 ? 1 : 0.6})`,
+                    transition: t("opacity 900ms ease, transform 900ms ease"),
+                  }}
+                />
+                <polygon
+                  points={starPoints(STAR_OUTER, STAR_INNER)}
+                  fill={ACCENT}
+                  style={{
+                    opacity: phase >= 3 ? 1 : phase === 2 ? 0.6 : 0.2,
+                    transform: `scale(${phase >= 3 ? 1 : phase === 2 ? 0.85 : 0.6}) rotate(${phase >= 3 ? 0 : -24}deg)`,
+                    transition: t("opacity 700ms ease, transform 900ms cubic-bezier(0.34, 1.56, 0.64, 1)"),
+                  }}
+                />
+                {k > 1 && (
+                  <text
+                    y={STAR_OUTER + 14}
+                    textAnchor="middle"
+                    fontSize={11}
+                    fontFamily="var(--font-mono)"
+                    fill={ACCENT}
+                    pointerEvents="none"
+                    style={{ opacity: phase >= 3 ? 1 : 0, transition: t("opacity 600ms ease") }}
+                  >
+                    ★{s + 1}
+                  </text>
+                )}
+              </g>
+            ))}
 
             {/* 노드 = 대화창의 달. 번호는 달 아래에. 끌 수 있다 */}
             {look.map((l, i) => (
@@ -503,10 +552,15 @@ export default function StoryCloud({
       </div>
 
       <figcaption className={`${styles.meaning} ${phase >= 3 ? styles.on : ""}`}>
-        <p className={styles.mTitle}>
-          <span aria-hidden="true">★</span> {meaning.title || "이름 없는 의미"}
-        </p>
-        <p className={styles.mText}>{meaning.essence}</p>
+        {k === 0 && <p className={styles.mText}>이번 이야기에서는 의미 파일(별)을 뽑지 못했어요. 노드는 그대로 저장됐어요.</p>}
+        {meanings.map((m, s) => (
+          <div key={m.id || `m${s}`}>
+            <p className={styles.mTitle}>
+              <span aria-hidden="true">★{k > 1 ? s + 1 : ""}</span> {m.title || "이름 없는 의미"}
+            </p>
+            <p className={styles.mText}>{m.essence}</p>
+          </div>
+        ))}
         <p className={styles.mNote}>달과 별은 끌어서 움직여 볼 수 있어요. 이런 의미 파일들이 모여 인격을 이룹니다.</p>
       </figcaption>
     </figure>

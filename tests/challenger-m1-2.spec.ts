@@ -4,7 +4,8 @@ import path from "node:path";
 import { generateMockResponse } from "../src/lib/model/mock";
 import type { Store } from "../src/lib/types";
 
-const RUNTIME_STORE_PATH = path.join(process.cwd(), "data", "runtime", "store.json");
+// 테스트 서버의 실행 저장소 (playwright.config.ts의 REM_RUNTIME_DIR와 같다)
+const RUNTIME_STORE_PATH = path.join(process.cwd(), "data", "runtime-test", "store.json");
 
 function makeSessionId(prefix = "challenge"): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;

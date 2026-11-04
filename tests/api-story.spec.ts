@@ -404,7 +404,7 @@ test.describe("Milestone 1B: Story Splitting, Query & Deletion APIs", () => {
         data: { sessionId, text: storyText },
       });
       expect(storyRes.status()).toBe(200);
-      const { story, nodes } = await storyRes.json();
+      const { nodes } = await storyRes.json();
 
       // 2. Query sessions list
       const sessRes = await request.get("/api/sessions");

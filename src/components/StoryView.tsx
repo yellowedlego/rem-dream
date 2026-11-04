@@ -135,7 +135,7 @@ export default function StoryView() {
               <StoryCloud
                 key={`${result.story.id}-${replay}`}
                 nodes={result.nodes}
-                meaning={result.meaning}
+                meanings={result.meanings}
                 storyId={result.story.id}
               />
               <button type="button" className={styles.ghost} onClick={() => setReplay((r) => r + 1)}>

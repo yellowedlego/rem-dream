@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MemoryNode } from "@/lib/types";
 import { api, currentSessionId, startNewSession, switchSession, type SessionSummary } from "./api";
 import AppNav from "./AppNav";
-import { MoonPlaneBeams, MoonPlaneTrack, useMoonPlane } from "./MoonPlane";
+import { MoonPlaneBeams, MoonPlaneTrack, useMoonPlane, type Birth } from "./MoonPlane";
 import { WALL_W, wallLayout } from "./wallLayout";
 import styles from "./ChatView.module.css";
 
@@ -50,12 +50,21 @@ interface Meteor {
   y: number;
 }
 
+/** 답을 기다리는 대화의 임시 번호: 이 번호로 달 자리·빛줄기를 먼저 만든다 (진짜 노드 번호는 1부터) */
+const PENDING_ID = -1;
+/** 답이 온 순간 달과 대화가 번쩍이는 시간 (CSS의 moonFlash·pairFlash와 같다) */
+const FLASH_MS = 1100;
+
 export default function ChatView() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [nodes, setNodes] = useState<MemoryNode[]>([]);
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
   const [text, setText] = useState("");
   const [pending, setPending] = useState<string | null>(null);
+  const [pendingAt, setPendingAt] = useState("");
+  // 달이 태어나는 연출: 보내면 charging(선 → 어두운 달이 차오름), 답이 오면 flash(번쩍) 뒤 사라진다
+  const [birth, setBirth] = useState<Birth | null>(null);
+  const flashTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const chatRef = useRef<HTMLElement>(null);
@@ -128,7 +137,13 @@ export default function ChatView() {
   // 대화가 시작되면 오른쪽에서 벽이 밀고 들어온다.
   // 대화 열은 벽에 밀려 왼쪽으로 가다가, 왼쪽 끝(한계)에 닿으면 멈추고 벽만 ease-out으로 마저 들어온다.
   const wallOpen = wallPref ?? (nodes.length > 0 || pending !== null);
-  const sorted = useMemo(() => [...nodes].sort((a, b) => a.createdAt.localeCompare(b.createdAt)), [nodes]);
+  // 답을 기다리는 대화도 맨 끝에 임시 노드로 넣어서, 달 자리와 빛줄기가 답보다 먼저 생기게 한다
+  const sorted = useMemo(() => {
+    const list = [...nodes].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+    if (pending !== null && sessionId)
+      list.push({ id: PENDING_ID, sessionId, order: 0, createdAt: pendingAt, user: pending, ai: "" });
+    return list;
+  }, [nodes, pending, pendingAt, sessionId]);
   // 오른쪽 벽의 내용은 전시 화면(/)의 오른쪽과 같은 것: 달 시간축 + 빛줄기 (MoonPlane 공용)
   const { geo, lightById, selectedId, jumpTo, measure } = useMoonPlane({
     sorted,
@@ -165,19 +180,27 @@ export default function ChatView() {
       setMeteors((m) => [...m, { id, x: btn.offsetLeft + btn.offsetWidth / 2, y: btn.offsetTop + btn.offsetHeight / 2 }]);
     }
     setError(null);
+    clearTimeout(flashTimer.current);
+    setPendingAt(new Date().toISOString());
     setPending(msg);
+    setBirth({ id: PENDING_ID, phase: "charging" });
     setText("");
     try {
       const { node } = await api.chat(sessionId, msg);
       setNodes((n) => [...n, node]);
+      // 답이 온 순간: 새 달과 그 대화가 한 번 번쩍이고 제 밝기로 돌아간다
+      setBirth({ id: node.id, phase: "flash" });
+      flashTimer.current = setTimeout(() => setBirth(null), FLASH_MS);
       void refreshSessions();
     } catch (e) {
+      setBirth(null);
       setError((e as Error).message);
       setText(msg); // 실패하면 쓴 글을 돌려준다
     } finally {
       setPending(null);
     }
   };
+  useEffect(() => () => clearTimeout(flashTimer.current), []);
 
   const newChat = () => {
     if (pending) return;
@@ -252,6 +275,7 @@ export default function ChatView() {
                 <article
                   key={n.id}
                   className={styles.pair}
+                  data-birth={birth?.id === n.id ? birth.phase : undefined}
                   // 전시 화면과 같은 음각 연출: 이 대화를 비추는 빛(lit)과 아래 홈에 드는 빛(glow)
                   style={{
                     ["--lit" as string]: (lightById.get(n.id)?.lit ?? 0).toFixed(3),
@@ -262,6 +286,8 @@ export default function ChatView() {
                     else itemRefs.current.delete(n.id);
                   }}
                 >
+                  {/* 번쩍일 때 이 대화와 위아래 주변까지 잠깐 밝히는 빛 */}
+                  {birth?.id === n.id && <span className={styles.birthGlow} aria-hidden="true" />}
                   <time className={styles.time} dateTime={n.createdAt}>
                     {hhmm(n.createdAt)}
                   </time>
@@ -270,7 +296,18 @@ export default function ChatView() {
                 </article>
               ))}
               {pending && (
-                <article className={styles.pair}>
+                <article
+                  className={styles.pair}
+                  data-birth="charging"
+                  style={{
+                    ["--lit" as string]: (lightById.get(PENDING_ID)?.lit ?? 0).toFixed(3),
+                    ["--glow" as string]: (lightById.get(PENDING_ID)?.glow ?? 0).toFixed(3),
+                  }}
+                  ref={(el) => {
+                    if (el) itemRefs.current.set(PENDING_ID, el);
+                    else itemRefs.current.delete(PENDING_ID);
+                  }}
+                >
                   <p className={styles.user}>{pending}</p>
                   <p className={`${styles.ai} ${styles.thinking}`} aria-label="답을 만드는 중">
                     <span />
@@ -359,11 +396,20 @@ export default function ChatView() {
 
           <section ref={planeRef} className={styles.wall} aria-label="기억 노드 시간축" inert={!wallOpen}>
             <div ref={moonScrollRef} className={styles.wallScroll}>
-              <MoonPlaneTrack sorted={sorted} geo={geo} selectedId={selectedId} onJump={jumpTo} labelMax={WALL_W - 140} />
+              <MoonPlaneTrack
+                sorted={sorted}
+                geo={geo}
+                selectedId={selectedId}
+                onJump={(id) => {
+                  if (id !== PENDING_ID) jumpTo(id);
+                }}
+                labelMax={WALL_W - 140}
+                birth={birth}
+              />
             </div>
           </section>
           <div className={styles.layers} style={{ opacity: wallOpen ? 1 : 0 }}>
-            <MoonPlaneBeams sorted={sorted} geo={geo} />
+            <MoonPlaneBeams sorted={sorted} geo={geo} birth={birth} />
           </div>
           <button
             type="button"

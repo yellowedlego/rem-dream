@@ -535,3 +535,64 @@
   display: none;
 }
 
+/* ── 달이 태어나는 동안 이 대화에 드는 빛 (ChatView의 data-birth, 달 연출과 같은 박자) ──
+   charging: 달이 어둠에서 차오르는 만큼 대화 바닥 빛도 같이 차오른다
+   flash: 답이 온 순간 이 대화가 잠깐 더 밝아지고, 빛이 위아래 대화까지 살짝 번진다 */
+.pair[data-birth="charging"]::before {
+  animation: pairCharge 7s cubic-bezier(0.2, 0.6, 0.3, 1) 520ms both;
+}
+@keyframes pairCharge {
+  from {
+    opacity: 0.1;
+  }
+  to {
+    opacity: 0.8;
+  }
+}
+.pair[data-birth="flash"] .ai {
+  animation: bubbleFlash 1100ms ease-out both;
+}
+@keyframes bubbleFlash {
+  22% {
+    filter: brightness(1.45);
+  }
+}
+.birthGlow {
+  position: absolute;
+  top: -44px;
+  bottom: -44px;
+  left: calc(-1 * var(--to-left));
+  right: calc(-1 * var(--to-wall));
+  pointer-events: none;
+  background: linear-gradient(
+    to left,
+    rgb(239 223 166 / 0.34) 0%,
+    rgb(239 223 166 / 0.14) 45%,
+    rgb(239 223 166 / 0) 90%
+  );
+  /* 위아래 주변(이웃 대화)으로는 옅게만 번지게 가장자리를 흐린다 */
+  mask-image: linear-gradient(to bottom, transparent 0, #000 44px, #000 calc(100% - 44px), transparent 100%);
+  animation: pairFlash 1100ms ease-out both;
+}
+@keyframes pairFlash {
+  0% {
+    opacity: 0;
+  }
+  22% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pair[data-birth]::before,
+  .pair[data-birth] .ai,
+  .birthGlow {
+    animation: none;
+  }
+  .birthGlow {
+    display: none;
+  }
+}
+

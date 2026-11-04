@@ -4,7 +4,8 @@ import path from "node:path";
 import type { MemoryNode, ModelCall, PersonaVersion, RemRun, Store } from "./types";
 
 const SEED_STORE_PATH = path.join(process.cwd(), "data", "store.json");
-const RUNTIME_DIR = path.join(process.cwd(), "data", "runtime");
+// 실행용 저장소 폴더. 테스트는 REM_RUNTIME_DIR로 따로 둔다 (playwright.config.ts)
+const RUNTIME_DIR = path.resolve(process.cwd(), process.env.REM_RUNTIME_DIR || path.join("data", "runtime"));
 const RUNTIME_STORE_PATH = path.join(RUNTIME_DIR, "store.json");
 
 

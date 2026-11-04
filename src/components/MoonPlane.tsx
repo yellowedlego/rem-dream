@@ -243,8 +243,18 @@ export function useMoonPlane({
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
+/**
+ * 달이 태어나는 중인 기억 (대화 화면). charging: 답을 기다리는 동안(선이 먼저 나가고 달이 어둠에서 차츰 밝아짐),
+ * flash: 답이 온 순간(달과 그 대화가 한 번 번쩍). 그림은 CSS(data-birth)가 맡는다.
+ */
+export interface Birth {
+  id: number;
+  phase: "charging" | "flash";
+}
+const birthOf = (birth: Birth | null | undefined, id: number) => (birth?.id === id ? birth.phase : undefined);
+
 /** 빛줄기: 대화 칸의 보이는 구간 → 그 기억의 달 (기준 상자 위에 겹쳐 그린다). 달이 달창 밖이면 가까운 가장자리로 향한다 */
-export function MoonPlaneBeams({ sorted, geo }: { sorted: MemoryNode[]; geo: Geo | null }) {
+export function MoonPlaneBeams({ sorted, geo, birth }: { sorted: MemoryNode[]; geo: Geo | null; birth?: Birth | null }) {
   if (!geo || sorted.length === 0) return null;
   return (
     <svg className={styles.overlay} width={geo.w} height={geo.h} aria-hidden="true">
@@ -254,10 +264,11 @@ export function MoonPlaneBeams({ sorted, geo }: { sorted: MemoryNode[]; geo: Geo
         const y1 = s.top + 2;
         const y2 = s.bottom - 2;
         return (
-          <g key={s.id} className={styles.beam} data-beam={s.id}>
+          <g key={s.id} className={styles.beam} data-beam={s.id} data-birth={birthOf(birth, s.id)}>
             <polygon points={`${geo.edgeX},${y1} ${ax},${ny} ${geo.edgeX},${y2}`} fillOpacity={0.09 * s.k} />
-            <line x1={geo.edgeX} y1={y1} x2={ax} y2={ny} strokeOpacity={0.6 * s.k} />
-            <line x1={geo.edgeX} y1={y2} x2={ax} y2={ny} strokeOpacity={0.6 * s.k} />
+            {/* pathLength=1: 태어나는 동안 선이 대화 쪽에서 달 쪽으로 그어지는 연출에 쓴다 */}
+            <line x1={geo.edgeX} y1={y1} x2={ax} y2={ny} strokeOpacity={0.6 * s.k} pathLength={1} />
+            <line x1={geo.edgeX} y1={y2} x2={ax} y2={ny} strokeOpacity={0.6 * s.k} pathLength={1} />
             <rect x={geo.edgeX - 1} y={y1} width={2} height={Math.max(0, y2 - y1)} opacity={0.3 + 0.7 * s.k} />
           </g>
         );
@@ -275,6 +286,7 @@ export function MoonPlaneTrack({
   selectedId,
   onJump,
   labelMax,
+  birth,
 }: {
   sorted: MemoryNode[];
   geo: Geo | null;
@@ -282,6 +294,8 @@ export function MoonPlaneTrack({
   onJump: (id: number) => void;
   /** 달 옆 글자의 최대 너비(px) */
   labelMax?: number;
+  /** 지금 태어나는 중인 달 */
+  birth?: Birth | null;
 }) {
   if (!geo || sorted.length === 0) return null;
   return (
@@ -309,6 +323,7 @@ export function MoonPlaneTrack({
             }}
             data-lit={lit.toFixed(2)}
             data-side={side}
+            data-birth={birthOf(birth, n.id)}
             aria-label={`기억 ${n.order}번: ${n.user}`}
             onClick={() => onJump(n.id)}
           >
