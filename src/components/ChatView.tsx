@@ -71,6 +71,8 @@ export default function ChatView() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const columnRef = useRef<HTMLDivElement>(null);
   const planeRef = useRef<HTMLElement>(null);
+  const composerRef = useRef<HTMLFormElement>(null);
+  const [composerH, setComposerH] = useState(96); // 입력줄 높이: 대화 칸 아래 여백과 보이는 구간 계산에 쓴다
   const moonScrollRef = useRef<HTMLDivElement>(null);
   const [wallPref, setWallPref] = useState<boolean | null>(null); // 사용자가 열고 닫은 선택. null이면 대화가 있을 때 자동으로 열림
   const itemRefs = useRef(new Map<number, HTMLElement>());
@@ -158,7 +160,16 @@ export default function ChatView() {
     // 빛줄기는 전시 화면처럼 대화 배경과 달창의 경계(벽의 왼쪽 끝)에서 시작한다
     edgeRef: planeRef,
     edgeSide: "left",
+    // 대화 칸은 입력줄 밑까지 깔려 있으므로, 글이 보이는 구간은 입력줄 윗변까지
+    bottomInsetRef: composerRef,
   });
+  useEffect(() => {
+    const el = composerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setComposerH(Math.round(el.offsetHeight)));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   // 벽이 들어오고 나가는 동안은 벽과 대화 열이 계속 움직이므로 매 프레임 다시 잰다
   useEffect(() => {
     const start = performance.now();
@@ -260,6 +271,7 @@ export default function ChatView() {
           style={{
             ["--wall" as string]: wallOpen ? `${WALL_W}px` : "0px",
             ["--area" as string]: `${area}px`,
+            ["--composer-h" as string]: `${composerH}px`,
             ["--l0" as string]: `${lay.l0.toFixed(2)}px`,
             ["--lk" as string]: lay.lk.toFixed(5),
             ["--w0" as string]: `${lay.w0.toFixed(2)}px`,
@@ -324,6 +336,7 @@ export default function ChatView() {
           </div>
 
           <form
+            ref={composerRef}
             className={styles.composer}
             onSubmit={(e) => {
               e.preventDefault();

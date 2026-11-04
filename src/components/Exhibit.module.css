@@ -183,16 +183,20 @@
 }
 
 /* ── 달이 태어나는 연출 (대화 화면, MoonPlane의 data-birth) ──
-   1) 보내면 빛줄기 선이 대화 쪽에서 달 자리로 먼저 그어지고(0.52s)
-   2) 달은 어둠에서 차츰 밝아지며 답을 기다린다(평소보다 조금 어두운 데까지)
-   3) 답이 오면 평소보다 밝게 한 번 번쩍이고 제 밝기로 가라앉는다 */
+   1) 보내면 빛줄기 선만 대화 쪽에서 달 자리로 먼저 그어지고(0.52s), 달은 삭(새달)으로 생긴다. 빛은 아직 없다
+   2) 답이 오면 달이 삭에서 제 모양까지 차오르며(MoonPlane의 BornMoon) 평소보다 밝게 번쩍이고,
+      그 달이 대화를 비추는 빛줄기와 대화 칸의 빛이 함께 켜진다 */
 .beam[data-birth="charging"] line {
   stroke-dasharray: 1;
   animation: beamDraw 520ms ease-out both;
 }
 .beam[data-birth="charging"] polygon,
 .beam[data-birth="charging"] rect {
-  animation: beamFill 2.4s ease-out 420ms both;
+  opacity: 0;
+}
+.beam[data-birth="flash"] polygon,
+.beam[data-birth="flash"] rect {
+  animation: beamLightIn 1100ms ease-out both;
 }
 .beam[data-birth="flash"] {
   animation: beamFlash 1100ms ease-out both;
@@ -205,12 +209,12 @@
     stroke-dashoffset: 0;
   }
 }
-@keyframes beamFill {
+@keyframes beamLightIn {
   from {
     opacity: 0;
   }
   to {
-    opacity: 0.7;
+    opacity: 1;
   }
 }
 @keyframes beamFlash {
@@ -225,23 +229,21 @@
   }
 }
 
+/* 기다리는 동안 삭인 달이 숨 쉬듯 아주 약하게 깜빡인다 */
 .node[data-birth="charging"] svg {
-  animation: moonCharge 7s cubic-bezier(0.2, 0.6, 0.3, 1) 520ms both;
+  animation: moonWait 1.6s ease-in-out 520ms infinite;
 }
 .node[data-birth="flash"] svg {
   animation: moonFlash 1100ms ease-out both;
 }
-@keyframes moonCharge {
-  from {
-    filter: brightness(0.12);
-  }
-  to {
-    filter: brightness(0.8);
+@keyframes moonWait {
+  50% {
+    filter: brightness(1.6);
   }
 }
 @keyframes moonFlash {
   0% {
-    filter: brightness(0.8);
+    filter: brightness(1);
     transform: scale(1);
   }
   22% {

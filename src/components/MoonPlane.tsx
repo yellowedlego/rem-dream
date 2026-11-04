@@ -102,6 +102,11 @@ interface Options {
   edgeRef?: RefObject<HTMLElement | null>;
   /** edgeRef의 어느 쪽 끝이 경계인지 (대화 화면은 벽의 왼쪽 끝) */
   edgeSide?: "left" | "right";
+  /**
+   * 대화 칸 아래를 덮는 요소(입력줄). 대화 칸은 입력줄 밑까지 깔려 있어서, 글이 실제로 보이는 구간은
+   * 이 요소의 윗변까지다. 입력창이 커지면 보이는 구간도 그만큼 줄어든다.
+   */
+  bottomInsetRef?: RefObject<HTMLElement | null>;
 }
 
 export function useMoonPlane({
@@ -113,6 +118,7 @@ export function useMoonPlane({
   itemRefs,
   edgeRef,
   edgeSide = "right",
+  bottomInsetRef,
   followLatest = false,
 }: Options) {
   const [geo, setGeo] = useState<Geo | null>(null);
@@ -136,7 +142,9 @@ export function useMoonPlane({
     const edge = (edgeRef?.current ?? chat).getBoundingClientRect();
 
     const viewTop = c.top - m.top;
-    const viewBottom = c.bottom - m.top;
+    // 입력줄이 덮은 아래쪽은 보이는 구간이 아니다
+    const inset = bottomInsetRef?.current;
+    const viewBottom = (inset ? Math.min(c.bottom, inset.getBoundingClientRect().top) : c.bottom) - m.top;
     const segs: Seg[] = [];
     const rects: { top: number; bottom: number }[] = [];
     for (const n of sorted) {
@@ -190,7 +198,7 @@ export function useMoonPlane({
       viewBottom,
       w: m.width,
       h: m.height,
-    });  }, [sorted, mainRef, chatRef, planeRef, scrollRef, itemRefs, edgeRef, edgeSide]);
+    });  }, [sorted, mainRef, chatRef, planeRef, scrollRef, itemRefs, edgeRef, edgeSide, bottomInsetRef]);
 
   useLayoutEffect(() => {
     followNext.current = true; // 기억이 바뀌었거나 처음 그릴 때도 비추는 자리를 보여 준다
@@ -248,8 +256,9 @@ export function useMoonPlane({
     };
     sc?.addEventListener("pointerdown", onPointerDown, { passive: true });
     window.addEventListener("pointerup", onPointerUp, { passive: true });
+    // 대화 칸·달창·입력줄의 크기가 바뀌어도(입력창이 커질 때 등) 보이는 구간과 빛줄기를 다시 잰다
     const ro = new ResizeObserver(schedule);
-    if (mainRef.current) ro.observe(mainRef.current);
+    for (const el of [mainRef.current, chat, sc, bottomInsetRef?.current]) if (el) ro.observe(el);
     return () => {
       cancelAnimationFrame(raf);
       chat?.removeEventListener("scroll", onChatScroll);
@@ -260,7 +269,7 @@ export function useMoonPlane({
       window.removeEventListener("pointerup", onPointerUp);
       ro.disconnect();
     };
-  }, [measure, chatRef, mainRef, scrollRef]);
+  }, [measure, chatRef, mainRef, scrollRef, bottomInsetRef]);
 
   // 새 기억이 생기면 달창을 최신 달로 내린다
   const count = sorted.length;
@@ -320,7 +329,8 @@ export function useMoonPlane({
         return n;
       };
       const viewTop = c.top - m.top;
-      const viewBottom = c.bottom - m.top;
+      const inset = bottomInsetRef?.current;
+      const viewBottom = (inset ? Math.min(c.bottom, inset.getBoundingClientRect().top) : c.bottom) - m.top;
       const midNow = Math.min(n - 0.5, Math.max(0.5, (posOf(viewTop) + posOf(viewBottom)) / 2));
       const focusY = AXIS_PAD + (midNow - 0.5) * MOON_STEP;
       const target = pushFocus(focusY, sc.scrollTop, sc.clientHeight, sc.clientHeight * CAMERA_MARGIN);
@@ -355,6 +365,31 @@ export interface Birth {
   phase: "charging" | "flash";
 }
 const birthOf = (birth: Birth | null | undefined, id: number) => (birth?.id === id ? birth.phase : undefined);
+
+/** 답이 온 순간 달이 삭에서 제 모양까지 차오르는 시간(ms) */
+const RISE_MS = 900;
+
+/**
+ * 태어나는 달: 답을 기다리는 동안은 삭(새달)이고, 답이 오면 삭에서 제 밝기까지 차오른다.
+ * 번쩍임(밝기·크기)은 CSS(data-birth="flash")가 맡고, 여기서는 달의 모양(lit)만 움직인다.
+ */
+function BornMoon({ lit, side, phase, selected }: { lit: number; side: "left" | "right"; phase: "charging" | "flash"; selected: boolean }) {
+  const [k, setK] = useState(0); // 0 → 1: 얼마나 차올랐나
+  useEffect(() => {
+    if (phase !== "flash") return;
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const t0 = performance.now();
+    let raf = 0;
+    const tick = (now: number) => {
+      const p = reduce ? 1 : Math.min(1, (now - t0) / RISE_MS);
+      setK(1 - Math.pow(1 - p, 3)); // ease-out
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [phase]);
+  return <Moon lit={phase === "flash" ? lit * k : 0} side={side} selected={selected} />;
+}
 
 /** 빛줄기: 대화 칸의 보이는 구간 → 그 기억의 달 (기준 상자 위에 겹쳐 그린다). 달이 달창 밖이면 가까운 가장자리로 향한다 */
 export function MoonPlaneBeams({ sorted, geo, birth }: { sorted: MemoryNode[]; geo: Geo | null; birth?: Birth | null }) {
@@ -430,7 +465,11 @@ export function MoonPlaneTrack({
             aria-label={`기억 ${n.order}번: ${n.user}`}
             onClick={() => onJump(n.id)}
           >
-            <Moon lit={lit} side={side} selected={n.id === selectedId} />
+            {birthOf(birth, n.id) ? (
+              <BornMoon lit={lit} side={side} phase={birthOf(birth, n.id)!} selected={n.id === selectedId} />
+            ) : (
+              <Moon lit={lit} side={side} selected={n.id === selectedId} />
+            )}
             <span className={styles.nodeLabel} style={labelMax ? { maxWidth: labelMax } : undefined}>
               <span className={styles.nodeTime}>{hhmm(n.createdAt)}</span>
               {n.user}
