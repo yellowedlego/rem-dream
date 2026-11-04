@@ -94,20 +94,19 @@
 .ai {
   margin: 0;
   max-width: 34em;
-  padding: 11px 16px;
+  padding: 11px 18px;
   font-size: 16px;
   line-height: 1.6;
-  border-radius: 16px;
 }
 .user {
   align-self: flex-end;
   background: var(--bubble);
-  border-bottom-right-radius: 4px;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
 }
 .ai {
   align-self: flex-start;
   background: var(--bubble-ai);
-  border-bottom-left-radius: 4px;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 12px 100%, 0 calc(100% - 12px));
 }
 
 .plane {
@@ -131,8 +130,7 @@
   pointer-events: none;
 }
 .axis {
-  stroke: var(--node-edge);
-  stroke-width: 1;
+  fill: var(--node-edge);
 }
 .beam polygon {
   fill: var(--accent);
@@ -145,7 +143,7 @@
   fill: var(--accent);
 }
 
-/* ── 노드: 줄 전체가 누르는 영역 (높이는 줄 간격만큼, 최대 44px) ── */
+/* ── 노드(달): 줄 전체가 누르는 영역. 글자색은 달 밝기(--lit)를 따라 부드럽게 ── */
 .node {
   position: absolute;
   display: flex;
@@ -153,30 +151,11 @@
   gap: 14px;
   padding: 0 12px 0 0;
   border: 0;
-  border-radius: 6px;
   background: none;
-  color: var(--dim);
+  color: color-mix(in srgb, var(--text) calc(var(--lit) * 100%), var(--dim));
   font: inherit;
   font-size: 13px;
   cursor: pointer;
-}
-
-.dot {
-  flex: none;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  border: 1px solid transparent;
-}
-.dot::after {
-  content: "";
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--bg);
-  border: 1.5px solid var(--node-edge);
 }
 
 .nodeLabel {
@@ -191,27 +170,10 @@
   margin-right: 10px;
 }
 
-.nodeOn {
-  color: var(--text);
-}
-.nodeOn .dot {
-  border-color: color-mix(in srgb, var(--accent) calc(var(--k) * 100%), transparent);
-}
-.nodeOn .dot::after {
-  background: var(--accent);
-  border-color: var(--accent);
-}
-
 .node:hover,
 .node:focus-visible {
   color: var(--text);
   background: var(--accent-wash);
-}
-.node:hover .dot::after {
-  border-color: var(--accent);
-}
-.nodeSelected .dot {
-  border-color: var(--point);
 }
 
 /* ── 아래 입력줄 ── */
@@ -239,7 +201,6 @@
 .fieldSmall select {
   height: 48px;
   padding: 0 16px;
-  border-radius: 12px;
   border: 0;
   background: var(--bubble);
   color: var(--text);
@@ -252,7 +213,6 @@
   height: 48px;
   padding: 0 22px;
   border: 0;
-  border-radius: 12px;
   font: inherit;
   font-size: 15px;
   font-weight: 600;

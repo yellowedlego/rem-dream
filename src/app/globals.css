@@ -23,6 +23,8 @@
   --ok: #8fd6b4;
   --warn: #f2a38b;
   --node-edge: #554c6c;
+  --moon-dark: #0f0c17; /* 달의 어두운 면 */
+  --moon-ring: #6b6188; /* 삭이어도 노드가 보이게 */
 }
 
 * {
