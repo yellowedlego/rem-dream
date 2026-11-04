@@ -153,6 +153,8 @@ export interface Store {
   nodes: MemoryNode[];
   insights: Insight[];
   personas: PersonaVersion[];
+  /** 긴 이야기 원문들. 시드(data/store.json)에는 없을 수 있어서 선택 */
+  stories?: Story[];
   /** 지금 쓰는 인격 버전 번호 (되돌리기를 하면 이 값만 바뀐다) */
   activePersona: number;
   /** 인격 수정 제안 목록 */

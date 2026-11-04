@@ -50,6 +50,9 @@ next-env.d.ts
 # runtime storage
 /data/runtime/
 
-
 # teamwork agent logs
 /.agents/
+
+# graphify output
+/graphify-out/
+/src/graphify-out/
