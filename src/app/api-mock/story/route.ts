@@ -57,7 +57,23 @@ export async function POST(request: Request) {
     };
     s.nodes.push(...nodes);
     (s.stories ??= []).push(story);
-    return { story, nodes };
+
+    // 의미 파일(별): 가짜 API는 의미를 뽑지 못하므로 주제 이름을 모아 둔 임시 문구를 넣는다.
+    // (실제로는 모델 호출 2가 만든다: docs/backend-plan.md "의미 파일")
+    const names = nodes
+      .map((n) => (n.topic ?? "").replace(/\s*\(\d+군데\)$/, "").replace(/…$/, "").slice(0, 10).trim())
+      .filter(Boolean);
+    const meaning = {
+      id: storyId,
+      storyId,
+      sessionId,
+      nodeIds: nodes.map((n) => n.id),
+      title: names.slice(0, 3).join(" · ") + (names.length > 3 ? " …" : ""),
+      essence: `주제 ${nodes.length}개가 오가는 이야기예요. AI 분석이 붙으면 이 자리에 이 이야기가 말해 주는 것이 한두 문장으로 들어가요.`,
+      keywords: [] as string[],
+      createdAt: story.createdAt,
+    };
+    return { story, nodes, meaning, method: "rule" as const };
   }, true);
 
   return NextResponse.json(result);

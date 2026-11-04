@@ -29,6 +29,31 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
   return data as T;
 }
 
+/**
+ * 의미 파일(별): 이야기 노드들을 합쳐 뽑은 의미. 인격은 승인된 의미 파일들로 구성한다.
+ * 계약은 docs/backend-plan.md "의미 파일(별)". 백엔드가 확정하면 src/lib/types.ts로 옮긴다.
+ */
+export interface Meaning {
+  id: number;
+  storyId: number;
+  sessionId: string;
+  nodeIds: number[];
+  title: string;
+  essence: string;
+  keywords: string[];
+  createdAt: string;
+}
+
+/** 이야기를 나눈 방법: AI가 맥락을 읽었는지, 규칙으로 임시 분리했는지 */
+export type SplitMethod = "ai" | "rule";
+
+export interface StoryResult {
+  story: Story;
+  nodes: MemoryNode[];
+  meaning: Meaning;
+  method: SplitMethod;
+}
+
 export interface SessionSummary {
   sessionId: string;
   nodeCount: number;
@@ -59,7 +84,7 @@ export const api = {
   chat: (sessionId: string, message: string) =>
     call<{ node: MemoryNode }>("/chat", { method: "POST", body: JSON.stringify({ sessionId, message }) }),
   story: (sessionId: string, text: string) =>
-    call<{ story: Story; nodes: MemoryNode[] }>("/story", { method: "POST", body: JSON.stringify({ sessionId, text }) }),
+    call<StoryResult>("/story", { method: "POST", body: JSON.stringify({ sessionId, text }) }),
   sessions: () => call<{ sessions: SessionSummary[] }>("/sessions"),
   nodes: (o: { sessionId?: string; q?: string } = {}) => call<{ nodes: MemoryNode[] }>(`/nodes${qs(o)}`),
   state: () => call<DebugState>("/state"),

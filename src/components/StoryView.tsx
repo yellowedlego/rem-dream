@@ -1,18 +1,15 @@
 ﻿"use client";
 
 import { useEffect, useState } from "react";
-import type { MemoryNode, Story } from "@/lib/types";
-import { api, currentSessionId } from "./api";
+import { api, currentSessionId, type StoryResult } from "./api";
 import AppNav from "./AppNav";
+import StoryCloud from "./StoryCloud";
 import { STORY_SAMPLES } from "./storySamples";
 import styles from "./StoryView.module.css";
 
 const MAX_CHARS = 8000;
 
-interface Result {
-  story: Story;
-  nodes: MemoryNode[];
-}
+type Result = StoryResult;
 
 /**
  * 정보를 잃지 않았는지 확인한다: 모든 노드의 원문 구간을 합치면 원문 전체가 빈틈·겹침 없이 덮이고,
@@ -46,6 +43,7 @@ export default function StoryView() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<Result | null>(null);
+  const [replay, setReplay] = useState(0); // 연출을 다시 보려고 컴포넌트를 새로 띄우는 번호
 
   useEffect(() => {
     // 대화 화면과 같은 세션을 쓴다 (둘 다 같은 기억 저장소에 쌓임)
@@ -57,6 +55,7 @@ export default function StoryView() {
     setBusy(true);
     setError(null);
     try {
+      setReplay(0);
       setResult(await api.story(sessionId, text));
     } catch (e) {
       setError((e as Error).message);
@@ -126,6 +125,22 @@ export default function StoryView() {
                 {check.chars.toLocaleString()} / {check.total.toLocaleString()}
               </p>
 
+              <p className={styles.note}>
+                {result.method === "ai"
+                  ? "AI가 맥락을 읽고 나눴어요."
+                  : "지금은 규칙으로 임시 분리했어요. 나중에는 AI가 맥락을 읽고 나눠요."}
+              </p>
+
+              <h3>의미 지도</h3>
+              <StoryCloud
+                key={`${result.story.id}-${replay}`}
+                nodes={result.nodes}
+                meaning={result.meaning}
+                storyId={result.story.id}
+              />
+              <button type="button" className={styles.ghost} onClick={() => setReplay((r) => r + 1)}>
+                연출 다시 보기
+              </button>
               <h3>원문에서 나눈 자리</h3>
               <p className={styles.raw}>
                 {check.spans.map((sp, k) => (
@@ -169,5 +184,6 @@ export default function StoryView() {
     </div>
   );
 }
+
 
 
