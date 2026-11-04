@@ -1,12 +1,12 @@
-.wrap {
+﻿.wrap {
   margin: 0;
 }
-.stage {
-  display: block;
+.canvas {
   width: 100%;
-  height: auto;
   background: var(--bg);
-  overflow: visible;
+}
+.canvas svg {
+  display: block;
 }
 
 .meaning {
@@ -43,3 +43,14 @@
     transition: none;
   }
 }
+
+
+/* 끌 수 있는 달·별 */
+.grab {
+  cursor: grab;
+  touch-action: none;
+}
+.grab:active {
+  cursor: grabbing;
+}
+
