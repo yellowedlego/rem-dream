@@ -126,7 +126,7 @@ export interface Story {
 | --- | --- | --- |
 | `POST /api/chat` `{ sessionId, message, model? }` | 활성 인격으로 모델을 불러 답을 받고 노드 1개를 저장해 `{ node }` 반환. REM 실행 중이면 `409` | 2 |
 | `GET /api/state?sessionId=` | 그 세션의 `nodes`, `insights`, `proposals`, `activePersona`, 지금 `RemRun` 한 번에 반환 (화면이 불러올 때 쓰는 읽기용) | 2 |
-| `POST /api/story` `{ sessionId, text }` | 긴 이야기를 **AI가 맥락을 읽어 노드 여러 개**로 나눠 저장하고, 그 노드들을 합친 의미 파일(별)도 만들어 `{ story, nodes, meaning, method }` 반환 (아래 "이야기 전처리 규칙"·"의미 파일" 참고) | 2 |
+| `POST /api/story` `{ sessionId, text }` | 긴 이야기를 **AI가 맥락을 읽어 노드 여러 개**로 나눠 저장하고, 그 노드들을 합친 의미 파일(별) 1개 이상도 만들어 `{ story, nodes, meanings, method }` 반환 (아래 "이야기 전처리 규칙"·"의미 파일" 참고) | 2 |
 | `GET /api/meanings?sessionId=`, `DELETE /api/meanings/[id]` | 의미 파일 목록·삭제 (디버그 화면용) | 2 |
 | `GET /api/sessions` | 세션 목록 `[{ sessionId, nodeCount, lastAt, preview }]` (대화 화면 사이드바, 디버그 검색용) | 2 |
 | `GET /api/nodes?sessionId=&q=&limit=` | 세션·내용 검색. `q`는 세션 번호·유저 입력·AI 답변·주제에 부분 일치. `sessionId`를 안 주면 전체 | 2 |
@@ -166,9 +166,9 @@ export interface Story {
 ```ts
 export interface Meaning {
   id: number;
-  storyId: number;          // 어느 이야기에서 나왔나 (1:1)
+  storyId: number;          // 어느 이야기에서 나왔나. 이야기 하나에서 의미 파일이 2개 이상 나올 수 있다 (1:N)
   sessionId: string;
-  nodeIds: number[];        // 별로 합쳐진 노드들 (Story.nodeIds와 같음)
+  nodeIds: number[];        // 이 별로 합쳐진 노드들. 노드 하나가 여러 별에 속할 수 있다 (N:M). 전부가 아니어도 됨
   title: string;            // 한 줄 제목 (별 옆에 표시)
   essence: string;          // 이 이야기가 말해 주는 것, 한두 문장
   keywords: string[];       // 선택, 3~5개
@@ -177,10 +177,11 @@ export interface Meaning {
 // PersonaVersion에 추가: sourceMeaningIds: number[]   // 이 인격을 만든 의미 파일들
 ```
 
-- `POST /api/story` 응답: `{ story, nodes, meaning, method }`
+- **여러 개 뽑기 (AI가 한다):** 의미는 규칙으로 못 뽑는다. 모델 호출 2가 노드들을 읽고 **의미 파일을 1개 이상(상한 기본 5)** 돌려준다. 한 노드가 두 가닥(두 의미)에 걸치면 그 노드의 id가 두 의미 파일의 `nodeIds`에 모두 들어가고, 서로 다른 의미가 둘 이상 나와도 된다. 모든 노드가 어떤 의미에 속할 필요는 없다(의미 없는 잡담 노드는 어디에도 안 속함).
+- `POST /api/story` 응답: `{ story, nodes, meanings, method }` (`meanings`는 배열. 한 개만 나와도 배열이다)
 - `GET /api/meanings?sessionId=` / `DELETE /api/meanings/[id]` (디버그 화면용)
 - **인격 조립:** 제안(`PersonaProposal`)을 만들 때 근거로 통찰과 함께 의미 파일을 넣는다. 승인된 인격 버전은 `sourceMeaningIds`로 어떤 의미 파일에서 왔는지 추적한다. 의미 파일을 지워도 이미 승인된 인격 버전은 그대로 남는다.
-- 프론트의 가짜 API는 `meaning`을 **임시 문구**로 채운다(주제 이름을 모아 둔 값). 의미를 실제로 뽑는 것은 위 "모델 호출 2"의 일이다.
+- 프론트의 가짜 API는 `meanings`를 **임시 문구**로 채운다(지금은 1개만)(주제 이름을 모아 둔 값). 의미를 실제로 뽑는 것은 위 "모델 호출 2"의 일이다.
 `sessionId`는 관람객 한 명 = 한 세션이다. `plan.md`의 미정 항목("관람객마다 기억을 따로 둘지")은 **기본값(따로)** 으로 간다.
 
 ## 6. 폴더 구조 (새로 만들 파일)
@@ -303,6 +304,8 @@ export interface RemMode {
 - [ ] 모드 2를 "무작위 두 기억 짝짓기 + 높은 온도"로 확정할지 (`plan.md` 미정 항목)
 - [ ] 하루 이야기를 노드 하나로 만들지 문장 단위로 쪼갤지 (기본값: 노드 하나)
 - [ ] REM 한 번에 읽을 노드 상한 (기본값 12)
+
+
 
 
 
