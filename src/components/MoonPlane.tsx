@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from "react";
 import type { MemoryNode } from "@/lib/types";
-import { followCamera } from "./camera";
+import { followCamera, pushFocus } from "./camera";
 import Moon from "./Moon";
 import styles from "./Exhibit.module.css";
 
@@ -16,6 +16,13 @@ const timeFmt = new Intl.DateTimeFormat("ko-KR", {
   timeZone: "Asia/Seoul",
 });
 export const hhmm = (iso: string) => timeFmt.format(new Date(iso));
+
+/**
+ * 시간순 비교. createdAt은 "+09:00"처럼 시간대 표기가 섞여 있을 수 있어서 글자로 비교하면 순서가 틀어진다
+ * (시드는 +09:00, 새 기억은 Z). 반드시 시각(ms)으로 비교하고, 같으면 세션 순서·번호로 가른다.
+ */
+export const byTime = (a: MemoryNode, b: MemoryNode) =>
+  Date.parse(a.createdAt) - Date.parse(b.createdAt) || a.order - b.order || a.id - b.id;
 
 /** 대화 칸에서 지금 보이는 구간 하나 (main 기준 좌표) */
 interface Seg {
@@ -55,8 +62,6 @@ export const MOON_STEP = 32;
 const AXIS_PAD = 56;
 /** 달창 위·아래 여백(높이 비율). 비추는 자리가 이 안쪽에 있으면 달창은 가만히 있는다 */
 const CAMERA_MARGIN = 0.25;
-/** 달창을 굴리다 이만큼(ms) 멈추면 가운데 달의 대화로 포커스가 옮겨간다 */
-const SETTLE_MS = 450;
 /** 휠·터치가 있은 뒤 이 시간(ms) 안의 달창 스크롤만 사람이 굴린 것으로 본다 */
 const USER_INPUT_MS = 250;
 const FULL_AT = 160; // 이만큼(px) 보이면 빛줄기가 가장 진해짐
@@ -114,8 +119,10 @@ export function useMoonPlane({
   const [selectedId, setSelectedId] = useState<number | null>(null);
   // 대화 칸이 스크롤됐을 때만 달창 카메라가 따라간다 (달창을 직접 스크롤할 때는 따라가지 않는다)
   const followNext = useRef(true);
-  // 달창이 멈췄을 때 실행할 "가운데 달로 포커스" (아래에서 매 렌더 최신 상태로 갱신)
-  const settleRef = useRef<() => void>(() => {});
+  // 달창을 사람이 굴릴 때 대화를 따라가게 하는 함수 (아래에서 매 렌더 최신 상태로 갱신)
+  const followChatRef = useRef<() => void>(() => {});
+  // 방금 대화를 코드로 움직였는지: 그 스크롤 때문에 달창 카메라가 다시 움직이지 않게 한 번 건너뛴다
+  const chatMovedByCode = useRef(false);
 
   const measure = useCallback(() => {
     const main = mainRef.current;
@@ -207,19 +214,22 @@ export function useMoonPlane({
     // (표시가 오래 남으면 대화를 굴릴 때 카메라가 움직인 달창을 사람이 굴린 줄 알고 대화를 되돌려 버린다)
     let lastInput = -Infinity;
     let dragging = false;
-    let settleTimer: ReturnType<typeof setTimeout> | undefined;
     const markUser = () => {
       lastInput = performance.now();
     };
     const onPlaneScroll = () => {
       schedule();
       if (!dragging && performance.now() - lastInput > USER_INPUT_MS) return;
-      // 대화는 그대로 두고, 달창이 잠깐 멈추면 가운데 달의 대화로 포커스를 옮긴다
-      clearTimeout(settleTimer);
-      settleTimer = setTimeout(() => settleRef.current(), SETTLE_MS);
+      // 거꾸로 마리오식 카메라: 비추는 자리가 달창 여백에 닿으면 그만큼 대화가 따라간다
+      followChatRef.current();
     };
     const onChatScroll = () => {
-      clearTimeout(settleTimer); // 대화를 직접 굴리기 시작하면 달 쪽 포커스 이동은 취소한다
+      if (chatMovedByCode.current) {
+        // 달창을 굴려서 대화가 따라온 스크롤: 달창 카메라는 다시 움직이지 않고 빛줄기·달 모양만 갱신
+        chatMovedByCode.current = false;
+        schedule();
+        return;
+      }
       scheduleFollow();
     };
     chat?.addEventListener("scroll", onChatScroll, { passive: true }); // 대화가 움직이면 카메라가 따라간다
@@ -242,7 +252,6 @@ export function useMoonPlane({
     if (mainRef.current) ro.observe(mainRef.current);
     return () => {
       cancelAnimationFrame(raf);
-      clearTimeout(settleTimer);
       chat?.removeEventListener("scroll", onChatScroll);
       sc?.removeEventListener("scroll", onPlaneScroll);
       sc?.removeEventListener("wheel", markUser);
@@ -283,15 +292,52 @@ export function useMoonPlane({
     itemRefs.current.get(id)?.scrollIntoView({ block: "center", behavior: reduce ? "auto" : "smooth" });
   };
 
-  // 달창을 굴리다 멈추면: 달창 세로 한가운데에 있는 달의 대화로 포커스를 옮긴다 (아직 답을 기다리는 임시 노드는 건너뜀)
+  // 달창을 사람이 굴릴 때: 대화가 비추는 자리(달 목록 위의 한 점)가 달창 위·아래 여백(25%)에 닿으면,
+  // 그 점이 여백에 머물도록 대화를 그만큼 움직인다. 여백 안쪽에서는 대화가 가만히 있다.
+  // (대화 → 달창 카메라의 거꾸로. 코드는 measure의 posOf·focusY 계산과 짝이다)
   useEffect(() => {
-    settleRef.current = () => {
+    followChatRef.current = () => {
+      const chat = chatRef.current;
       const sc = scrollRef.current;
-      if (!sc || sorted.length === 0) return;
-      const centerY = sc.scrollTop + sc.clientHeight / 2;
-      const i = Math.min(sorted.length - 1, Math.max(0, Math.round((centerY - AXIS_PAD) / MOON_STEP)));
-      const node = sorted[i];
-      if (node && node.id >= 0) jumpTo(node.id);
+      const main = mainRef.current;
+      const n = sorted.length;
+      if (!chat || !sc || !main || n === 0) return;
+      const m = main.getBoundingClientRect();
+      const c = chat.getBoundingClientRect();
+      const rects: { top: number; bottom: number }[] = [];
+      for (const nd of sorted) {
+        const el = itemRefs.current.get(nd.id);
+        if (!el) return;
+        const r = el.getBoundingClientRect();
+        rects.push({ top: r.top - m.top, bottom: r.bottom - m.top });
+      }
+      const posOf = (y: number) => {
+        if (y <= rects[0].top) return 0;
+        for (let i = 0; i < n; i++) {
+          const { top, bottom } = rects[i];
+          if (y < bottom) return y >= top ? i + (y - top) / (bottom - top) : i;
+        }
+        return n;
+      };
+      const viewTop = c.top - m.top;
+      const viewBottom = c.bottom - m.top;
+      const midNow = Math.min(n - 0.5, Math.max(0.5, (posOf(viewTop) + posOf(viewBottom)) / 2));
+      const focusY = AXIS_PAD + (midNow - 0.5) * MOON_STEP;
+      const target = pushFocus(focusY, sc.scrollTop, sc.clientHeight, sc.clientHeight * CAMERA_MARGIN);
+      if (Math.abs(target - focusY) < 0.5) return; // 여백 안쪽: 대화는 그대로
+      const midTarget = Math.min(n - 0.5, Math.max(0.5, (target - AXIS_PAD) / MOON_STEP + 0.5));
+      // 대화 칸을 delta(px)만큼 옮겼을 때의 중간 위치가 midTarget이 되도록 맞춘다 (몇 번 되풀이해서 수렴)
+      const rowPx = (i: number) => (rects[Math.min(n - 1, i + 1)].top - rects[i].top) || rects[i].bottom - rects[i].top;
+      let delta = 0;
+      for (let k = 0; k < 6; k++) {
+        const cur = (posOf(viewTop + delta) + posOf(viewBottom + delta)) / 2;
+        const err = midTarget - cur;
+        if (Math.abs(err) < 0.002) break;
+        delta += err * rowPx(Math.min(n - 1, Math.max(0, Math.floor(cur))));
+      }
+      const before = chat.scrollTop;
+      chat.scrollTop = before + delta;
+      if (chat.scrollTop !== before) chatMovedByCode.current = true;
     };
   });
 
