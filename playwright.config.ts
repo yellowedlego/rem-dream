@@ -5,11 +5,15 @@ export default defineConfig({
   outputDir: "test-results",
   use: {
     baseURL: "http://localhost:3123",
-    viewport: { width: 1440, height: 900 },
   },
   webServer: {
-    command: "npm run start -- -p 3123",
+    command: process.platform === "win32" ? "npm.cmd run start -- -p 3123" : "npm run start -- -p 3123",
     url: "http://localhost:3123",
     reuseExistingServer: true,
+    timeout: 120_000,
+    env: {
+      MODEL_MOCK: "1",
+      ...process.env,
+    },
   },
 });

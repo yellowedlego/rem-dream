@@ -117,7 +117,7 @@
       "sessionId": "demo-1",
       "order": 15,
       "createdAt": "2026-11-04T18:10:00+09:00",
-      "user": "집에 오는 길에 비가 와서 다 젖었어.",
+      "user": "집에 오는 길에 비가 와서 다젖었어.",
       "ai": "우산 없을 때 비는 정말 서럽지. 따뜻하게 씻고 쉬어."
     },
     {
@@ -213,5 +213,52 @@
       "parentVersion": 1
     }
   ],
-  "activePersona": 2
+  "activePersona": 2,
+  "proposals": [
+    {
+      "id": 1,
+      "runId": "run-demo-1",
+      "sourceInsightIds": [
+        1
+      ],
+      "proposedPrompt": "너는 관람객의 하루 이야기를 들어 주는 친절한 대화 상대야. 짧고 따뜻하게 답한다.\n상대가 급해 보이면 먼저 할 일을 작게 나눠 준다.",
+      "summary": "상대가 시험이나 과제로 급해 보일 때 먼저 범위를 묻고 작게 쪼개어 정리해 주도록 바뀝니다.",
+      "baseVersion": 1,
+      "status": "approved",
+      "createdAt": "2026-11-04T22:51:30+09:00",
+      "decidedAt": "2026-11-04T22:52:00+09:00"
+    },
+    {
+      "id": 2,
+      "runId": "run-demo-1",
+      "sourceInsightIds": [
+        3
+      ],
+      "proposedPrompt": "너는 관람객의 하루 이야기를 들어 주는 친절한 대화 상대야. 짧고 따뜻하게 답한다.\n상대가 급해 보이면 먼저 할 일을 작게 나눠 준다.\n맛있는 음식이나 좋아하는 것을 언급하며 기운을 북돋운다.",
+      "summary": "친구가 지치거나 힘들어할 때 좋아하는 음식 이야기를 자연스럽게 꺼내며 기분을 북돋우려 합니다.",
+      "baseVersion": 2,
+      "status": "pending",
+      "createdAt": "2026-11-04T22:53:00+09:00",
+      "decidedAt": null
+    }
+  ],
+  "runs": [
+    {
+      "id": "run-demo-1",
+      "sessionId": "demo-1",
+      "mode": "consolidate",
+      "temperature": 0.7,
+      "status": "done",
+      "startedAt": "2026-11-04T22:50:00+09:00",
+      "finishedAt": "2026-11-04T22:52:10+09:00",
+      "currentNodeIds": [],
+      "insightIds": [
+        1,
+        2
+      ],
+      "proposalId": 1,
+      "error": null
+    }
+  ],
+  "calls": []
 }

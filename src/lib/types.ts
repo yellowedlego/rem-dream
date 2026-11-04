@@ -15,6 +15,26 @@ export interface MemoryNode {
   user: string;
   /** AI 답변 */
   ai: string;
+  /** 이야기에서 나왔으면 그 번호 */
+  storyId?: number;
+  /** rawText 안의 [시작, 끝) 글자 위치 */
+  storySpan?: [number, number];
+  /** 쪼갠 조각의 한 줄 주제 (화면 표시용) */
+  topic?: string;
+}
+
+/** 긴 이야기 한 편 — 원문은 한 글자도 바꾸지 않고 보관한다 */
+export interface Story {
+  /** 번호 */
+  id: number;
+  /** 세션 ID */
+  sessionId: string;
+  /** 사용자가 넣은 원문 그대로 */
+  rawText: string;
+  /** 쪼개져 나온 노드 번호들 (순서대로) */
+  nodeIds: number[];
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
 }
 
 /** REM 모드 이름. 모드는 파일 하나에 하나씩 추가할 수 있어서 문자열로 둔다. */
@@ -48,6 +68,56 @@ export interface PersonaVersion {
   parentVersion: number | null;
 }
 
+/** REM 한 번의 실행 */
+export interface RemRun {
+  id: string;
+  sessionId: string;
+  mode: RemModeId;
+  temperature: number;
+  status: "running" | "done" | "stopped" | "error";
+  startedAt: string;
+  finishedAt: string | null;
+  /** 지금 읽고 있는 노드 번호들 (화면이 빛낼 대상) */
+  currentNodeIds: number[];
+  /** 이 실행에서 만들어진 통찰 번호 */
+  insightIds: number[];
+  /** 완료 후 만들어진 수정 제안 번호 (없으면 null) */
+  proposalId: number | null;
+  error: string | null;
+}
+
+/** 인격 수정 제안. 승인 전에는 PersonaVersion이 아니다 */
+export interface PersonaProposal {
+  id: number;
+  runId: string;
+  /** 근거 통찰 */
+  sourceInsightIds: number[];
+  /** 제안하는 시스템 프롬프트 전문 */
+  proposedPrompt: string;
+  /** 사람에게 보여 줄 한두 줄 요약 ("자는 동안 이렇게 바뀌려 해요") */
+  summary: string;
+  baseVersion: number;
+  status: "pending" | "approved" | "rejected";
+  createdAt: string;
+  decidedAt: string | null;
+}
+
+/** 모델 요청 한 건 (디버그 화면의 로그·수치용) */
+export interface ModelCall {
+  id: number;
+  at: string;
+  purpose: "chat" | "rem-step" | "rem-proposal";
+  runId: string | null;
+  model: string;
+  temperature: number;
+  prompt: string;
+  response: string;
+  inputTokens: number | null;
+  outputTokens: number | null;
+  ms: number;
+  error: string | null;
+}
+
 /** data/store.json 한 파일의 모양 */
 export interface Store {
   nodes: MemoryNode[];
@@ -55,4 +125,12 @@ export interface Store {
   personas: PersonaVersion[];
   /** 지금 쓰는 인격 버전 번호 (되돌리기를 하면 이 값만 바뀐다) */
   activePersona: number;
+  /** 인격 수정 제안 목록 */
+  proposals: PersonaProposal[];
+  /** REM 실행 기록 */
+  runs: RemRun[];
+  /** 디버그용 모델 호출 기록 (선택) */
+  calls?: ModelCall[];
+  /** 긴 이야기 목록 */
+  stories: Story[];
 }
