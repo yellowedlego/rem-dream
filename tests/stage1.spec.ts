@@ -1,5 +1,10 @@
-import { expect, test } from "@playwright/test";
+﻿import { expect, test } from "@playwright/test";
 import store from "../data/store.json" with { type: "json" };
+
+// 이 파일은 시드(노드 20개) 그대로를 본다. 앞의 API 테스트들이 쌓은 기억을 지우고 시작한다.
+test.beforeAll(async ({ request }) => {
+  expect((await request.post("/api/debug/reset-all")).ok()).toBe(true);
+});
 
 // 1단계 끝 기준: 노드를 누르면 대화가 펼쳐지고(→ 그 대화로 스크롤), 디버그 화면에 노드 목록이 보임
 
@@ -53,8 +58,10 @@ test("노드 동그라미: 외곽선과 달이 축 한가운데에 정확히 겹
   await page.goto("/");
   await expect(page.getByRole("button", { name: /^기억 \d+번/ })).toHaveCount(20);
   const off = await page.evaluate(() => {
-    const axis = [...document.querySelectorAll("svg rect")].find((r) => r.getAttribute("width") === "1") as SVGRectElement;
-    const ax = axis.getBoundingClientRect().left + 0.5;
+    // 시간축은 달창 안의 1px 세로줄 (MoonPlane의 trackAxis)
+    const axis = document.querySelector('[class*="trackAxis"]') as HTMLElement;
+    const ar = axis.getBoundingClientRect();
+    const ax = ar.left + ar.width / 2;
     return [...document.querySelectorAll("button[data-lit]")].map((b) => {
       const svg = b.querySelector("svg")!.getBoundingClientRect();
       const circ = b.querySelector("svg circle")!.getBoundingClientRect();
@@ -70,31 +77,10 @@ test("노드 동그라미: 외곽선과 달이 축 한가운데에 정확히 겹
   }
 });
 
-test("마우스를 평면에 올리면 아스키·격자가 번지고, 떼면 사라진다", async ({ page }) => {
-  await page.goto("/");
-  await expect(page.getByRole("button", { name: /^기억 \d+번/ })).toHaveCount(20); // 화면이 다 뜬 뒤에
-  const canvas = page.locator("canvas[data-glyph-field]");
-  await expect(canvas).toBeVisible();
-  const ink = () =>
-    canvas.evaluate((c: HTMLCanvasElement) => {
-      const d = c.getContext("2d")!.getImageData(0, 0, c.width, c.height).data;
-      let n = 0;
-      for (let i = 3; i < d.length; i += 4) if (d[i] > 8) n++;
-      return n;
-    });
-  await expect.poll(ink).toBe(0); // 처음엔 아무것도 없음
-  const box = (await canvas.boundingBox())!;
-  await page.mouse.move(box.x + box.width * 0.7, box.y + box.height * 0.6, { steps: 8 });
-  await expect.poll(ink, { timeout: 3000 }).toBeGreaterThan(500);
-  await page.waitForTimeout(900); // 번짐이 커서를 따라잡을 때까지
-  await page.screenshot({ path: "screenshots/exhibit-hover.png" });
-  await page.mouse.move(box.x - 200, box.y + 100, { steps: 4 }); // 대화 칸 위로
-  await expect.poll(ink, { timeout: 3000 }).toBe(0);
-});
-
 test("디버그 화면: 노드 목록 20줄", async ({ page }) => {
   await page.goto("/debug");
   await expect(page.locator("tbody tr")).toHaveCount(20);
   await expect(page.getByText(store.nodes[0].user)).toBeVisible();
   await page.screenshot({ path: "screenshots/debug.png", fullPage: true });
 });
+

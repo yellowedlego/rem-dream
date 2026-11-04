@@ -1,0 +1,21 @@
+.nav {
+  display: flex;
+  gap: 4px;
+}
+.nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 14px;
+  color: var(--muted);
+  font-size: 14px;
+  text-decoration: none;
+}
+.nav a:hover {
+  color: var(--text);
+  background: var(--accent-wash);
+}
+.nav a[aria-current="page"] {
+  color: var(--accent);
+  background: var(--accent-wash);
+}

@@ -16,7 +16,7 @@ const pairs = [
   ["15:45", "친구랑 사소한 걸로 말다툼했어.", "사소하게 시작해도 마음이 계속 쓰이지. 지금은 좀 어때?"],
   ["16:30", "동아리에서 꿈 시스템 만든다고 발표했어.", "재밌는 주제다. 친구들 반응은 어땠어?"],
   ["17:20", "학원 가기 싫어서 버스 정류장에서 한참 서 있었어.", "가기 싫은 날도 있지. 그래도 갔어, 아니면 쉬었어?"],
-  ["18:10", "집에 오는 길에 비가 와서 다 젖었어.", "우산 없을 때 비는 정말 서럽지. 따뜻하게 씻고 쉬어."],
+  ["18:10", "집에 오는 길에 비가 와서 다젖었어.", "우산 없을 때 비는 정말 서럽지. 따뜻하게 씻고 쉬어."],
   ["19:00", "저녁에 엄마가 김치찌개 해 줬어.", "비 맞은 날 김치찌개면 딱이네. 몸 좀 녹았어?"],
   ["20:05", "수학 문제 몇 개 풀었는데 하나는 끝까지 못 풀었어.", "몇 개라도 풀었으면 오늘 계획은 지킨 거야. 막힌 건 내일 다시 보자."],
   ["21:15", "유튜브 보다가 한 시간이 그냥 지나갔어.", "그럴 때 있지. 그 한 시간이 쉬는 시간이었다고 생각해도 돼."],
@@ -45,6 +45,47 @@ const personas = [
   { version: 2, systemPrompt: BASE + "\n상대가 급해 보이면 먼저 할 일을 작게 나눠 준다.", sourceInsightIds: [1], approvedAt: "2026-11-04T22:52:00+09:00", parentVersion: 1 },
 ];
 
-const store = { nodes, insights, personas, activePersona: 2 };
+const runs = [
+  {
+    id: "run-demo-1",
+    sessionId: "demo-1",
+    mode: "consolidate",
+    temperature: 0.7,
+    status: "done",
+    startedAt: "2026-11-04T22:50:00+09:00",
+    finishedAt: "2026-11-04T22:52:10+09:00",
+    currentNodeIds: [],
+    insightIds: [1, 2],
+    proposalId: 1,
+    error: null,
+  },
+];
+
+const proposals = [
+  {
+    id: 1,
+    runId: "run-demo-1",
+    sourceInsightIds: [1],
+    proposedPrompt: BASE + "\n상대가 급해 보이면 먼저 할 일을 작게 나눠 준다.",
+    summary: "상대가 시험이나 과제로 급해 보일 때 먼저 범위를 묻고 작게 쪼개어 정리해 주도록 바뀝니다.",
+    baseVersion: 1,
+    status: "approved",
+    createdAt: "2026-11-04T22:51:30+09:00",
+    decidedAt: "2026-11-04T22:52:00+09:00",
+  },
+  {
+    id: 2,
+    runId: "run-demo-1",
+    sourceInsightIds: [3],
+    proposedPrompt: BASE + "\n상대가 급해 보이면 먼저 할 일을 작게 나눠 준다.\n맛있는 음식이나 좋아하는 것을 언급하며 기운을 북돋운다.",
+    summary: "친구가 지치거나 힘들어할 때 좋아하는 음식 이야기를 자연스럽게 꺼내며 기분을 북돋우려 합니다.",
+    baseVersion: 2,
+    status: "pending",
+    createdAt: "2026-11-04T22:53:00+09:00",
+    decidedAt: null,
+  },
+];
+
+const store = { nodes, insights, personas, activePersona: 2, proposals, runs, calls: [] };
 writeFileSync(new URL("../data/store.json", import.meta.url), JSON.stringify(store, null, 2) + "\n");
-console.log(`nodes=${nodes.length} insights=${insights.length} personas=${personas.length}`);
+console.log(`nodes=${nodes.length} insights=${insights.length} personas=${personas.length} proposals=${proposals.length} runs=${runs.length}`);

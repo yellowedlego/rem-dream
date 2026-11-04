@@ -169,3 +169,119 @@
   white-space: pre-wrap;
   color: var(--text);
 }
+
+/* ── 검색·삭제 (실제 작동하는 디버그) ── */
+.search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.search label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.search input,
+.search select {
+  height: 40px;
+  padding: 0 12px;
+  border: 0;
+  background: var(--bubble);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+}
+.search input {
+  width: min(360px, 60vw);
+}
+.search input::placeholder {
+  color: var(--muted);
+}
+
+.danger,
+.dangerSolid,
+.plain,
+.link {
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.danger,
+.plain,
+.dangerSolid {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 0;
+  white-space: nowrap;
+}
+.danger {
+  background: none;
+  color: var(--warn);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--warn) 45%, transparent);
+}
+.danger:hover {
+  background: color-mix(in srgb, var(--warn) 12%, transparent);
+}
+.dangerSolid {
+  background: var(--warn);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+.plain {
+  background: var(--panel);
+  color: var(--text);
+}
+.confirm {
+  display: inline-flex;
+  gap: 6px;
+  white-space: nowrap;
+}
+.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.controls .danger {
+  min-height: 36px;
+}
+
+.message {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  font-size: 14px;
+}
+.msgOk {
+  background: color-mix(in srgb, var(--ok) 13%, transparent);
+  color: var(--ok);
+}
+.msgErr {
+  background: color-mix(in srgb, var(--warn) 14%, transparent);
+  color: var(--warn);
+}
+.message .plain {
+  margin-left: auto;
+}
+
+.clip {
+  max-width: 320px;
+}
+.list li {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.list li .rowMeta {
+  width: 100%;
+}
