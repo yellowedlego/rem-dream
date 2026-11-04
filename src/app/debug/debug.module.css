@@ -33,7 +33,7 @@
   height: 36px;
   padding: 0 12px;
   border-radius: 8px;
-  border: 1px solid var(--line);
+  border: 0;
   background: var(--panel);
   color: var(--text);
   font: inherit;
@@ -51,8 +51,7 @@
   gap: 12px;
 }
 .stats div {
-  background: var(--panel);
-  border: 1px solid var(--line);
+  background: var(--surface);
   border-radius: 12px;
   padding: 12px 16px;
 }
@@ -64,23 +63,24 @@
   margin: 4px 0 0;
   font-family: var(--font-mono);
   font-size: 22px;
+  font-variant-numeric: tabular-nums;
 }
 
 .grid {
-  display: grid;
-  grid-template-columns: 1.5fr 1fr;
-  gap: 20px;
-  align-items: start;
-}
-.side {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
+/* 통찰과 인격 버전은 한 줄에 같은 높이로 */
+.side {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: stretch;
+}
 
 .card {
-  background: var(--panel);
-  border: 1px solid var(--line);
+  background: var(--surface);
   border-radius: 16px;
   padding: 16px 18px;
 }
@@ -97,6 +97,7 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
+  font-variant-numeric: tabular-nums;
 }
 .tableWrap th {
   text-align: left;
@@ -124,6 +125,9 @@
 .dim {
   color: var(--muted);
 }
+.tableWrap .num {
+  text-align: right;
+}
 
 .list {
   list-style: none;
@@ -146,7 +150,7 @@
   color: var(--muted);
 }
 .tag {
-  color: var(--moon);
+  color: var(--accent);
 }
 .active {
   color: var(--ok);

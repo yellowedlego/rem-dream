@@ -1,21 +1,28 @@
 /* 색은 여기서만 정한다. 화면 코드에는 변수만 쓴다. */
 :root {
-  --bg: #15121c;
-  --panel: #1e1a28;
-  --line: #322c3f;
-  --text: #efe9f4;
-  --muted: #9b91aa;
-  --accent: #c4b2ff;
-  --accent-soft: #3a3058;
-  --accent-text: #d9cfff;
-  --moon: #f2d68b;
+  /* 밤: 보라는 바닥과 작은 포인트에만 */
+  --bg: #14111c;
+  --surface: #1a1626; /* 한 단계 밝은 바닥: 선 대신 톤 차이로 영역을 나눈다 */
+  --panel: #1f1a2c;
+  --bubble: #262033; /* 내 말 */
+  --bubble-ai: #2c2444; /* AI 말: 보라 기운 */
+  --line: #322c3f; /* 표 안쪽 선에만 */
+  --text: #f1ece6;
+  --muted: #a39cae;
+  --dim: #8a8298; /* 안 비친 노드 글자, --bg 위 4.5:1 이상 */
+
+  /* 꿈: 연한 노랑(달빛)이 주 색 */
+  --accent: #efdfa6;
+  --accent-ink: #1a1626; /* 노랑 위 글자 */
+  --accent-wash: rgba(239, 223, 166, 0.07);
+
+  /* 보라 포인트 */
+  --point: #b9a3f5;
+  --point-wash: rgba(185, 163, 245, 0.09);
+
   --ok: #8fd6b4;
   --warn: #f2a38b;
-  --node: #241f31;
-  --node-edge: #4a4260;
-  --plane-glow: rgba(196, 178, 255, 0.07);
-  --dim: #5f5770;
-  --accent-soft-bg: rgba(196, 178, 255, 0.06);
+  --node-edge: #554c6c;
 }
 
 * {

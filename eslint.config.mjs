@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // 외부 스킬 코드는 검사하지 않는다
+    ".claude/**",
   ]),
 ]);
 

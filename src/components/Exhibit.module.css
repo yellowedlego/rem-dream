@@ -1,7 +1,10 @@
+/* 영역 구분은 선 대신 바닥 톤 차이(--bg / --surface)로 한다 */
+
 .shell {
   height: 100dvh;
   display: grid;
   grid-template-rows: auto 1fr auto;
+  background: var(--bg);
 }
 
 .header {
@@ -9,7 +12,6 @@
   align-items: center;
   justify-content: space-between;
   padding: 20px 36px;
-  border-bottom: 1px solid var(--line);
 }
 
 .brand {
@@ -57,22 +59,24 @@
 .chat {
   min-height: 0;
   overflow-y: auto;
-  padding: 12px 0 40vh;
-  border-right: 1px solid var(--line);
+  padding: 16px 0 40vh;
+  background: var(--surface);
   scrollbar-width: thin;
-  scrollbar-color: var(--line) transparent;
+  scrollbar-color: var(--bubble) transparent;
 }
 
 .pair {
-  padding: 22px 36px 24px;
+  padding: 18px 36px 22px;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  border-bottom: 1px solid var(--line);
   scroll-margin: 40px;
 }
+.pair + .pair {
+  margin-top: 12px;
+}
 .pairSelected {
-  background: var(--accent-soft-bg);
+  background: var(--point-wash);
 }
 
 .meta {
@@ -81,6 +85,9 @@
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--muted);
+}
+.pairSelected .meta {
+  color: var(--point);
 }
 
 .user,
@@ -94,20 +101,18 @@
 }
 .user {
   align-self: flex-end;
-  background: var(--panel);
+  background: var(--bubble);
   border-bottom-right-radius: 4px;
 }
 .ai {
   align-self: flex-start;
-  color: var(--accent-text);
-  border: 1px solid var(--line);
+  background: var(--bubble-ai);
   border-bottom-left-radius: 4px;
 }
 
 .plane {
   position: relative;
   min-height: 0;
-  background: radial-gradient(ellipse at 30% 50%, var(--plane-glow), transparent 70%);
 }
 
 .hint {
@@ -119,14 +124,14 @@
   color: var(--muted);
 }
 
-/* ── 빛줄기 ── */
+/* ── 빛줄기 (달빛) ── */
 .overlay {
   position: absolute;
   inset: 0;
   pointer-events: none;
 }
 .axis {
-  stroke: var(--line);
+  stroke: var(--node-edge);
   stroke-width: 1;
 }
 .beam polygon {
@@ -140,22 +145,20 @@
   fill: var(--accent);
 }
 
-/* ── 노드 ── */
+/* ── 노드: 줄 전체가 누르는 영역 (높이는 줄 간격만큼, 최대 44px) ── */
 .node {
   position: absolute;
-  translate: -11px -11px;
   display: flex;
   align-items: center;
   gap: 14px;
-  height: 22px;
-  padding: 0 8px 0 0;
+  padding: 0 12px 0 0;
   border: 0;
+  border-radius: 6px;
   background: none;
   color: var(--dim);
   font: inherit;
   font-size: 13px;
   cursor: pointer;
-  border-radius: 11px;
 }
 
 .dot {
@@ -202,12 +205,13 @@
 .node:hover,
 .node:focus-visible {
   color: var(--text);
+  background: var(--accent-wash);
 }
 .node:hover .dot::after {
   border-color: var(--accent);
 }
 .nodeSelected .dot {
-  border-color: var(--moon);
+  border-color: var(--point);
 }
 
 /* ── 아래 입력줄 ── */
@@ -216,7 +220,7 @@
   align-items: flex-end;
   gap: 12px;
   padding: 18px 36px 24px;
-  border-top: 1px solid var(--line);
+  background: var(--surface);
 }
 
 .field,
@@ -236,8 +240,8 @@
   height: 48px;
   padding: 0 16px;
   border-radius: 12px;
-  border: 1px solid var(--line);
-  background: var(--panel);
+  border: 0;
+  background: var(--bubble);
   color: var(--text);
   font: inherit;
   font-size: 15px;
@@ -247,6 +251,7 @@
 .sleep {
   height: 48px;
   padding: 0 22px;
+  border: 0;
   border-radius: 12px;
   font: inherit;
   font-size: 15px;
@@ -254,14 +259,12 @@
   cursor: pointer;
 }
 .send {
-  border: 0;
-  background: var(--text);
-  color: var(--bg);
+  background: var(--bubble-ai);
+  color: var(--text);
 }
 .sleep {
-  border: 1.5px solid var(--moon);
-  background: transparent;
-  color: var(--moon);
+  background: var(--accent);
+  color: var(--accent-ink);
 }
 
 .footer :disabled {

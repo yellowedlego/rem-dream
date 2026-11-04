@@ -56,36 +56,6 @@ async function DebugData() {
       </dl>
 
       <main className={styles.grid}>
-        <section aria-labelledby="nodes-h" className={styles.card}>
-          <h2 id="nodes-h">기억 노드 {nodes.length}개</h2>
-          <div className={styles.tableWrap}>
-            <table>
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>세션</th>
-                  <th>순서</th>
-                  <th>시각</th>
-                  <th>유저 입력</th>
-                  <th>AI 답변</th>
-                </tr>
-              </thead>
-              <tbody>
-                {nodes.map((n) => (
-                  <tr key={n.id}>
-                    <td className={styles.mono}>{n.id}</td>
-                    <td className={styles.mono}>{n.sessionId}</td>
-                    <td className={styles.mono}>{n.order}</td>
-                    <td className={styles.mono}>{t(n.createdAt)}</td>
-                    <td>{n.user}</td>
-                    <td className={styles.dim}>{n.ai}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-
         <div className={styles.side}>
           <section aria-labelledby="ins-h" className={styles.card}>
             <h2 id="ins-h">통찰 {insights.length}개</h2>
@@ -124,6 +94,36 @@ async function DebugData() {
             </ul>
           </section>
         </div>
+        <section aria-labelledby="nodes-h" className={styles.card}>
+          <h2 id="nodes-h">기억 노드 {nodes.length}개</h2>
+          <div className={styles.tableWrap}>
+            <table>
+              <thead>
+                <tr>
+                  <th className={styles.num}>#</th>
+                  <th>세션</th>
+                  <th className={styles.num}>순서</th>
+                  <th>시각</th>
+                  <th>유저 입력</th>
+                  <th>AI 답변</th>
+                </tr>
+              </thead>
+              <tbody>
+                {nodes.map((n) => (
+                  <tr key={n.id}>
+                    <td className={`${styles.mono} ${styles.num}`}>{n.id}</td>
+                    <td className={styles.mono}>{n.sessionId}</td>
+                    <td className={`${styles.mono} ${styles.num}`}>{n.order}</td>
+                    <td className={styles.mono}>{t(n.createdAt)}</td>
+                    <td>{n.user}</td>
+                    <td className={styles.dim}>{n.ai}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
       </main>
     </div>
   );

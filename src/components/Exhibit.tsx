@@ -25,6 +25,8 @@ interface Geo {
   edgeX: number; // 대화 칸 오른쪽 끝
   axisX: number; // 시간축 x
   nodeY: Map<number, number>;
+  /** 노드 한 줄의 높이 = 누르는 영역 (겹치지 않게 줄 간격, 최대 44px) */
+  rowH: number;
   segs: Seg[];
   w: number;
   h: number;
@@ -77,7 +79,9 @@ export default function Exhibit({ nodes, personaVersion }: { nodes: MemoryNode[]
     const nodeY = new Map<number, number>();
     for (const n of sorted) nodeY.set(n.id, p.top - m.top + AXIS_PAD + (tRatio.get(n.id) ?? 0) * usable);
 
+    const step = sorted.length > 1 ? usable / (sorted.length - 1) : 44;
     setGeo({
+      rowH: Math.min(44, Math.floor(step)),
       edgeX: c.right - m.left,
       axisX: p.left - m.left + Math.min(140, p.width * 0.28),
       nodeY,
@@ -193,7 +197,12 @@ export default function Exhibit({ nodes, personaVersion }: { nodes: MemoryNode[]
                 key={n.id}
                 type="button"
                 className={`${styles.node} ${on ? styles.nodeOn : ""} ${n.id === selectedId ? styles.nodeSelected : ""}`}
-                style={{ left: geo.axisX, top: geo.nodeY.get(n.id), ["--k" as string]: k }}
+                style={{
+                  left: geo.axisX - 11,
+                  top: (geo.nodeY.get(n.id) ?? 0) - geo.rowH / 2,
+                  height: geo.rowH,
+                  ["--k" as string]: k,
+                }}
                 aria-label={`기억 ${n.order}번: ${n.user}`}
                 onClick={() => jumpTo(n.id)}
               >
