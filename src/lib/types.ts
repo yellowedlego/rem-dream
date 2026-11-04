@@ -1,4 +1,4 @@
-// 꿈(REM) 시스템의 데이터 약속 — docs/plan.md "데이터 모양 (초안)"을 그대로 옮김.
+﻿// 꿈(REM) 시스템의 데이터 약속 — docs/plan.md "데이터 모양 (초안)"을 그대로 옮김.
 // 화면(/, /debug)은 이 모양을 읽기만 한다.
 
 /** 노드 = 채팅 한 번 = {유저 입력, AI 답변} 한 쌍 */
@@ -17,8 +17,12 @@ export interface MemoryNode {
   ai: string;
   /** 이야기에서 나왔으면 그 번호 */
   storyId?: number;
-  /** rawText 안의 [시작, 끝) 글자 위치 */
-  storySpan?: [number, number];
+  /**
+   * 원문(Story.rawText) 안의 [시작, 끝) 글자 위치들. 이야기가 A→B→A처럼 뒤섞였으면
+   * 같은 주제(A)의 떨어진 구간이 한 노드에 여러 개 들어간다. 이야기 하나의 모든 노드의 구간을
+   * 합치면 원문 전체가 빈틈·겹침 없이 덮인다. (docs/backend-plan.md "이야기 전처리 규칙")
+   */
+  storySpans?: [number, number][];
   /** 쪼갠 조각의 한 줄 주제 (화면 표시용) */
   topic?: string;
 }
@@ -66,7 +70,30 @@ export interface PersonaVersion {
   approvedAt: string;
   /** 이전 버전 번호 (처음 인격은 null) */
   parentVersion: number | null;
+  /** 이 인격을 만든 의미 파일들 (없으면 빈 배열 또는 생략) */
+  sourceMeaningIds?: number[];
 }
+
+/**
+ * 의미 파일(별): 이야기 노드들을 합쳐 뽑은 의미. 이야기 하나에서 1개 이상 나올 수 있고,
+ * 노드 하나가 여러 의미에 속할 수 있다. 인격은 승인된 의미 파일들로 구성한다.
+ */
+export interface Meaning {
+  id: number;
+  storyId: number;
+  sessionId: string;
+  /** 이 별로 합쳐진 노드들 */
+  nodeIds: number[];
+  /** 한 줄 제목 */
+  title: string;
+  /** 이 이야기가 말해 주는 것, 한두 문장 */
+  essence: string;
+  keywords: string[];
+  createdAt: string;
+}
+
+/** 이야기를 나눈 방법: AI가 맥락을 읽었는지, 규칙으로 나눴는지(모델이 없거나 실패했을 때) */
+export type SplitMethod = "ai" | "rule";
 
 /** REM 한 번의 실행 */
 export interface RemRun {
@@ -102,11 +129,14 @@ export interface PersonaProposal {
   decidedAt: string | null;
 }
 
+/** 모델을 부른 목적 */
+export type ModelPurpose = "chat" | "story-split" | "story-meaning" | "rem-step" | "rem-proposal";
+
 /** 모델 요청 한 건 (디버그 화면의 로그·수치용) */
 export interface ModelCall {
   id: number;
   at: string;
-  purpose: "chat" | "rem-step" | "rem-proposal";
+  purpose: ModelPurpose;
   runId: string | null;
   model: string;
   temperature: number;
@@ -133,4 +163,7 @@ export interface Store {
   calls?: ModelCall[];
   /** 긴 이야기 목록 */
   stories: Story[];
+  /** 의미 파일(별) 목록 */
+  meanings: Meaning[];
 }
+

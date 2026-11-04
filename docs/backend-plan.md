@@ -1,4 +1,4 @@
-# 꿈(REM) 시스템 — 백엔드 구현 계획 (사람 A용)
+﻿# 꿈(REM) 시스템 — 백엔드 구현 계획 (사람 A용)
 
 파일: `docs/backend-plan.md` · 상위 문서: [plan.md](plan.md) (기획서) · 작성일 2026-11-04
 
@@ -111,7 +111,7 @@ export interface Story {
 }
 // MemoryNode에 선택 필드 추가:
 //   storyId?: number;                 // 이야기에서 나왔으면 그 번호
-//   storySpan?: [number, number];     // rawText 안의 [시작, 끝) 글자 위치
+//   storySpans?: [number, number][];  // rawText 안의 [시작, 끝) 글자 위치들 (뒤섞인 이야기면 여러 개)
 //   topic?: string;                   // 쪼갠 조각의 한 줄 주제 (화면 표시용)
 ```
 
@@ -126,7 +126,8 @@ export interface Story {
 | --- | --- | --- |
 | `POST /api/chat` `{ sessionId, message, model? }` | 활성 인격으로 모델을 불러 답을 받고 노드 1개를 저장해 `{ node }` 반환. REM 실행 중이면 `409` | 2 |
 | `GET /api/state?sessionId=` | 그 세션의 `nodes`, `insights`, `proposals`, `activePersona`, 지금 `RemRun` 한 번에 반환 (화면이 불러올 때 쓰는 읽기용) | 2 |
-| `POST /api/story` `{ sessionId, text }` | 긴 이야기를 **맥락 단위로 쪼개 노드 여러 개**로 저장하고 `{ story, nodes }` 반환 (아래 "이야기 쪼개기 규칙" 참고) | 2 |
+| `POST /api/story` `{ sessionId, text }` | 긴 이야기를 **AI가 맥락을 읽어 노드 여러 개**로 나눠 저장하고, 그 노드들을 합친 의미 파일(별) 1개 이상도 만들어 `{ story, nodes, meanings, method }` 반환 (아래 "이야기 전처리 규칙"·"의미 파일" 참고) | 2 |
+| `GET /api/meanings?sessionId=`, `DELETE /api/meanings/[id]` | 의미 파일 목록·삭제 (디버그 화면용) | 2 |
 | `GET /api/sessions` | 세션 목록 `[{ sessionId, nodeCount, lastAt, preview }]` (대화 화면 사이드바, 디버그 검색용) | 2 |
 | `GET /api/nodes?sessionId=&q=&limit=` | 세션·내용 검색. `q`는 세션 번호·유저 입력·AI 답변·주제에 부분 일치. `sessionId`를 안 주면 전체 | 2 |
 | `DELETE /api/nodes/[id]` | 노드 하나 삭제 (그 노드를 근거로 한 통찰은 남기되 근거 번호에서 뺌) | 2 |
@@ -143,16 +144,44 @@ export interface Story {
 | `GET /api/debug/calls`, `GET /api/debug/metrics` | `ModelCall` 목록, 노드·통찰 수·토큰 합계·평균 응답 시간·오류 횟수 | 6 |
 | `POST /api/debug/reset-all` | 전체 초기화(시드로 되돌림) | 6 |
 
-### 이야기 쪼개기 규칙 (`POST /api/story`) — 전처리, 정보를 잃지 않기
+### 이야기 전처리 규칙 (`POST /api/story`) — AI가 맥락을 읽어 나누고, 정보는 잃지 않기
 
-긴 이야기를 모델에게 "요약"시키지 않고 **어디서 끊을지만** 정하게 한다.
+긴 이야기는 **AI(모델)가 맥락을 읽고 나누는 것이 기본**이다. 규칙(알고리즘)으로는 "무엇이 같은 얘기인지"를 알 수 없으므로, 규칙 분리는 모델이 실패했을 때의 **대체 경로**일 뿐이다.
+모델에게 "요약"시키지 않고 **어디서 끊고 무엇끼리 묶을지만** 정하게 한다. 이야기가 "A 하다가 아 맞다 B, 또 C, 다시 A"처럼 **뒤섞여 있어도** 같은 주제(A)는 한 노드로 묶는다.
 
-1. 모델은 `[{ start, end, topic }]`(원문 글자 위치와 한 줄 주제)만 돌려준다. 본문을 다시 쓰게 하지 않는다.
-2. 서버가 검증한다: 구간이 **빈틈·겹침 없이 원문 전체를 덮는지**, 첫 구간이 0에서 시작해 마지막이 `rawText.length`에서 끝나는지. 실패하면 한 번 다시 시키고, 그래도 안 되면 문단·문장 기준으로 직접 자른다(모델 없이도 항상 성공).
-3. 각 구간이 노드 하나가 된다. 노드의 `user`에는 **원문 조각을 그대로**(공백 포함) 넣는다. `ai`에는 그 조각에 대한 짧은 반응 한두 줄. 구간 글자를 이어 붙이면 `rawText`와 같아야 한다(테스트로 확인).
-4. 노드 수 상한(기본 12). 넘으면 인접한 구간을 합친다. 입력 길이 상한(기본 8,000자)을 넘으면 `413`.
-5. `rawText`는 `Story`에 따로 남아서, 노드를 지워도 원문은 남는다(`DELETE /api/stories/[id]`로만 사라짐).
+1. **모델 호출 1 — 나누기.** 입력: 원문 전체. 출력(JSON): `[{ topic, spans: [[start, end], ...] }]`. `spans`는 원문 글자 위치이고, 같은 주제의 떨어진 구간이 여러 개 들어갈 수 있다. 본문을 다시 쓰게 하지 않는다. 글자 위치를 틀리기 쉬우므로, 프롬프트에는 원문을 문장 번호가 붙은 목록으로 주고 모델은 **문장 번호**로 답하게 한 뒤 서버가 글자 위치로 바꾼다.
+2. **서버 검증.** 모든 노드의 구간을 합치면 원문 전체가 빈틈·겹침 없이 덮여야 한다(0에서 시작해 `rawText.length`에서 끝남). 실패하면 한 번 다시 시키고, 그래도 안 되면 문단·문장 기준으로 순서대로 직접 자른다(모델 없이도 항상 성공). 응답의 `method`는 `"ai"` 또는 `"rule"`로 어느 쪽이 썼는지 알려 준다(화면이 "임시 분리"인지 표시한다).
+3. 각 주제가 노드 하나가 된다. 노드의 `user`에는 **자기 구간의 원문을 그대로**(공백 포함) 순서대로 넣고, 구간이 여럿이면 줄바꿈 하나(`\n`)로만 이어 붙인다. `ai`에는 그 내용에 대한 짧은 반응 한두 줄. 노드마다 `storySpans`에 구간을 기록한다. 테스트: 모든 `storySpans`가 원문을 정확히 덮고, `user === 구간들의 원문을 \n으로 이은 것`.
+4. **모델 호출 2 — 의미 뽑기.** 입력: 이야기 노드들. 출력: 아래 "의미 파일(별)" 한 개. 호출 1과 합쳐서 한 번에 시켜도 된다(구조화된 출력).
+5. 노드 수 상한(기본 12). 넘으면 가장 짧은 주제를 앞 주제에 합친다. 입력 길이 상한(기본 8,000자)을 넘으면 `413`.
+6. `rawText`는 `Story`에 따로 남아서, 노드를 지워도 원문은 남는다(`DELETE /api/stories/[id]`로만 사라짐).
 
+> 프론트의 가짜 API(`src/app/api-mock/_lib/mockStore.ts`)는 모델 대신 규칙으로 흉내 낸다: "아 맞다·그러고 보니·근데·아무튼" 같은 끼어들기·되돌아가기 신호와 겹치는 단어로 주제를 묶고, 응답에 `method: "rule"`을 단다. **실제 백엔드가 만들 때 이 규칙을 따라 하지 말고 모델 호출 1·2로 구현한다.**
+
+### 의미 파일(별) — 이야기에서 뽑은 의미, 인격의 재료
+
+이야기 하나를 노드 여러 개로 나눈 뒤, 그 노드들을 **별 하나로 합쳐 "의미"를 뽑은 파일**이 의미 파일이다. 화면에서는 노드들이 구름처럼 흩어졌다가 빛을 모아 별 하나가 되는 그래프로 보인다.
+**인격(시스템 프롬프트)은 승인된 의미 파일들로 구성한다.** (`plan.md`의 통찰과 같은 자리에서 쓰이며, 통찰이 REM이 만든 것이라면 의미 파일은 이야기 전처리가 만든 것이다.)
+
+```ts
+export interface Meaning {
+  id: number;
+  storyId: number;          // 어느 이야기에서 나왔나. 이야기 하나에서 의미 파일이 2개 이상 나올 수 있다 (1:N)
+  sessionId: string;
+  nodeIds: number[];        // 이 별로 합쳐진 노드들. 노드 하나가 여러 별에 속할 수 있다 (N:M). 전부가 아니어도 됨
+  title: string;            // 한 줄 제목 (별 옆에 표시)
+  essence: string;          // 이 이야기가 말해 주는 것, 한두 문장
+  keywords: string[];       // 선택, 3~5개
+  createdAt: string;
+}
+// PersonaVersion에 추가: sourceMeaningIds: number[]   // 이 인격을 만든 의미 파일들
+```
+
+- **여러 개 뽑기 (AI가 한다):** 의미는 규칙으로 못 뽑는다. 모델 호출 2가 노드들을 읽고 **의미 파일을 1개 이상(상한 기본 5)** 돌려준다. 한 노드가 두 가닥(두 의미)에 걸치면 그 노드의 id가 두 의미 파일의 `nodeIds`에 모두 들어가고, 서로 다른 의미가 둘 이상 나와도 된다. 모든 노드가 어떤 의미에 속할 필요는 없다(의미 없는 잡담 노드는 어디에도 안 속함).
+- `POST /api/story` 응답: `{ story, nodes, meanings, method }` (`meanings`는 배열. 한 개만 나와도 배열이다)
+- `GET /api/meanings?sessionId=` / `DELETE /api/meanings/[id]` (디버그 화면용)
+- **인격 조립:** 제안(`PersonaProposal`)을 만들 때 근거로 통찰과 함께 의미 파일을 넣는다. 승인된 인격 버전은 `sourceMeaningIds`로 어떤 의미 파일에서 왔는지 추적한다. 의미 파일을 지워도 이미 승인된 인격 버전은 그대로 남는다.
+- 프론트의 가짜 API는 `meanings`를 **임시 문구**로 채운다(지금은 1개만)(주제 이름을 모아 둔 값). 의미를 실제로 뽑는 것은 위 "모델 호출 2"의 일이다.
 `sessionId`는 관람객 한 명 = 한 세션이다. `plan.md`의 미정 항목("관람객마다 기억을 따로 둘지")은 **기본값(따로)** 으로 간다.
 
 ## 6. 폴더 구조 (새로 만들 파일)
@@ -166,7 +195,8 @@ src/lib/
     client.ts               모델 호출 한 곳. 입력: 프롬프트·온도 → 출력: 텍스트·토큰·시간. ModelCall 기록까지 여기서
     mock.ts                 MODEL_MOCK=1일 때 쓰는 가짜 응답
   story/
-    split.ts                이야기 쪼개기: 모델이 준 구간 검증 + 모델 없이 문단·문장으로 자르는 대체 경로
+    split.ts                이야기 전처리: 모델이 준 구간 검증 + 모델이 실패했을 때 문단·문장으로 자르는 대체 경로
+    meaning.ts              의미 파일(별) 만들기·저장, 인격 조립에 쓸 목록
   persona.ts                활성 인격 읽기, 제안 승인/되돌리기
   rem/
     types.ts                RemMode 인터페이스
@@ -207,7 +237,7 @@ export interface RemMode {
 - [ ] `src/lib/store.ts`: 런타임 저장소, 원자적 쓰기, `addNode()`
 - [ ] `src/lib/model/client.ts`, `mock.ts`
 - [ ] `src/app/api/chat/route.ts`, `src/app/api/state/route.ts`
-- [ ] `src/app/api/story/route.ts`, `src/lib/story/split.ts` (5절의 이야기 쪼개기 규칙)
+- [ ] `src/app/api/story/route.ts`, `src/lib/story/split.ts` (5절의 이야기 전처리 규칙: 모델 호출 1·2 + 검증 + 규칙 대체 경로)
 - [ ] `src/app/api/{sessions,nodes,stories,sessions/[sessionId]}/…/route.ts` (검색·삭제, 디버그 화면용)
 - [ ] `tests/api-chat.spec.ts`, `tests/api-story.spec.ts` (MODEL_MOCK=1). 이야기 테스트는 "조각을 이어 붙이면 원문과 같다"를 확인
 - **끝 기준:** 채팅을 보내면 노드가 저장되고, 서버를 껐다 켜도(새로고침 포함) 남아 있다. 키 없이 `MODEL_MOCK=1`로도 같은 흐름이 돈다. 긴 이야기를 넣으면 원문이 그대로 보존된 노드 여러 개가 생긴다.
@@ -274,3 +304,8 @@ export interface RemMode {
 - [ ] 모드 2를 "무작위 두 기억 짝짓기 + 높은 온도"로 확정할지 (`plan.md` 미정 항목)
 - [ ] 하루 이야기를 노드 하나로 만들지 문장 단위로 쪼갤지 (기본값: 노드 하나)
 - [ ] REM 한 번에 읽을 노드 상한 (기본값 12)
+
+
+
+
+

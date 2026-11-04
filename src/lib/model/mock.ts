@@ -1,8 +1,10 @@
+﻿import type { ModelPurpose } from "@/lib/types";
+
 export interface MockModelOptions {
   prompt: string;
   systemInstruction?: string;
   temperature?: number;
-  purpose: "chat" | "rem-step" | "rem-proposal";
+  purpose: ModelPurpose;
   runId?: string;
 }
 

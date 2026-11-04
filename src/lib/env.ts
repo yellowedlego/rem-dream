@@ -1,4 +1,4 @@
-import "server-only";
+﻿import "server-only";
 
 export interface EnvConfig {
   geminiApiKey: string;
@@ -8,7 +8,7 @@ export interface EnvConfig {
 
 export function getEnv(): EnvConfig {
   const isMock = process.env.MODEL_MOCK === "1" || process.env.MODEL_MOCK === "true";
-  const geminiModel = process.env.GEMINI_MODEL?.trim() || "gemini-2.5-flash";
+  const geminiModel = process.env.GEMINI_MODEL?.trim() || "gemini-3.6-flash"; // 정식 출시(GA) Flash. 실제 값은 .env.local의 GEMINI_MODEL
   const geminiApiKey = process.env.GEMINI_API_KEY?.trim() || "";
 
   return {
