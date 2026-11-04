@@ -15,6 +15,27 @@ export interface MemoryNode {
   user: string;
   /** AI 답변 */
   ai: string;
+  /** 긴 이야기에서 쪼개져 나온 노드면 그 이야기 번호 */
+  storyId?: number;
+  /**
+   * 원문(Story.rawText) 안의 [시작, 끝) 글자 위치들. 이야기가 A→B→A처럼 뒤섞였으면
+   * 같은 주제(A)의 떨어진 구간이 한 노드에 여러 개 들어간다. 이야기 하나의 모든 노드의 구간을
+   * 합치면 원문 전체가 빈틈·겹침 없이 덮여야 한다.
+   */
+  storySpans?: [number, number][];
+  /** 쪼갠 조각의 한 줄 주제 (화면 표시용) */
+  topic?: string;
+}
+
+/** 긴 이야기 한 편 — 원문은 한 글자도 바꾸지 않고 보관한다 (docs/backend-plan.md 4·5절) */
+export interface Story {
+  id: number;
+  sessionId: string;
+  /** 사용자가 넣은 원문 그대로 */
+  rawText: string;
+  /** 쪼개져 나온 노드 번호들 (순서대로) */
+  nodeIds: number[];
+  createdAt: string;
 }
 
 /** REM 모드 이름. 모드는 파일 하나에 하나씩 추가할 수 있어서 문자열로 둔다. */
@@ -53,6 +74,8 @@ export interface Store {
   nodes: MemoryNode[];
   insights: Insight[];
   personas: PersonaVersion[];
+  /** 긴 이야기 원문들. 시드(data/store.json)에는 없을 수 있어서 선택 */
+  stories?: Story[];
   /** 지금 쓰는 인격 버전 번호 (되돌리기를 하면 이 값만 바뀐다) */
   activePersona: number;
 }
