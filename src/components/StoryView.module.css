@@ -271,3 +271,123 @@
   margin-top: 10px;
 }
 
+
+/* ── 그래프 아래의 별·노드 상자: 두 목록의 스크롤은 서로 따로다 ── */
+.deck {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.panel {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+}
+.panelHead {
+  margin: 0;
+  padding: 10px 14px 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.panelHead span {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 400;
+}
+.panelEmpty {
+  margin: 0;
+  padding: 4px 14px 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0 6px 8px;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(239 223 166 / 0.3) transparent;
+}
+/* 별은 3개까지는 한눈에 다 펼쳐 보이고, 4개부터 이 칸 안에서 스크롤한다 */
+.starList[data-scroll="true"] {
+  max-height: 270px;
+}
+.nodeList {
+  max-height: 320px;
+}
+.item {
+  width: 100%;
+  display: grid;
+  gap: 4px;
+  padding: 9px 10px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.item:hover {
+  background: var(--accent-wash);
+}
+.item[data-linked] {
+  box-shadow: inset 3px 0 0 rgb(239 223 166 / 0.4);
+}
+.item[aria-pressed="true"] {
+  background: rgb(239 223 166 / 0.14);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.itemHead {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  font-size: 14px;
+}
+/* 별 번호 칸(★1)은 노드 번호 칸과 같은 모양이되, 글자가 더 들어가므로 가로로 조금 넓힌다 */
+.starChip {
+  min-width: 30px;
+  text-align: center;
+}
+.itemMeta {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+.itemText {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text);
+  /* 평소엔 두 줄까지만 보여 한눈에 훑어보게, 눌러서 보는 동안에는 전부 */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.item[aria-pressed="true"] .itemText {
+  -webkit-line-clamp: unset;
+  display: block;
+}
+.itemReply {
+  margin-top: 2px;
+  padding: 6px 10px;
+  background: var(--bubble-ai);
+  font-size: 13px;
+  line-height: 1.55;
+}
+/* 원문 보기: 포커스한 달·별의 구간만 또렷하게 */
+.seg[data-hot="off"] {
+  opacity: 0.38;
+}
+.seg[data-hot="on"] {
+  box-shadow: 0 0 0 1px var(--accent);
+}

@@ -16,6 +16,8 @@ export interface CallModelOptions {
   systemInstruction?: string;
   /** 이번 글 앞에 넣을 대화 기록 (오래된 것부터) */
   history?: ChatTurn[];
+  /** 이번 글에 함께 보내는 이미지 (이미 검사를 통과한 것. base64) */
+  images?: { mimeType: string; data: string }[];
   temperature?: number;
   maxOutputTokens?: number;
   /** JSON으로 받기: 스키마를 주면 모델이 그 모양으로만 답한다 (Gemini responseSchema) */
@@ -97,7 +99,13 @@ export async function callModel(opts: CallModelOptions): Promise<CallModelResult
         ...(opts.history ?? [])
           .filter((t) => t.text.trim())
           .map((t) => ({ role: t.role, parts: [{ text: t.text }] })),
-        { role: "user", parts: [{ text: opts.prompt }] },
+        {
+          role: "user",
+          parts: [
+            { text: opts.prompt },
+            ...(opts.images ?? []).map((img) => ({ inlineData: { mimeType: img.mimeType, data: img.data } })),
+          ],
+        },
       ];
 
       const generationConfig: Record<string, unknown> = { temperature };
@@ -139,7 +147,8 @@ export async function callModel(opts: CallModelOptions): Promise<CallModelResult
 
       inputTokens =
         data.usageMetadata?.promptTokenCount ??
-        estimateTokens(opts.prompt + (opts.systemInstruction || "") + (opts.history ?? []).map((t) => t.text).join(""));
+        estimateTokens(opts.prompt + (opts.systemInstruction || "") + (opts.history ?? []).map((t) => t.text).join("")) +
+          (opts.images?.length ?? 0) * 258;
       outputTokens = data.usageMetadata?.candidatesTokenCount ?? estimateTokens(resultText);
     }
   } catch (err) {
@@ -152,7 +161,8 @@ export async function callModel(opts: CallModelOptions): Promise<CallModelResult
         runId: opts.runId ?? null,
         model: env.isMock ? `mock-${model}` : model,
         temperature,
-        prompt: opts.prompt,
+        // 이미지 데이터(base64)는 기록에 남기지 않고 장 수만 적는다
+        prompt: opts.images?.length ? `[이미지 ${opts.images.length}장] ${opts.prompt}` : opts.prompt,
         response: resultText,
         inputTokens: callError ? null : inputTokens,
         outputTokens: callError ? null : outputTokens,

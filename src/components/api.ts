@@ -77,8 +77,11 @@ const qs = (o: Record<string, string | undefined>) => {
 };
 
 export const api = {
-  chat: (sessionId: string, message: string) =>
-    call<{ node: MemoryNode }>("/chat", { method: "POST", body: JSON.stringify({ sessionId, message }) }),
+  chat: (sessionId: string, message: string, images?: { mimeType: string; data: string }[]) =>
+    call<{ node: MemoryNode }>("/chat", {
+      method: "POST",
+      body: JSON.stringify({ sessionId, message, ...(images && images.length > 0 ? { images } : {}) }),
+    }),
   story: (sessionId: string, text: string) =>
     call<StoryResult>("/story", { method: "POST", body: JSON.stringify({ sessionId, text }) }),
   // 서버는 배열 그대로 준다

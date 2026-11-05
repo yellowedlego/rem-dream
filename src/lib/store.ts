@@ -1,7 +1,7 @@
 import "server-only";
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import type { MemoryNode, ModelCall, PersonaVersion, RemRun, Store } from "./types";
+import type { ImageRef, MemoryNode, ModelCall, PersonaVersion, RemRun, Store } from "./types";
 
 const SEED_STORE_PATH = path.join(process.cwd(), "data", "store.json");
 // 실행용 저장소 폴더. 테스트는 REM_RUNTIME_DIR로 따로 둔다 (playwright.config.ts)
@@ -187,7 +187,8 @@ export async function updateStore<T>(
 export async function addNode(
   sessionId: string,
   userText: string,
-  aiText: string
+  aiText: string,
+  images?: ImageRef[]
 ): Promise<MemoryNode> {
   return updateStore((store) => {
     const maxId = store.nodes.reduce((max, n) => Math.max(max, n.id), 0);
@@ -204,6 +205,7 @@ export async function addNode(
       createdAt: new Date().toISOString(),
       user: userText,
       ai: aiText,
+      ...(images && images.length > 0 ? { images } : {}),
     };
 
     store.nodes.push(newNode);

@@ -363,7 +363,17 @@ const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v
 export interface Birth {
   id: number;
   phase: "charging" | "flash";
+  /** flash가 시작될 때 달이 이미 차올라 있던 정도 (chargeLit). 거기서 이어서 제 모양까지 차오른다 */
+  from?: number;
 }
+
+/** 보내고 나서 선이 그어지는 시간(ms): 이 뒤부터 달이 차오르기 시작한다 (CSS beamDraw와 같다) */
+const LINE_MS = 520;
+/**
+ * 답을 기다리는 동안 달이 얼마나 차올랐나: 삭(0)에서 반달(0.5) 쪽으로 천천히 다가간다.
+ * 6초에 약 63%, 10초에 약 80% (끝까지 반달을 넘지 않는다)
+ */
+export const chargeLit = (waitedMs: number) => 0.5 * (1 - Math.exp(-Math.max(0, waitedMs - LINE_MS) / 6000));
 const birthOf = (birth: Birth | null | undefined, id: number) => (birth?.id === id ? birth.phase : undefined);
 
 /** 답이 온 순간 달이 삭에서 제 모양까지 차오르는 시간(ms) */
@@ -373,22 +383,40 @@ const RISE_MS = 900;
  * 태어나는 달: 답을 기다리는 동안은 삭(새달)이고, 답이 오면 삭에서 제 밝기까지 차오른다.
  * 번쩍임(밝기·크기)은 CSS(data-birth="flash")가 맡고, 여기서는 달의 모양(lit)만 움직인다.
  */
-function BornMoon({ lit, side, phase, selected }: { lit: number; side: "left" | "right"; phase: "charging" | "flash"; selected: boolean }) {
-  const [k, setK] = useState(0); // 0 → 1: 얼마나 차올랐나
+function BornMoon({ lit, side, phase, from = 0, selected }: { lit: number; side: "left" | "right"; phase: "charging" | "flash"; from?: number; selected: boolean }) {
+  // 기다리는 동안(charging): 마운트된 뒤 흐른 시간으로 삭 → 반달 쪽으로 천천히. 답이 오면(flash): 그 자리(from)에서 제 모양까지
+  const [shown, setShown] = useState(0);
   useEffect(() => {
-    if (phase !== "flash") return;
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
     const t0 = performance.now();
     let raf = 0;
     const tick = (now: number) => {
+      if (phase === "charging") {
+        setShown(reduce ? 0.25 : chargeLit(now - t0));
+        raf = requestAnimationFrame(tick);
+        return;
+      }
       const p = reduce ? 1 : Math.min(1, (now - t0) / RISE_MS);
-      setK(1 - Math.pow(1 - p, 3)); // ease-out
+      setShown(from + (lit - from) * (1 - Math.pow(1 - p, 3))); // ease-out
       if (p < 1) raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
+    // lit은 대화를 굴리면 바뀌지만 연출 도중에 다시 시작하지 않는다 (시작할 때의 값으로 끝까지)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
-  return <Moon lit={phase === "flash" ? lit * k : 0} side={side} selected={selected} />;
+  return <Moon lit={shown} side={side} selected={selected} />;
+}
+
+/** 사진이 붙은 기억을 달창 목록에서 알아보는 작은 아이콘 (사진 자체는 보여 주지 않는다) */
+function PhotoIcon() {
+  return (
+    <svg className={styles.photoIcon} width="13" height="11" viewBox="0 0 13 11" aria-label="사진 있음" role="img">
+      <rect x="0.5" y="0.5" width="12" height="10" fill="none" stroke="currentColor" />
+      <circle cx="9" cy="3.5" r="1.1" fill="currentColor" />
+      <path d="M1 10 4.5 5.5 7 8.2 8.8 6.4 12 10Z" fill="currentColor" />
+    </svg>
+  );
 }
 
 /** 빛줄기: 대화 칸의 보이는 구간 → 그 기억의 달 (기준 상자 위에 겹쳐 그린다). 달이 달창 밖이면 가까운 가장자리로 향한다 */
@@ -466,12 +494,13 @@ export function MoonPlaneTrack({
             onClick={() => onJump(n.id)}
           >
             {birthOf(birth, n.id) ? (
-              <BornMoon lit={lit} side={side} phase={birthOf(birth, n.id)!} selected={n.id === selectedId} />
+              <BornMoon lit={lit} side={side} phase={birthOf(birth, n.id)!} from={birth?.from} selected={n.id === selectedId} />
             ) : (
               <Moon lit={lit} side={side} selected={n.id === selectedId} />
             )}
             <span className={styles.nodeLabel} style={labelMax ? { maxWidth: labelMax } : undefined}>
               <span className={styles.nodeTime}>{hhmm(n.createdAt)}</span>
+              {n.images?.length ? <PhotoIcon /> : null}
               {n.user}
             </span>
           </button>

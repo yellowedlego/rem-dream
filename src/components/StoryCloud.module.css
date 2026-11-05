@@ -9,37 +9,22 @@
   display: block;
 }
 
-.meaning {
-  margin-top: 10px;
-  padding: 12px 16px;
-  background: var(--panel);
+.hint {
+  margin-top: 8px;
   opacity: 0;
-  transform: translateY(4px);
-  transition: opacity 600ms ease, transform 600ms ease;
+  transition: opacity 600ms ease;
 }
-.meaning.on {
+.hint.on {
   opacity: 1;
-  transform: none;
-}
-.mTitle {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--accent);
-}
-.mText {
-  margin: 6px 0 0;
-  font-size: 14px;
-  line-height: 1.6;
 }
 .mNote {
-  margin: 8px 0 0;
+  margin: 0;
   font-size: 12px;
   color: var(--muted);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .meaning {
+  .hint {
     transition: none;
   }
 }

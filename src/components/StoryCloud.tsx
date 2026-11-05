@@ -4,6 +4,7 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { MemoryNode } from "@/lib/types";
 import type { Meaning } from "@/lib/types";
 import { MOON_R, MoonShape } from "./Moon";
+import { buildLinks, relatedOf, toggleFocus, type Link, type StoryFocus } from "./storyFocus";
 import styles from "./StoryCloud.module.css";
 
 // 옵시디언 그래프처럼: 이야기 노드(달)가 왼쪽에서 확 튕겨 나와 출렁이다 자리를 잡고, 별(의미 파일)이 노드들 사이에 놓인다.
@@ -57,12 +58,6 @@ interface Body {
   /** 끌고 있는 동안 고정되는 위치 */
   fx: number | null;
   fy: number | null;
-}
-
-/** 별 s와 달 i를 잇는 선 하나 (의미 파일 s의 근거 노드가 i) */
-interface Link {
-  s: number;
-  i: number;
 }
 
 /** 별 s가 머무는 자리의 x: 별이 여러 개면 칸을 고르게 나눠 선다 */
@@ -149,26 +144,30 @@ export default function StoryCloud({
   nodes,
   meanings,
   storyId,
+  focus,
+  onFocus,
 }: {
   nodes: MemoryNode[];
   /** 의미 파일(별)들. 0개일 수도 있다 (모델이 의미를 못 뽑았을 때는 달만 떠 있다) */
   meanings: Meaning[];
   storyId: number;
+  /** 지금 포커스된 달·별 (아래 목록과 같은 값). 눌러서 바꾸면 onFocus로 알린다 */
+  focus: StoryFocus | null;
+  onFocus: (f: StoryFocus | null) => void;
 }) {
   const uid = useId().replace(/:/g, "");
   const n = nodes.length;
   const k = meanings.length;
   // 별 s ↔ 달 i 연결. 노드 번호를 이 화면의 달 순서로 바꾼다 (모르는 번호는 버린다)
-  const links = useMemo(() => {
-    const at = new Map(nodes.map((nd, i) => [nd.id, i]));
-    return meanings.flatMap((m, s) =>
-      m.nodeIds.flatMap((id) => {
-        const i = at.get(id);
-        return i === undefined ? [] : [{ s, i }];
-      }),
-    );
-  }, [nodes, meanings]);
+  const links = useMemo(() => buildLinks(nodes, meanings), [nodes, meanings]);
   const linkCount = links.length;
+  // 포커스: 눌린 것과 이어진 것만 또렷하게, 나머지는 흐리게
+  const related = useMemo(() => relatedOf(focus, links), [focus, links]);
+  const moonFocused = (i: number) => focus?.kind === "moon" && focus.index === i;
+  const starFocused = (s: number) => focus?.kind === "star" && focus.index === s;
+  const moonDim = (i: number) => !!focus && !moonFocused(i) && !related.moons.has(i);
+  const starDim = (s: number) => !!focus && !starFocused(s) && !related.stars.has(s);
+  const linkDim = (s: number, i: number) => !!focus && !(starFocused(s) || moonFocused(i));
   const boxRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const [w, setW] = useState(0);
@@ -191,6 +190,8 @@ export default function StoryCloud({
   const alpha = useRef(1);
   const raf = useRef(0);
   const dragging = useRef<number | null>(null);
+  // 눌렀다 떼는 동안 거의 안 움직였으면 "끌기"가 아니라 "누르기"로 보고 포커스를 바꾼다
+  const downAt = useRef<{ x: number; y: number; idx: number } | null>(null);
   const widthRef = useRef(0);
   const phaseRef = useRef(0);
   const gatherAt = useRef(0);
@@ -360,6 +361,7 @@ export default function StoryCloud({
     if (!b) return;
     ev.currentTarget.setPointerCapture(ev.pointerId);
     const p = pointOf(ev);
+    downAt.current = { x: ev.clientX, y: ev.clientY, idx };
     dragging.current = idx;
     b.fx = p.x;
     b.fy = p.y;
@@ -385,6 +387,11 @@ export default function StoryCloud({
     if (dragging.current === idx) dragging.current = null;
     alpha.current = Math.max(alpha.current, 0.4);
     kick.current();
+    const d = downAt.current;
+    downAt.current = null;
+    if (ev.type === "pointerup" && d && d.idx === idx && Math.hypot(ev.clientX - d.x, ev.clientY - d.y) < 5) {
+      onFocus(toggleFocus(focus, idx < n ? { kind: "moon", index: idx } : { kind: "star", index: idx - n }));
+    }
   };
   const t = (spec: string) => (still ? "none" : spec);
 
@@ -436,7 +443,11 @@ export default function StoryCloud({
                 pathLength={1}
                 strokeDasharray={1}
                 strokeDashoffset={phase >= 2 ? 0 : 1}
-                style={{ transition: t(`stroke-dashoffset 900ms ease-out ${li * STEP_MS}ms`) }}
+                style={{
+                  transition: t(`stroke-dashoffset 900ms ease-out ${li * STEP_MS}ms, opacity 250ms ease`),
+                  opacity: linkDim(s, i) ? 0.12 : 1,
+                  strokeWidth: starFocused(s) || moonFocused(i) ? 2.4 : undefined,
+                }}
               />
             ))}
 
@@ -460,6 +471,7 @@ export default function StoryCloud({
                 ref={(el) => {
                   els.current.stars[s] = el;
                 }}
+                style={{ opacity: starDim(s) ? 0.3 : 1, transition: "opacity 250ms ease" }}
                 className={styles.grab}
                 data-body={n + s}
                 onPointerDown={onDown}
@@ -469,6 +481,16 @@ export default function StoryCloud({
               >
                 <title>{m.title}</title>
                 <circle r={STAR_OUTER + 10} fill="transparent" />
+                {/* 포커스 고리: 눌린 별은 또렷하게, 이어진 별은 옅게 */}
+                <circle
+                  data-focus-ring=""
+                  r={STAR_OUTER + 9}
+                  fill="none"
+                  stroke={ACCENT}
+                  strokeWidth={1.6}
+                  pointerEvents="none"
+                  style={{ opacity: starFocused(s) ? 1 : related.stars.has(s) ? 0.5 : 0, transition: "opacity 200ms ease" }}
+                />
                 <circle
                   r={STAR_OUTER * 3.4}
                   fill={`url(#${uid}-glow)`}
@@ -511,6 +533,7 @@ export default function StoryCloud({
                 ref={(el) => {
                   els.current.nodes[i] = el;
                 }}
+                style={{ opacity: moonDim(i) ? 0.35 : 1, transition: "opacity 250ms ease" }}
                 className={styles.grab}
                 data-body={i}
                 onPointerDown={onDown}
@@ -520,6 +543,15 @@ export default function StoryCloud({
               >
                 <title>{nodes[i].topic}</title>
                 <circle r={l.r + 8} fill="transparent" />
+                <circle
+                  data-focus-ring=""
+                  r={l.r + 6}
+                  fill="none"
+                  stroke={ACCENT}
+                  strokeWidth={1.6}
+                  pointerEvents="none"
+                  style={{ opacity: moonFocused(i) ? 1 : related.moons.has(i) ? 0.5 : 0, transition: "opacity 200ms ease" }}
+                />
                 <g
                   style={{
                     transform: `scale(${phase >= 1 ? 1 : 0.25})`,
@@ -551,17 +583,10 @@ export default function StoryCloud({
         )}
       </div>
 
-      <figcaption className={`${styles.meaning} ${phase >= 3 ? styles.on : ""}`}>
-        {k === 0 && <p className={styles.mText}>이번 이야기에서는 의미 파일(별)을 뽑지 못했어요. 노드는 그대로 저장됐어요.</p>}
-        {meanings.map((m, s) => (
-          <div key={m.id || `m${s}`}>
-            <p className={styles.mTitle}>
-              <span aria-hidden="true">★{k > 1 ? s + 1 : ""}</span> {m.title || "이름 없는 의미"}
-            </p>
-            <p className={styles.mText}>{m.essence}</p>
-          </div>
-        ))}
-        <p className={styles.mNote}>달과 별은 끌어서 움직여 볼 수 있어요. 이런 의미 파일들이 모여 인격을 이룹니다.</p>
+      <figcaption className={`${styles.hint} ${phase >= 3 ? styles.on : ""}`}>
+        <p className={styles.mNote}>
+          달과 별은 끌어서 움직여 볼 수 있고, 눌러서 아래 목록과 함께 볼 수 있어요. 이런 의미 파일들이 모여 인격을 이룹니다.
+        </p>
       </figcaption>
     </figure>
   );

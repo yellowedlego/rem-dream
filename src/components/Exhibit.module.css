@@ -229,17 +229,9 @@
   }
 }
 
-/* 기다리는 동안 삭인 달이 숨 쉬듯 아주 약하게 깜빡인다 */
-.node[data-birth="charging"] svg {
-  animation: moonWait 1.6s ease-in-out 520ms infinite;
-}
+/* 기다리는 동안은 달의 모양 자체가 삭에서 반달 쪽으로 천천히 바뀐다 (MoonPlane의 BornMoon) */
 .node[data-birth="flash"] svg {
   animation: moonFlash 1100ms ease-out both;
-}
-@keyframes moonWait {
-  50% {
-    filter: brightness(1.6);
-  }
 }
 @keyframes moonFlash {
   0% {
@@ -286,6 +278,13 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+/* 사진이 붙은 기억 표시: 시간 옆의 작은 사진 아이콘 */
+.photoIcon {
+  flex: none;
+  margin-right: 8px;
+  color: var(--accent);
+  opacity: 0.85;
 }
 .nodeTime {
   font-family: var(--font-mono);

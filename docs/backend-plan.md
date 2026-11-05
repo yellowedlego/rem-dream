@@ -113,6 +113,7 @@ export interface Story {
 //   storyId?: number;                 // 이야기에서 나왔으면 그 번호
 //   storySpans?: [number, number][];  // rawText 안의 [시작, 끝) 글자 위치들 (뒤섞인 이야기면 여러 개)
 //   topic?: string;                   // 쪼갠 조각의 한 줄 주제 (화면 표시용)
+//   images?: { id: string; mime: "image/jpeg" | "image/png" | "image/webp" | "image/gif" }[];  // 대화에 첨부한 사진 (src/lib/images.ts, uploads.ts)
 ```
 
 `Store`에는 `proposals: PersonaProposal[]`, `runs: RemRun[]`, `calls: ModelCall[]`, `stories: Story[]`를 더한다.
@@ -124,7 +125,8 @@ export interface Story {
 
 | 주소 | 하는 일 | 단계 |
 | --- | --- | --- |
-| `POST /api/chat` `{ sessionId, message, model? }` | 활성 인격으로 모델을 불러 답을 받고 노드 1개를 저장해 `{ node }` 반환. REM 실행 중이면 `409` | 2 |
+| `POST /api/chat` `{ sessionId, message, model?, images? }` | 활성 인격으로 모델을 불러 답을 받고 노드 1개를 저장해 `{ node }` 반환. REM 실행 중이면 `409`. `images`는 `[{ mimeType, data(base64) }]` 최대 4장(장당 5MB, JPEG·PNG·WebP·GIF, 실제 파일 모양까지 검사). 사진이 있으면 `message`가 비어도 되고(그때 노드의 `user`는 `"(사진)"`), 어기면 `400`. 사진은 모델 답을 받은 **뒤에만** 파일로 저장 | 2 |
+| `GET /api/images/[id]` | 첨부 이미지 한 장 (`id`는 `<uuid>.jpg` 같은 모양만, 아니면 `404`). 파일은 `data/runtime/uploads/`. 노드·이야기·세션 삭제와 전체 초기화 때 같이 지워짐 | 2 |
 | `GET /api/state?sessionId=` | 그 세션의 `nodes`, `insights`, `proposals`, `activePersona`, 지금 `RemRun` 한 번에 반환 (화면이 불러올 때 쓰는 읽기용) | 2 |
 | `POST /api/story` `{ sessionId, text }` | 긴 이야기를 **AI가 맥락을 읽어 노드 여러 개**로 나눠 저장하고, 그 노드들을 합친 의미 파일(별) 1개 이상도 만들어 `{ story, nodes, meanings, method }` 반환 (아래 "이야기 전처리 규칙"·"의미 파일" 참고) | 2 |
 | `GET /api/meanings?sessionId=`, `DELETE /api/meanings/[id]` | 의미 파일 목록·삭제 (디버그 화면용) | 2 |

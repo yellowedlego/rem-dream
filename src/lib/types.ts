@@ -1,6 +1,13 @@
 ﻿// 꿈(REM) 시스템의 데이터 약속 — docs/plan.md "데이터 모양 (초안)"을 그대로 옮김.
 // 화면(/, /debug)은 이 모양을 읽기만 한다.
 
+/** 대화에 첨부한 이미지 한 장. 파일은 서버(uploads/)에 있고 GET /api/images/[id]로 읽는다 */
+export interface ImageRef {
+  /** 파일 이름 겸 번호: "<uuid>.jpg" 같은 모양 */
+  id: string;
+  mime: "image/jpeg" | "image/png" | "image/webp" | "image/gif";
+}
+
 /** 노드 = 채팅 한 번 = {유저 입력, AI 답변} 한 쌍 */
 export interface MemoryNode {
   /** 번호 (전체에서 유일, 1부터) */
@@ -15,6 +22,8 @@ export interface MemoryNode {
   user: string;
   /** AI 답변 */
   ai: string;
+  /** 첨부한 이미지 (없으면 생략). 글 없이 사진만 보냈으면 user가 "(사진)" */
+  images?: ImageRef[];
   /** 이야기에서 나왔으면 그 번호 */
   storyId?: number;
   /**

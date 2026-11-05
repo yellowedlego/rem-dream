@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { updateStore } from "@/lib/store";
+import { deleteImages } from "@/lib/uploads";
 
 export async function DELETE(
   _req: Request,
@@ -12,14 +13,16 @@ export async function DELETE(
     return NextResponse.json({ error: "Invalid node ID" }, { status: 400 });
   }
 
+  let imageIds: string[] = [];
   const result = await updateStore((store) => {
     const nodeIndex = store.nodes.findIndex((n) => n.id === numId);
     if (nodeIndex === -1) {
       return { found: false };
     }
 
-    // Remove the node from nodes list
-    store.nodes.splice(nodeIndex, 1);
+    // Remove the node from nodes list (첨부 이미지 파일은 저장소를 고친 뒤에 지운다)
+    const [removed] = store.nodes.splice(nodeIndex, 1);
+    imageIds = (removed.images ?? []).map((i) => i.id);
 
     // Remove node ID from any insights' sourceNodeIds
     for (const insight of store.insights) {
@@ -49,6 +52,7 @@ export async function DELETE(
   if (!result.found) {
     return NextResponse.json({ error: "Node not found" }, { status: 404 });
   }
+  await deleteImages(imageIds);
 
   return NextResponse.json({ ok: true }, { status: 200 });
 }

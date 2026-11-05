@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { updateStore } from "@/lib/store";
+import { deleteImages } from "@/lib/uploads";
 
 export async function DELETE(
   _req: Request,
@@ -12,6 +13,7 @@ export async function DELETE(
     return NextResponse.json({ error: "Invalid story ID" }, { status: 400 });
   }
 
+  let imageIds: string[] = [];
   const result = await updateStore((store) => {
     if (!Array.isArray(store.stories)) {
       store.stories = [];
@@ -35,7 +37,10 @@ export async function DELETE(
     // Remove the story
     store.stories.splice(storyIndex, 1);
 
-    // Cascade delete associated nodes
+    // Cascade delete associated nodes (노드에 붙은 이미지 파일도 같이 지운다)
+    imageIds = store.nodes
+      .filter((n) => nodeIdsToDelete.has(n.id))
+      .flatMap((n) => (n.images ?? []).map((i) => i.id));
     store.nodes = store.nodes.filter((n) => !nodeIdsToDelete.has(n.id));
 
     // Remove deleted node IDs from insight sourceNodeIds
@@ -58,6 +63,7 @@ export async function DELETE(
   if (!result.found) {
     return NextResponse.json({ error: "Story not found" }, { status: 404 });
   }
+  await deleteImages(imageIds);
 
   return NextResponse.json({ ok: true }, { status: 200 });
 }
