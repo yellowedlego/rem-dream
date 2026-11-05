@@ -1,10 +1,15 @@
 ﻿"use client";
 
+// 첨부 사진은 내 컴퓨터의 임시 주소(blob:)와 우리 서버의 /api/images라서 next/image로 최적화할 대상이 아니다
+/* eslint-disable @next/next/no-img-element */
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MemoryNode } from "@/lib/types";
 import { api, currentSessionId, startNewSession, switchSession, type SessionSummary } from "./api";
 import AppNav from "./AppNav";
-import { MoonPlaneBeams, MoonPlaneTrack, useMoonPlane, type Birth } from "./MoonPlane";
+import { MAX_IMAGES, PHOTO_ONLY_TEXT } from "@/lib/images";
+import { MoonPlaneBeams, MoonPlaneTrack, chargeLit, useMoonPlane, type Birth } from "./MoonPlane";
+import { hasFiles, imageFilesOf, prepareImage, revokeAttachment, type Attachment } from "./imageFiles";
 import { WALL_W, wallLayout } from "./wallLayout";
 import styles from "./ChatView.module.css";
 
@@ -55,6 +60,13 @@ const PENDING_ID = -1;
 /** 답이 온 순간 달과 대화가 번쩍이는 시간 (CSS의 moonFlash·pairFlash와 같다) */
 const FLASH_MS = 1100;
 
+/** 파일을 끌어 올 때 나타나는 별: 가로세로로 길게 뻗은 네 꼭짓점 별이라 "+"처럼 보인다 */
+const PLUS_STAR = Array.from({ length: 8 }, (_, k) => {
+  const a = -Math.PI / 2 + (k * Math.PI) / 4;
+  const r = k % 2 === 0 ? 34 : 6.5;
+  return `${(Math.cos(a) * r).toFixed(1)},${(Math.sin(a) * r).toFixed(1)}`;
+}).join(" ");
+
 export default function ChatView() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [nodes, setNodes] = useState<MemoryNode[]>([]);
@@ -62,6 +74,14 @@ export default function ChatView() {
   const [text, setText] = useState("");
   const [pending, setPending] = useState<string | null>(null);
   const [pendingAt, setPendingAt] = useState("");
+  // 사진 첨부: 입력줄에 붙어 있는 것(줄이는 중인 것 포함), 답을 기다리는 대화에 보이는 것, 크게 보기, 끌어 오는 별
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [attachBusy, setAttachBusy] = useState(0);
+  const [pendingImages, setPendingImages] = useState<string[]>([]);
+  const [viewer, setViewer] = useState<string | null>(null);
+  const [dragStar, setDragStar] = useState<{ x: number; y: number; dropped: boolean } | null>(null);
+  const dragDepth = useRef(0);
+  const fileRef = useRef<HTMLInputElement>(null);
   // 달이 태어나는 연출: 보내면 charging(선 → 어두운 달이 차오름), 답이 오면 flash(번쩍) 뒤 사라진다
   const [birth, setBirth] = useState<Birth | null>(null);
   const flashTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -184,9 +204,92 @@ export default function ChatView() {
 
   // 대화 열의 왼쪽 끝과 폭은 벽이 들어온 길이에 정비례한다 (계산식: wallLayout.ts, 테스트: tests/unit)
   const lay = wallLayout(area);
+
+  // ── 사진 붙이기 (클립 버튼, Ctrl+V, 끌어 놓기가 모두 여기로 온다) ──
+  const addFiles = (files: File[]) => {
+    const imgs = imageFilesOf(files);
+    if (imgs.length === 0) {
+      if (files.length > 0) setError("사진 파일만 올릴 수 있어요.");
+      return;
+    }
+    const room = Math.max(0, MAX_IMAGES - attachments.length - attachBusy);
+    if (room === 0) {
+      setError(`사진은 한 번에 ${MAX_IMAGES}장까지 보낼 수 있어요.`);
+      return;
+    }
+    const take = imgs.slice(0, room);
+    setError(imgs.length > room ? `사진은 한 번에 ${MAX_IMAGES}장까지만 붙어요. 앞의 ${room}장만 올렸어요.` : null);
+    setAttachBusy((b) => b + take.length);
+    for (const f of take) {
+      prepareImage(f)
+        .then((a) => setAttachments((list) => [...list, a]))
+        .catch((e: Error) => setError(e.message))
+        .finally(() => setAttachBusy((b) => b - 1));
+    }
+  };
+  const removeAttachment = (id: string) => {
+    setAttachments((list) => {
+      list.filter((a) => a.id === id).forEach(revokeAttachment);
+      return list.filter((a) => a.id !== id);
+    });
+  };
+  const attachFull = attachments.length + attachBusy >= MAX_IMAGES;
+
+  // 파일을 끌어 올 때 나타나는 별이 마우스를 따라다닌다. 놓으면 한 번 터지고 사라진다
+  const starAt = (e: React.DragEvent<HTMLElement>, dropped = false) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    setDragStar({ x: e.clientX - r.left, y: e.clientY - r.top, dropped });
+  };
+  const onDragEnter = (e: React.DragEvent<HTMLElement>) => {
+    if (!hasFiles(e.dataTransfer)) return;
+    e.preventDefault();
+    dragDepth.current += 1;
+    starAt(e);
+  };
+  const onDragOver = (e: React.DragEvent<HTMLElement>) => {
+    if (!hasFiles(e.dataTransfer)) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+    starAt(e);
+  };
+  const onDragLeave = (e: React.DragEvent<HTMLElement>) => {
+    if (!hasFiles(e.dataTransfer)) return;
+    dragDepth.current = Math.max(0, dragDepth.current - 1);
+    if (dragDepth.current === 0) setDragStar(null);
+  };
+  const onDrop = (e: React.DragEvent<HTMLElement>) => {
+    if (!hasFiles(e.dataTransfer)) return;
+    e.preventDefault();
+    dragDepth.current = 0;
+    addFiles(Array.from(e.dataTransfer.files));
+    starAt(e, true);
+    setTimeout(() => setDragStar(null), 650);
+  };
+  useEffect(() => {
+    // 대화 칸 밖에 놓쳐도 브라우저가 사진을 열어 버리지(화면이 사라지지) 않게
+    const stop = (e: DragEvent) => {
+      if (hasFiles(e.dataTransfer)) e.preventDefault();
+    };
+    window.addEventListener("dragover", stop);
+    window.addEventListener("drop", stop);
+    return () => {
+      window.removeEventListener("dragover", stop);
+      window.removeEventListener("drop", stop);
+    };
+  }, []);
+  useEffect(() => {
+    if (!viewer) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setViewer(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [viewer]);
+
   const send = async () => {
     const msg = text.trim();
-    if (!msg || !sessionId || pending) return;
+    const sending = attachments;
+    if ((!msg && sending.length === 0) || !sessionId || pending || attachBusy > 0) return;
     // 별똥별: 보내기 버튼 가운데(버튼 뒤)에서 떠서 수직으로 올라간다 (움직임 줄이기 설정이면 생략)
     const btn = sendRef.current;
     if (btn && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -196,22 +299,28 @@ export default function ChatView() {
     setError(null);
     clearTimeout(flashTimer.current);
     setPendingAt(new Date().toISOString());
-    setPending(msg);
+    setPending(msg || PHOTO_ONLY_TEXT);
+    setPendingImages(sending.map((a) => a.previewUrl));
     setBirth({ id: PENDING_ID, phase: "charging" });
     setText("");
+    setAttachments([]);
+    const sentAt = performance.now();
     try {
-      const { node } = await api.chat(sessionId, msg);
+      const { node } = await api.chat(sessionId, msg, sending);
       setNodes((n) => [...n, node]);
-      // 답이 온 순간: 새 달과 그 대화가 한 번 번쩍이고 제 밝기로 돌아간다
-      setBirth({ id: node.id, phase: "flash" });
+      // 답이 온 순간: 기다리는 동안 차오른 자리에서 새 달이 제 모양까지 차오르며 번쩍이고, 대화도 한 번 번쩍인다
+      setBirth({ id: node.id, phase: "flash", from: chargeLit(performance.now() - sentAt) });
       flashTimer.current = setTimeout(() => setBirth(null), FLASH_MS);
+      sending.forEach(revokeAttachment);
       void refreshSessions();
     } catch (e) {
       setBirth(null);
       setError((e as Error).message);
-      setText(msg); // 실패하면 쓴 글을 돌려준다
+      setText(msg); // 실패하면 쓴 글과 사진을 돌려준다
+      setAttachments(sending);
     } finally {
       setPending(null);
+      setPendingImages([]);
     }
   };
   useEffect(() => () => clearTimeout(flashTimer.current), []);
@@ -267,6 +376,10 @@ export default function ChatView() {
         <section
           ref={chatRef}
           className={styles.chat}
+          onDragEnter={onDragEnter}
+          onDragOver={onDragOver}
+          onDragLeave={onDragLeave}
+          onDrop={onDrop}
           data-measured={area > 0 ? "" : undefined}
           style={{
             ["--wall" as string]: wallOpen ? `${WALL_W}px` : "0px",
@@ -306,7 +419,22 @@ export default function ChatView() {
                   <time className={styles.time} dateTime={n.createdAt}>
                     {hhmm(n.createdAt)}
                   </time>
-                  <p className={styles.user}>{n.user}</p>
+                  {n.images?.length ? (
+                    <div className={styles.userImgs}>
+                      {n.images.map((i) => (
+                        <button
+                          key={i.id}
+                          type="button"
+                          className={styles.bubbleThumb}
+                          aria-label="보낸 사진 크게 보기"
+                          onClick={() => setViewer(`/api/images/${i.id}`)}
+                        >
+                          <img src={`/api/images/${i.id}`} alt="보낸 사진" loading="lazy" />
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                  {!(n.images?.length && n.user === PHOTO_ONLY_TEXT) && <p className={styles.user}>{n.user}</p>}
                   <p className={styles.ai}>{n.ai}</p>
                 </article>
               ))}
@@ -323,7 +451,16 @@ export default function ChatView() {
                     else itemRefs.current.delete(PENDING_ID);
                   }}
                 >
-                  <p className={styles.user}>{pending}</p>
+                  {pendingImages.length > 0 && (
+                    <div className={styles.userImgs}>
+                      {pendingImages.map((src) => (
+                        <span key={src} className={styles.bubbleThumb}>
+                          <img src={src} alt="보내는 사진" />
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {!(pendingImages.length > 0 && pending === PHOTO_ONLY_TEXT) && <p className={styles.user}>{pending}</p>}
                   <p className={`${styles.ai} ${styles.thinking}`} aria-label="답을 만드는 중">
                     <span />
                     <span />
@@ -349,7 +486,33 @@ export default function ChatView() {
               </p>
             )}
             <div className={styles.row}>
-              <label
+              <button
+                type="button"
+                className={styles.clip}
+                aria-label="사진 붙이기"
+                title={`사진 붙이기 (최대 ${MAX_IMAGES}장, Ctrl+V·끌어 놓기도 돼요)`}
+                disabled={!!pending || attachFull}
+                onClick={() => fileRef.current?.click()}
+              >
+                <svg width="18" height="16" viewBox="0 0 18 16" aria-hidden="true">
+                  <rect x="1" y="1" width="16" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" />
+                  <circle cx="12.5" cy="5.2" r="1.6" fill="currentColor" />
+                  <path d="M2 14 7 7.5 10.5 11.6 12.6 9.4 16.5 14Z" fill="currentColor" />
+                </svg>
+              </button>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                multiple
+                hidden
+                aria-label="사진 파일 고르기"
+                onChange={(e) => {
+                  addFiles(Array.from(e.target.files ?? []));
+                  e.target.value = ""; // 같은 파일을 다시 골라도 반응하게
+                }}
+              />
+              <div
                 className={styles.field}
                 data-glow={hover || focused ? "on" : "off"}
                 style={{ ["--gx" as string]: `${glow.x}px`, ["--gy" as string]: `${glow.y}px` }}
@@ -360,9 +523,25 @@ export default function ChatView() {
                   setGlow({ x: e.clientX - r.left, y: e.clientY - r.top });
                 }}
               >
-                <span className={styles.srOnly}>메시지</span>
+                {/* 사진을 붙이면 이 칸이 열리면서 입력창 테두리(빛 포함)가 사진까지 감싸게 늘어난다 */}
+                <div className={styles.attachWrap} data-open={attachments.length > 0 || attachBusy > 0 ? "true" : "false"}>
+                  <ul className={styles.attach} aria-label="붙인 사진">
+                    {attachments.map((a) => (
+                      <li key={a.id} className={styles.thumb}>
+                        <img src={a.previewUrl} alt={a.name} />
+                        <button type="button" className={styles.thumbX} aria-label={`${a.name} 빼기`} onClick={() => removeAttachment(a.id)}>
+                          ×
+                        </button>
+                      </li>
+                    ))}
+                    {Array.from({ length: attachBusy }, (_, i) => (
+                      <li key={`busy-${i}`} className={`${styles.thumb} ${styles.thumbBusy}`} aria-label="사진을 줄이는 중" />
+                    ))}
+                  </ul>
+                </div>
                 <textarea
                   ref={taRef}
+                  aria-label="메시지"
                   value={text}
                   rows={1}
                   placeholder="메시지를 입력하세요 (Enter 보내기, Shift+Enter 줄바꿈)"
@@ -375,6 +554,14 @@ export default function ChatView() {
                     glowToCaret();
                   }}
                   onBlur={() => setFocused(false)}
+                  onPaste={(e) => {
+                    // 복사한 그림·캡처가 있으면 사진으로 붙이고, 글자만 있으면 평소처럼 붙여 넣는다
+                    const files = imageFilesOf(e.clipboardData.files);
+                    if (files.length > 0) {
+                      e.preventDefault();
+                      addFiles(files);
+                    }
+                  }}
                   onKeyUp={glowToCaret}
                   onClick={glowToCaret}
                   onKeyDown={(e) => {
@@ -385,14 +572,14 @@ export default function ChatView() {
                     }
                   }}
                 />
-              </label>
+              </div>
               <label className={styles.model}>
                 <span className={styles.srOnly}>모델</span>
                 <select defaultValue="flash" aria-label="모델">
                   <option value="flash">Gemini Flash</option>
                 </select>
               </label>
-              <button ref={sendRef} type="submit" className={styles.send} disabled={!text.trim() || !!pending}>
+              <button ref={sendRef} type="submit" className={styles.send} disabled={(!text.trim() && attachments.length === 0) || !!pending || attachBusy > 0}>
                 보내기
               </button>
               {meteors.map((m) => (
@@ -435,8 +622,36 @@ export default function ChatView() {
           >
             {wallOpen ? "달 창 닫기 ›" : "‹ 달 창 열기"}
           </button>
+          {dragStar && (
+            <div
+              className={styles.dropLayer}
+              data-dropped={dragStar.dropped ? "" : undefined}
+              style={{ ["--dx" as string]: `${dragStar.x}px`, ["--dy" as string]: `${dragStar.y}px` }}
+              aria-hidden="true"
+            >
+              <svg className={styles.dropStar} width="104" height="104" viewBox="-40 -40 80 80">
+                <circle r="38" fill="url(#plusGlow)" />
+                <defs>
+                  <radialGradient id="plusGlow">
+                    <stop offset="0%" stopColor="#efdfa6" stopOpacity="0.5" />
+                    <stop offset="100%" stopColor="#efdfa6" stopOpacity="0" />
+                  </radialGradient>
+                </defs>
+                <polygon points={PLUS_STAR} fill="#efdfa6" />
+              </svg>
+              {!dragStar.dropped && <span className={styles.dropHint}>놓으면 사진이 붙어요</span>}
+            </div>
+          )}
         </section>
       </div>
+      {viewer && (
+        <div className={styles.lightbox} role="dialog" aria-modal="true" aria-label="사진 크게 보기" onClick={() => setViewer(null)}>
+          <img src={viewer} alt="크게 본 사진" onClick={(e) => e.stopPropagation()} />
+          <button type="button" className={styles.lightboxClose} aria-label="닫기" onClick={() => setViewer(null)}>
+            ×
+          </button>
+        </div>
+      )}
     </div>
   );
 }

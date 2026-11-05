@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { updateStore } from "@/lib/store";
+import { deleteImages } from "@/lib/uploads";
 
 export async function DELETE(
   _req: Request,
@@ -13,7 +14,13 @@ export async function DELETE(
 
   const targetSessionId = sessionId.trim();
 
+  let imageIds: string[] = [];
   await updateStore((store) => {
+    // 0. 이 세션 노드에 붙은 이미지 (저장소를 고친 뒤에 파일을 지운다)
+    imageIds = store.nodes
+      .filter((n) => n.sessionId === targetSessionId)
+      .flatMap((n) => (n.images ?? []).map((i) => i.id));
+
     // 1. Identify all node IDs belonging to this session
     const sessionNodeIds = new Set(
       store.nodes.filter((n) => n.sessionId === targetSessionId).map((n) => n.id)
@@ -65,5 +72,6 @@ export async function DELETE(
     }
   });
 
+  await deleteImages(imageIds);
   return NextResponse.json({ ok: true }, { status: 200 });
 }
