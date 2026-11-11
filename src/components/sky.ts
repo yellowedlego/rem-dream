@@ -98,6 +98,24 @@ export function orbitSlots(
   });
 }
 
+/**
+ * 의미(별)들을 생성 시간순으로 잇는 옅은 그물. 바로 다음 별과는 늘, 한 칸 건너 별과는 둘의 간격이 가까울 때만(기간 안) 잇는다.
+ * 그래서 별 하나에서 앞으로 많아야 두 줄 — 촘촘해지지 않고 시간이 가까운 별끼리 그물이 짜인다.
+ */
+export function netLinks(
+  meanings: { id: number; createdAt: string }[],
+  skipWithinMs = 30 * 60 * 1000,
+): [number, number][] {
+  const sorted = [...meanings].sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id - b.id);
+  const at = (i: number) => Date.parse(sorted[i].createdAt);
+  const out: [number, number][] = [];
+  for (let i = 0; i < sorted.length; i++) {
+    if (i + 1 < sorted.length) out.push([sorted[i].id, sorted[i + 1].id]);
+    if (i + 2 < sorted.length && at(i + 2) - at(i) <= skipWithinMs) out.push([sorted[i].id, sorted[i + 2].id]);
+  }
+  return out;
+}
+
 /** 모이는 연출의 시간표(초). 각 구간의 끝 시각 */
 export const CONVERGE = {
   gather: 1.3, // 기운 원으로 모인다

@@ -16,13 +16,19 @@
 }
 .bgStar {
   fill: #e9e2f6;
-  opacity: 0.28;
+  opacity: 0.42;
   animation: twinkle 5s ease-in-out infinite;
 }
 @keyframes twinkle {
   50% {
-    opacity: 0.08;
+    opacity: 0.12;
   }
+}
+/* 생성 시간순 그물: 비교 화면의 별자리 선보다 옅게 */
+.net {
+  stroke: rgb(185 163 245 / 0.14);
+  stroke-width: 0.8;
+  pointer-events: none;
 }
 .orbitRing {
   fill: none;

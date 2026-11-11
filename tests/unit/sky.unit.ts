@@ -9,6 +9,7 @@ import {
   domeY,
   glowAt,
   namedStars,
+  netLinks,
   orbitSlots,
   orbitSpeed,
   polarisKick,
@@ -80,6 +81,23 @@ test("모이는 연출: 처음엔 집, 원이 납작해지면 한 줄(45도 위)
   const end = convergePos(CONVERGE.end, 2, 5, home, 150);
   near(end.x, home.x);
   near(end.y, home.y);
+});
+
+test("그물: 시간순으로 다음 별과 잇고, 한 칸 건너는 선은 기간 안일 때만", () => {
+  const t = (min: number) => new Date(Date.UTC(2026, 0, 1, 0, min)).toISOString();
+  const ms = [
+    { id: 3, createdAt: t(20) },
+    { id: 1, createdAt: t(0) },
+    { id: 2, createdAt: t(10) },
+    { id: 4, createdAt: t(300) },
+  ];
+  assert.deepEqual(netLinks(ms), [
+    [1, 2],
+    [1, 3],
+    [2, 3],
+    [3, 4],
+  ]);
+  assert.deepEqual(netLinks([{ id: 1, createdAt: t(0) }]), []);
 });
 
 test("북극성 관성: 빨려 들기 전엔 0, 뒤에는 흔들리다 잦아든다", () => {

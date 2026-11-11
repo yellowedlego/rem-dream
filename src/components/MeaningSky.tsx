@@ -8,7 +8,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Meaning, MemoryNode } from "@/lib/types";
 import { api } from "./api";
 import { byTime } from "./MoonPlane";
-import { CONVERGE, convergePos, domeStars, easeInOut, orbitSlots, orbitSpeed, phase, polarisKick, type Pt } from "./sky";
+import { CONVERGE, convergePos, domeStars, easeInOut, netLinks, orbitSlots, orbitSpeed, phase, polarisKick, type Pt } from "./sky";
 import styles from "./MeaningSky.module.css";
 
 const POLL_MS = 5000;
@@ -69,6 +69,8 @@ export default function MeaningSky() {
   const bg = useMemo(() => (size.w ? domeStars(Math.round((size.w * size.h) / 9000), size.w, size.h * 2, 23) : []), [size]);
   const sessions = useMemo(() => new Set([...nodes.map((n) => n.sessionId), ...meanings.map((m) => m.sessionId)]).size, [nodes, meanings]);
   const latest = useMemo(() => [...nodes].sort(byTime).at(-1) ?? null, [nodes]);
+  const links = useMemo(() => netLinks(meanings), [meanings]);
+  const linkRefs = useRef(new Map<string, SVGLineElement>());
 
   // ── 움직임: rAF가 transform만 바꾼다 (React는 다시 그리지 않는다) ──
   const starRefs = useRef(new Map<number, SVGGElement>());
@@ -115,6 +117,7 @@ export default function MeaningSky() {
       const t = p ? (now - p.start) / 1000 : 0;
       const R = u * 0.3;
 
+      const placed = new Map<number, { pos: Pt; op: number }>();
       list.forEach((s, i) => {
         const el = starRefs.current.get(s.id);
         if (!el) return;
@@ -129,6 +132,19 @@ export default function MeaningSky() {
         } else pos = homeOf(s, c.orbit);
         el.setAttribute("transform", `translate(${pos.x.toFixed(1)} ${pos.y.toFixed(1)})`);
         el.style.opacity = String(op);
+        placed.set(s.id, { pos, op });
+      });
+      // 그물 선: 두 별을 따라가고, 별이 사라지면 같이 사라진다
+      linkRefs.current.forEach((ln, key) => {
+        const [a, b] = key.split("-").map(Number);
+        const pa = placed.get(a);
+        const pb = placed.get(b);
+        if (!pa || !pb) return;
+        ln.setAttribute("x1", pa.pos.x.toFixed(1));
+        ln.setAttribute("y1", pa.pos.y.toFixed(1));
+        ln.setAttribute("x2", pb.pos.x.toFixed(1));
+        ln.setAttribute("y2", pb.pos.y.toFixed(1));
+        ln.style.opacity = String(Math.min(pa.op, pb.op));
       });
 
       // 북극성: 관성 + 흡수 순간 번쩍
@@ -239,8 +255,19 @@ export default function MeaningSky() {
             ))}
             <ellipse ref={ringRef} className={styles.tiltRing} rx={1} ry={1} transform="rotate(-45)" style={{ opacity: 0 }} />
 
+            {links.map(([a, b]) => (
+              <line
+                key={`${a}-${b}`}
+                ref={(el) => {
+                  if (el) linkRefs.current.set(`${a}-${b}`, el);
+                  else linkRefs.current.delete(`${a}-${b}`);
+                }}
+                className={styles.net}
+              />
+            ))}
+
             {slots.map((s) => {
-              const m = meanings.find((x) => x.id === s.id)!;
+              const m =meanings.find((x) => x.id === s.id)!;
               return (
                 <g
                   key={s.id}
