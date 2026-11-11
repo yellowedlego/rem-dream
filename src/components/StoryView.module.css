@@ -267,6 +267,10 @@
   font-size: 13px;
   color: var(--muted);
 }
+.toMe {
+  color: var(--accent);
+  text-underline-offset: 3px;
+}
 .result h3 + button {
   margin-top: 10px;
 }

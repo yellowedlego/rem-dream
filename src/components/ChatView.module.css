@@ -53,6 +53,41 @@
   opacity: 0.45;
   cursor: not-allowed;
 }
+/* 의미성 추출 → 내 AI 화면 */
+.toMe {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  color: var(--accent);
+  background: var(--accent-wash);
+  font-size: 14px;
+  text-decoration: none;
+}
+.toMe:hover {
+  background: rgb(239 223 166 / 0.14);
+}
+.toMe[aria-disabled="true"] {
+  color: var(--dim);
+  background: transparent;
+  pointer-events: none;
+}
+/* 말로 입력하는 중: 마이크 단추가 달빛으로 숨 쉰다 */
+.clip[data-listening] {
+  color: var(--accent-ink);
+  background: var(--accent);
+  animation: micPulse 1.4s ease-in-out infinite;
+}
+@keyframes micPulse {
+  50% {
+    box-shadow: 0 0 0 6px rgb(239 223 166 / 0.18);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .clip[data-listening] {
+    animation: none;
+  }
+}
 .sessions {
   list-style: none;
   margin: 0;

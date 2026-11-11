@@ -1,0 +1,597 @@
+.shell {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  background: var(--bg);
+}
+.header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 14px 24px;
+}
+.header h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+.session {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.main {
+  padding: 0 24px 40px;
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}
+.main h2 {
+  margin: 0 0 6px;
+  font-size: 17px;
+  font-weight: 600;
+}
+.main h2 span {
+  margin-left: 6px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+/* ── 만들기 ── */
+.make {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 24px 40px;
+  align-items: end;
+  padding: 22px 24px;
+  background: var(--surface);
+}
+.lead,
+.help {
+  margin: 0;
+  max-width: 64ch;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+.help {
+  margin-bottom: 12px;
+}
+.meta {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--dim);
+}
+.meta a {
+  color: var(--accent);
+}
+.makeSide {
+  display: flex;
+  align-items: end;
+  gap: 14px;
+}
+.relations {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: flex;
+  gap: 4px;
+}
+.relations legend {
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.relations label {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  min-width: 128px;
+  padding: 10px 14px;
+  background: var(--bubble);
+  cursor: pointer;
+}
+.relations label b {
+  font-size: 15px;
+  font-weight: 600;
+}
+.relations label span {
+  font-size: 12px;
+  color: var(--muted);
+}
+.relations label[data-on] {
+  background: var(--accent-wash);
+  box-shadow: inset 0 0 0 1px rgb(239 223 166 / 0.55);
+}
+.relations label[data-on] b {
+  color: var(--accent);
+}
+.relations input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  cursor: pointer;
+}
+.relations label:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.primary,
+.ghost {
+  height: 44px;
+  padding: 0 20px;
+  border: 0;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+.ghost {
+  background: var(--bubble);
+  color: var(--text);
+  font-weight: 500;
+}
+.primary:disabled,
+.ghost:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.error {
+  margin: 0;
+  padding: 8px 12px;
+  background: color-mix(in srgb, var(--warn) 14%, transparent);
+  color: var(--warn);
+  font-size: 14px;
+}
+.note {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--dim);
+}
+.ok {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ok);
+}
+
+/* ── 위키 + 오른쪽 열 ── */
+.grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.8fr) minmax(0, 2fr);
+  gap: 16px;
+  align-items: start;
+}
+.stack {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+.panel {
+  padding: 20px 24px 24px;
+  background: var(--surface);
+}
+
+/* 기억 위키: 백과사전 한 쪽처럼 명조 제목 + 번호 */
+.wiki {
+  position: sticky;
+  top: 16px;
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  padding: 20px 22px 24px;
+  background: var(--panel);
+  scrollbar-color: var(--node-edge) transparent;
+}
+.wiki h2 {
+  font-family: var(--font-serif), serif;
+  font-size: 19px;
+}
+.wikiHelp {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.entries {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 2px;
+}
+.entries li {
+  padding: 12px 12px 12px 14px;
+  border-left: 2px solid transparent;
+  transition:
+    background 0.5s ease,
+    border-color 0.5s ease;
+}
+.entries li + li {
+  box-shadow: 0 -1px 0 var(--line);
+}
+.entries h3 {
+  margin: 0 0 4px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-family: var(--font-serif), serif;
+  font-size: 15px;
+  font-weight: 600;
+}
+.entryNo {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--dim);
+}
+.entries li p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--muted);
+}
+.keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px !important;
+}
+.keys span {
+  padding: 1px 7px;
+  background: var(--point-wash);
+  color: var(--point);
+  font-size: 12px;
+}
+/* 방금 찾아본 칸: 달빛이 들어온다 */
+.entries li[data-looked] {
+  background: var(--accent-wash);
+  border-left-color: var(--accent);
+  animation: lookedIn 1.1s ease-out;
+}
+.entries li[data-looked] h3 {
+  color: var(--accent);
+}
+.found {
+  margin-left: auto;
+  font-family: var(--font-sans), sans-serif;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 500;
+  color: var(--accent);
+}
+@keyframes lookedIn {
+  0% {
+    background: rgb(239 223 166 / 0.28);
+  }
+}
+/* 찾는 중: 위키 위로 빛줄기가 훑고 지나간다 */
+.wiki[data-scan] .entries li {
+  opacity: 0.7;
+}
+.scanLine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 70px;
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent, rgb(239 223 166 / 0.16) 50%, transparent);
+  animation: scan 1.3s ease-in-out infinite;
+}
+@keyframes scan {
+  from {
+    transform: translateY(-70px);
+  }
+  to {
+    transform: translateY(min(100dvh, 900px));
+  }
+}
+
+/* ── 알아본 나 ── */
+.about {
+  margin: 0 0 12px;
+  font-family: var(--font-serif), serif;
+  font-size: 17px;
+  line-height: 1.75;
+}
+.chips,
+.tips {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.chips li {
+  padding: 4px 10px;
+  background: var(--bubble);
+  font-size: 13px;
+  color: var(--text);
+}
+.tips {
+  margin-top: 14px;
+  display: grid;
+  gap: 6px;
+}
+.tips li {
+  padding-left: 14px;
+  position: relative;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.tips li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.7em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* ── 비교 ── */
+.cmpHead,
+.pairs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.cmpHead span {
+  font-size: 13px;
+  color: var(--muted);
+}
+.cmpHead .mine {
+  color: var(--accent);
+}
+.thread {
+  display: grid;
+  gap: 14px;
+  margin: 8px 0 12px;
+  max-height: 56dvh;
+  overflow: auto;
+  scrollbar-color: var(--node-edge) transparent;
+}
+.samples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 0;
+}
+.samples button {
+  padding: 8px 12px;
+  border: 0;
+  background: var(--bubble);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+.samples button:hover {
+  background: var(--accent-wash);
+}
+.turn {
+  display: grid;
+  gap: 8px;
+}
+.me {
+  justify-self: center;
+  max-width: 80%;
+  margin: 0;
+  padding: 8px 14px;
+  background: var(--bubble);
+  font-size: 15px;
+  line-height: 1.6;
+}
+.basic,
+.personal {
+  margin: 0;
+  padding: 12px 14px;
+  font-size: 15px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+.basic {
+  background: var(--panel);
+  color: var(--muted);
+}
+.personal {
+  background: var(--bubble-ai);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+.personal p {
+  margin: 0;
+}
+.lookedNote {
+  margin-top: 8px !important;
+  font-size: 12px;
+  color: var(--accent);
+}
+.wait {
+  min-height: 48px;
+  color: var(--dim);
+  font-size: 13px;
+  animation: breathe 1.4s ease-in-out infinite;
+}
+@keyframes breathe {
+  50% {
+    opacity: 0.55;
+  }
+}
+.ask {
+  display: flex;
+  gap: 8px;
+}
+.ask input {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  padding: 0 14px;
+  border: 0;
+  background: var(--bubble);
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+}
+.ask input::placeholder {
+  color: var(--muted);
+}
+.mic {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: var(--bubble);
+  color: var(--muted);
+  cursor: pointer;
+}
+.mic:hover {
+  color: var(--text);
+}
+.mic[data-listening] {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+/* ── 가져가기 ── */
+.take {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.cardWrap {
+  padding: 18px;
+  background: radial-gradient(120% 90% at 50% 0%, rgb(239 223 166 / 0.08), transparent 70%);
+}
+.takeSide {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+.btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.mail {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  background: var(--panel);
+}
+.mail label:first-child {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.mail input[type="email"] {
+  height: 42px;
+  padding: 0 12px;
+  border: 0;
+  background: var(--bubble);
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+}
+.consent {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.consent input {
+  margin-top: 3px;
+}
+.mail button {
+  justify-self: start;
+}
+.full summary {
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+}
+.full pre {
+  margin: 8px 0 0;
+  padding: 12px 14px;
+  max-height: 280px;
+  overflow: auto;
+  background: var(--panel);
+  font-family: var(--font-sans), sans-serif;
+  font-size: 13px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+.forget {
+  margin: 0;
+  font-size: 13px;
+  color: var(--dim);
+  text-align: right;
+}
+.forget button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--warn);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+@media (max-width: 1100px) {
+  .grid,
+  .make {
+    grid-template-columns: 1fr;
+  }
+  .wiki {
+    position: relative;
+    top: 0;
+    max-height: none;
+  }
+  .take {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 720px) {
+  .makeSide {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .relations {
+    flex-direction: column;
+  }
+  .pairs,
+  .cmpHead {
+    grid-template-columns: 1fr;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scanLine,
+  .wait,
+  .entries li[data-looked] {
+    animation: none;
+  }
+}
+
+/* 인쇄 규칙은 globals.css의 [data-print-area] (전역 선택자라 여기 둘 수 없다) */
+.print > * {
+  margin: 0;
+}

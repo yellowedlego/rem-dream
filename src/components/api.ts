@@ -1,6 +1,6 @@
 // 화면이 서버와 이야기하는 곳은 여기 하나. 주소·응답 모양은 docs/backend-plan.md 5절과 같다.
 // 서버는 src/app/api/ (진짜 백엔드). 모양이 다른 곳은 아래 api 객체 안에서 화면이 쓰던 모양으로 맞춘다.
-import type { Insight, Meaning, MemoryNode, PersonaVersion, SplitMethod, Story } from "@/lib/types";
+import type { Insight, MailLog, Meaning, MemoryNode, PersonaVersion, Profile, Relation, SplitMethod, Story } from "@/lib/types";
 
 const BASE = process.env.NEXT_PUBLIC_API_BASE ?? "/api";
 
@@ -29,7 +29,30 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
   return data as T;
 }
 
-export type { Meaning, SplitMethod };
+export type { Meaning, Profile, Relation, SplitMethod, MailLog };
+
+export interface ChatTurn {
+  role: "user" | "model";
+  text: string;
+}
+
+export interface CompareResult {
+  basic: string;
+  personal: string;
+  /** 이번 말로 찾아본 기억 위키 칸 번호 */
+  looked: number[];
+}
+
+export interface SessionRecord {
+  sessionId: string;
+  lastAt: string;
+  nodes: number;
+  stories: number;
+  meanings: number;
+  profiles: number;
+  images: number;
+  mails: number;
+}
 
 export interface StoryResult {
   story: Story;
@@ -105,6 +128,23 @@ export const api = {
     call<{ ok: true }>(`/sessions/${encodeURIComponent(sessionId)}`, { method: "DELETE" }),
   deleteInsight: (id: number) => call<{ ok: true }>(`/insights/${id}`, { method: "DELETE" }),
   resetAll: () => call<{ ok: true }>("/debug/reset-all", { method: "POST" }),
+
+  // ── 내 AI ──
+  profiles: (sessionId: string) => call<{ profiles: Profile[] }>(`/profiles${qs({ sessionId })}`),
+  makeProfile: (sessionId: string, relation: Relation) =>
+    call<{ profile: Profile }>("/profiles", { method: "POST", body: JSON.stringify({ sessionId, relation }) }),
+  deleteProfile: (id: number) => call<{ ok: true }>(`/profiles/${id}`, { method: "DELETE" }),
+  compare: (id: number, message: string, history: { basic: ChatTurn[]; personal: ChatTurn[] }) =>
+    call<CompareResult>(`/profiles/${id}/compare`, { method: "POST", body: JSON.stringify({ message, history }) }),
+  mailStatus: () => call<{ ready: boolean; mock: boolean }>("/mail"),
+  mail: (id: number, to: string) =>
+    call<{ ok: true; to: string }>(`/profiles/${id}/mail`, { method: "POST", body: JSON.stringify({ to, consent: true }) }),
+
+  // ── 기록 관리 ──
+  records: () => call<{ sessions: SessionRecord[]; mails: MailLog[] }>("/admin/records"),
+  prune: (olderThanHours: number) =>
+    call<{ ok: true; removed: string[] }>("/admin/prune", { method: "POST", body: JSON.stringify({ olderThanHours }) }),
+  clearMails: () => call<{ ok: true }>("/admin/mails", { method: "DELETE" }),
 };
 
 // ── 브라우저에 기억해 두는 세션 번호 (관람객·사용자 한 명 = 한 세션) ──

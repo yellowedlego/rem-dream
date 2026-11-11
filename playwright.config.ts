@@ -19,6 +19,8 @@ export default defineConfig({
       ...process.env,
       // 테스트는 개발 서버와 다른 실행 저장소를 쓴다 (개발 중 쌓은 기억을 건드리지 않게)
       REM_RUNTIME_DIR: "data/runtime-test",
+      // 테스트는 절대 실제 메일을 보내지 않는다 (outbox 폴더에 파일로만 남긴다)
+      MAIL_MOCK: "1",
     },
   },
 });

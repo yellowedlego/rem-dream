@@ -139,7 +139,7 @@ export interface PersonaProposal {
 }
 
 /** 모델을 부른 목적 */
-export type ModelPurpose = "chat" | "story-split" | "story-meaning" | "rem-step" | "rem-proposal";
+export type ModelPurpose = "chat" | "story-split" | "story-meaning" | "rem-step" | "rem-proposal" | "profile" | "compare";
 
 /** 모델 요청 한 건 (디버그 화면의 로그·수치용) */
 export interface ModelCall {
@@ -155,6 +155,62 @@ export interface ModelCall {
   outputTokens: number | null;
   ms: number;
   error: string | null;
+}
+
+/** "내 AI"에서 고르는 관계 */
+export type Relation = "friend" | "teacher" | "mentor";
+
+/** 사용자 말에서 계산으로 알아낸 말투 (모델 없이) */
+export interface StyleGuess {
+  /** 존댓말이 더 많으면 true, 반말이면 false */
+  polite: boolean;
+  /** 한 번에 보내는 글의 길이 */
+  length: "short" | "medium" | "long";
+  /** ㅋㅋ·ㅎㅎ를 자주 쓰는지 */
+  laughs: boolean;
+  /** 이모지·ㅠㅠ를 쓰는지 */
+  emoji: boolean;
+  /** 계산에 쓴 내 말 개수 */
+  samples: number;
+}
+
+/** 기억 위키 한 칸: 내가 한 이야기 하나를 정리한 것. 대화마다 찾아서 프롬프트에 넣는다 */
+export interface WikiEntry {
+  /** 프로필 안에서의 번호 (1부터) */
+  id: number;
+  title: string;
+  /** 내가 한 말 + 필요하면 AI가 뭐라 했는지 (1인칭, 한두 문장) */
+  body: string;
+  keywords: string[];
+  sourceNodeIds: number[];
+}
+
+/** 의미성에서 만든 "나와 말이 잘 통하는 AI" 한 벌 */
+export interface Profile {
+  id: number;
+  sessionId: string;
+  createdAt: string;
+  relation: Relation;
+  style: StyleGuess;
+  /** 나에 대해 (1인칭, 두세 문장) */
+  about: string;
+  /** 이 사람과 말이 잘 통하려면 (짧은 문장 몇 개) */
+  tips: string[];
+  wiki: WikiEntry[];
+  /** 가져가는 사전 프롬프트 전문 (새 채팅 맨 앞에 붙여 넣는 글) */
+  prompt: string;
+  /** 모델이 정리했는지(ai), 모델 없이 규칙으로 만들었는지(rule) */
+  method: SplitMethod;
+}
+
+/** 메일 보낸 기록. 주소는 가려서만 남긴다 (관리 화면에서 지울 수 있다) */
+export interface MailLog {
+  id: number;
+  at: string;
+  sessionId: string;
+  profileId: number;
+  /** j***@gmail.com 처럼 가린 주소 */
+  to: string;
 }
 
 /** data/store.json 한 파일의 모양 */
@@ -174,5 +230,9 @@ export interface Store {
   stories: Story[];
   /** 의미 파일(별) 목록 */
   meanings: Meaning[];
+  /** "내 AI" 프로필 (없으면 생략) */
+  profiles?: Profile[];
+  /** 메일 보낸 기록 (없으면 생략) */
+  mails?: MailLog[];
 }
 

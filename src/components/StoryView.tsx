@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api, currentSessionId, type StoryResult } from "./api";
+import Link from "next/link";
 import AppNav from "./AppNav";
 import StoryCloud from "./StoryCloud";
 import { STORY_SAMPLES } from "./storySamples";
@@ -119,6 +120,7 @@ export default function StoryView() {
           <h2 id="in-h">긴 이야기 넣기</h2>
           <p className={styles.help}>
             하루 이야기나 긴 글을 한 번에 붙여 넣으세요. 맥락이 바뀌는 곳에서 나눠 기억 노드 여러 개로 만들어요. 글은 한 글자도 바뀌지 않아요.
+            AI와 나눈 대화를 붙일 때는 줄 앞에 “나:”, “Gemini:”처럼 이름표를 두면 AI의 답은 맥락으로만 읽고 의미는 내 말에서만 뽑아요.
           </p>
           <label className={styles.box}>
             <span className={styles.srOnly}>이야기</span>
@@ -167,7 +169,10 @@ export default function StoryView() {
               <p className={styles.note}>
                 {result.method === "ai"
                   ? "AI가 맥락을 읽고 나눴어요."
-                  : "지금은 규칙으로 임시 분리했어요. 나중에는 AI가 맥락을 읽고 나눠요."}
+                  : "지금은 규칙으로 임시 분리했어요. 나중에는 AI가 맥락을 읽고 나눠요."}{" "}
+                <Link href="/me" className={styles.toMe}>
+                  이 의미성으로 내 AI 만들기 →
+                </Link>
               </p>
 
               <h3>의미 지도</h3>

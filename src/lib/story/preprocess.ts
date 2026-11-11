@@ -15,7 +15,6 @@ import type { SplitMethod } from "@/lib/types";
 import {
   coversExactly,
   groupsToPieces,
-  numberedSentences,
   pieceText,
   splitSentences,
   validateMeanings,
@@ -25,6 +24,7 @@ import {
   type Piece,
 } from "./groups";
 import { heuristicSplit } from "./split";
+import { numberedWithSpeakers, speakersOf, type Speaker } from "./speakers";
 
 /**
  * 이야기 전처리 (docs/backend-plan.md "이야기 전처리 규칙").
@@ -36,7 +36,7 @@ export async function splitWithModel(text: string): Promise<{ pieces: Piece[]; m
   const env = getEnv();
 
   if (!env.isMock && sentences.length > 0) {
-    const prompt = buildSplitPrompt(numberedSentences(text, sentences));
+    const prompt = buildSplitPrompt(numberedWithSpeakers(text, sentences, speakersOf(text, sentences)));
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
         const answer = await callModelJson<GroupAnswer>({
@@ -82,7 +82,7 @@ export async function extractMeanings(text: string, pieces: Piece[]): Promise<Me
   }
   try {
     const answer = await callModelJson<MeaningAnswer>({
-      prompt: buildMeaningPrompt(pieces.map((p) => ({ topic: p.topic, text: pieceText(text, p) }))),
+      prompt: buildMeaningPrompt(pieces.map((p) => ({ topic: p.topic, text: markedPieceText(text, p) }))),
       systemInstruction: MEANING_SYSTEM,
       temperature: 0.3,
       json: { schema: MEANING_SCHEMA as unknown as Record<string, unknown> },
@@ -93,4 +93,16 @@ export async function extractMeanings(text: string, pieces: Piece[]): Promise<Me
     console.warn("[story] meaning extraction failed:", err);
     return [];
   }
+}
+
+/** 의미 뽑기에 보여 줄 조각 글: 대화 기록이면 문장마다 [나]/[AI] 표시를 붙인다 */
+function markedPieceText(text: string, piece: Piece): string {
+  const sentences = splitSentences(text);
+  const speakers: Speaker[] | null = speakersOf(text, sentences);
+  if (!speakers) return pieceText(text, piece);
+  return sentences
+    .map((s, i) => ({ s, who: speakers[i] }))
+    .filter(({ s }) => piece.spans.some(([a, b]) => s.start >= a && s.end <= b))
+    .map(({ s, who }) => `${who === "ai" ? "[AI]" : "[나]"} ${text.slice(s.start, s.end).trim()}`)
+    .join("\n");
 }
