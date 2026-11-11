@@ -381,3 +381,29 @@
   transition: transform 140ms ease-out;
 }
 
+
+/* 대화창 ↔ 별자리 전환 */
+.views {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--surface);
+}
+.views button {
+  min-height: 34px;
+  padding: 0 16px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+.views button[aria-selected="true"] {
+  background: var(--accent-wash);
+  color: var(--accent);
+}
+.skyMain {
+  grid-row: 2 / 4;
+  min-height: 0;
+}

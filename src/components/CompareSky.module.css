@@ -1,0 +1,153 @@
+.sky {
+  position: relative;
+  z-index: 1;
+  margin: 4px 0 6px;
+}
+.sky svg {
+  display: block;
+  overflow: visible;
+}
+.rim {
+  fill: none;
+  stroke: rgb(239 223 166 / 0.16);
+  stroke-width: 1;
+  stroke-dasharray: 1 5;
+}
+.bgStar {
+  fill: #e9e2f6;
+  opacity: 0.35;
+  animation: twinkle 4s ease-in-out infinite;
+}
+@keyframes twinkle {
+  50% {
+    opacity: 0.12;
+  }
+}
+.line {
+  fill: none;
+  stroke: rgb(239 223 166 / 0.18);
+  stroke-width: 0.8;
+}
+.named circle {
+  fill: var(--accent);
+  filter: drop-shadow(0 0 3px rgb(239 223 166 / 0.6));
+}
+.named text {
+  fill: var(--muted);
+  font-size: 11px;
+  font-family: var(--font-serif), serif;
+}
+.named[data-flare] text {
+  fill: var(--accent);
+}
+
+/* A에서 번져 온 빛: 켜졌다가 은은하게 남는다 */
+.glowP,
+.glowB {
+  opacity: 0;
+  animation: lightUp 2.6s ease-out forwards;
+}
+.glowP {
+  fill: rgb(255 244 205);
+  filter: drop-shadow(0 0 6px rgb(239 223 166 / 0.9));
+}
+.glowB {
+  fill: rgb(200 196 214);
+  filter: drop-shadow(0 0 4px rgb(200 196 214 / 0.6));
+}
+@keyframes lightUp {
+  0% {
+    opacity: 0;
+    transform-box: fill-box;
+  }
+  14% {
+    opacity: var(--g);
+  }
+  100% {
+    opacity: calc(var(--g) * 0.28);
+  }
+}
+
+/* 점 A: 선이 천구에 닿는 자리 */
+.aP circle,
+.aB circle {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.aP circle:first-child {
+  fill: #fff7d6;
+  filter: drop-shadow(0 0 6px rgb(239 223 166 / 1));
+  animation: aFlash 1.6s ease-out forwards;
+}
+.aB circle:first-child {
+  fill: #c8c4d6;
+  animation: aFlash 1.6s ease-out forwards;
+}
+.aRing {
+  fill: none;
+  stroke-width: 1.2;
+  animation: aRing 1.2s ease-out forwards;
+}
+.aP .aRing {
+  stroke: rgb(239 223 166 / 0.9);
+}
+.aB .aRing {
+  stroke: rgb(200 196 214 / 0.6);
+}
+@keyframes aFlash {
+  0% {
+    opacity: 1;
+    transform: scale(1.8);
+  }
+  100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+}
+@keyframes aRing {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(9);
+  }
+}
+
+/* 기억 위키에서 찾은 별: 네 갈래로 번쩍 */
+.flare {
+  fill: #fff7d6;
+  filter: drop-shadow(0 0 5px rgb(239 223 166 / 1));
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: flare 2.2s ease-out 0.25s both;
+}
+@keyframes flare {
+  0% {
+    opacity: 0;
+    scale: 0.2;
+    rotate: -30deg;
+  }
+  25% {
+    opacity: 1;
+    scale: 1.2;
+  }
+  100% {
+    opacity: 0.55;
+    scale: 0.75;
+    rotate: 15deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bgStar,
+  .glowP,
+  .glowB,
+  .aRing,
+  .flare,
+  .aP circle:first-child,
+  .aB circle:first-child {
+    animation-duration: 0.01s;
+  }
+}

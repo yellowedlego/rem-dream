@@ -8,7 +8,9 @@ import Link from "next/link";
 import { RELATIONS } from "@/lib/profile/build";
 import { api, currentSessionId, startNewSession, type ChatTurn, type Profile, type Relation } from "./api";
 import AppNav from "./AppNav";
+import CompareSky, { SKY_H, type SkyEvent, type SkyHit } from "./CompareSky";
 import MicButton from "./MicButton";
+import { domeY } from "./sky";
 import PromptCard from "./PromptCard";
 import styles from "./MeView.module.css";
 
@@ -27,6 +29,26 @@ const RELATION_HINT: Record<Relation, string> = {
 };
 const SAMPLE_ASKS = ["요즘 나 어때 보여?", "오늘 좀 지쳤어", "내가 좋아하는 거 기억나?"];
 
+/** 보내기 → 유성우 → (BEAM_AFTER) 답변 칸 왼쪽 벽에서 천구까지 선을 긋고 → (BEAM_MS) 점 A에서 별빛이 번진다 */
+const BEAM_AFTER = 500;
+const BEAM_MS = 450;
+/** 이벤트·효과 안에서만 부르는 시계 (렌더 중에는 쓰지 않는다) */
+const clockNow = () => performance.now();
+
+interface Beam {
+  x: number;
+  y1: number;
+  y2: number;
+  kind: SkyHit["kind"];
+}
+interface Shot {
+  id: number;
+  x: number;
+  y: number;
+  fly: number;
+  delay: number;
+}
+
 export default function MeView() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [nodeCount, setNodeCount] = useState<number | null>(null);
@@ -39,6 +61,22 @@ export default function MeView() {
   const [ask, setAsk] = useState("");
   const [pending, setPending] = useState<string | null>(null);
   const micBase = useRef("");
+
+  // 천구 연출
+  const cmpRef = useRef<HTMLElement>(null);
+  const skyBoxRef = useRef<HTMLDivElement>(null);
+  const threadRef = useRef<HTMLDivElement>(null);
+  const sendBtnRef = useRef<HTMLButtonElement>(null);
+  const [shots, setShots] = useState<Shot[]>([]);
+  const [beams, setBeams] = useState<{ id: number; lines: Beam[] } | null>(null);
+  const [skyEvent, setSkyEvent] = useState<SkyEvent | null>(null);
+  const seq = useRef(0);
+  const timers = useRef<number[]>([]);
+  const later = (fn: () => void, ms: number) => timers.current.push(window.setTimeout(fn, ms));
+  useEffect(() => {
+    const list = timers.current;
+    return () => list.forEach(clearTimeout);
+  }, []);
 
   const [mail, setMail] = useState<{ ready: boolean; mock: boolean } | null>(null);
   const [to, setTo] = useState("");
@@ -80,9 +118,90 @@ export default function MeView() {
     }
   };
 
+  /** 비교 칸 기준 좌표: 마지막 턴의 두 답변 칸 왼쪽 벽 → 천구 윗선(점 A) */
+  const measureBeams = (): { lines: Beam[]; hits: SkyHit[] } | null => {
+    const panel = cmpRef.current;
+    const sky = skyBoxRef.current;
+    const thread = threadRef.current;
+    const blocks = thread?.lastElementChild?.querySelectorAll<HTMLElement>("[data-side]");
+    if (!panel || !sky || !thread || !blocks?.length) return null;
+    const pr = panel.getBoundingClientRect();
+    const sr = sky.getBoundingClientRect();
+    const tr = thread.getBoundingClientRect();
+    const lines: Beam[] = [];
+    const hits: SkyHit[] = [];
+    blocks.forEach((b) => {
+      const kind = b.dataset.side === "personal" ? "personal" : "basic";
+      const r = b.getBoundingClientRect();
+      const left = r.left + (kind === "personal" ? 1 : 0); // 내 AI 칸은 2px 달빛 벽의 가운데
+      const top = Math.min(Math.max(r.top, tr.top), tr.bottom);
+      lines.push({
+        x: left - pr.left,
+        y1: top - pr.top,
+        y2: sr.top - pr.top + domeY(left - sr.left, sr.width, SKY_H),
+        kind,
+      });
+      hits.push({ x: left - sr.left, kind });
+    });
+    return { lines, hits };
+  };
+
+  /** 선을 긋고, 선이 천구에 닿으면 A에서 빛이 번진다 */
+  // 나중에 부른 연출이 앞 연출을 대신한다 (답이 0.5초보다 빨리 오면 보내기 단계의 빛이 답 단계의 빛을 덮지 않게)
+  const fireToken = useRef(0);
+  const sentAt = useRef(0);
+  const fireSky = (flare: number[], after: number) => {
+    const token = ++fireToken.current;
+    later(() => {
+      if (token !== fireToken.current) return;
+      const m = measureBeams();
+      if (!m) return;
+      setBeams({ id: ++seq.current, lines: m.lines });
+      later(() => {
+        if (token === fireToken.current) setSkyEvent({ id: ++seq.current, hits: m.hits, flare });
+      }, BEAM_MS);
+    }, after);
+  };
+
+  /** 보내기 단추에서 천구 윗선까지 유성 세 개 */
+  const launchShower = () => {
+    const panel = cmpRef.current;
+    const sky = skyBoxRef.current;
+    const btn = sendBtnRef.current;
+    if (!panel || !sky || !btn) return;
+    const pr = panel.getBoundingClientRect();
+    const sr = sky.getBoundingClientRect();
+    const br = btn.getBoundingClientRect();
+    const fresh = [-16, 0, 13].map((dx, i) => {
+      const x = br.left + br.width / 2 + dx - pr.left;
+      const y = br.top - pr.top;
+      const topY = sr.top - pr.top + domeY(x - (sr.left - pr.left), sr.width, SKY_H);
+      return { id: ++seq.current, x, y, fly: Math.max(y - topY, 60), delay: i * 90 + (i === 2 ? 40 : 0) };
+    });
+    setShots((all) => [...all, ...fresh]);
+  };
+
+  // 새 턴·기다리는 턴이 생기면 대화 칸 맨 아래로 (선이 잴 답변 칸이 보이게)
+  useEffect(() => {
+    const t = threadRef.current;
+    if (t) t.scrollTop = t.scrollHeight;
+  }, [turns, pending]);
+
+  // 답이 도착하면 진짜 답변 칸에서 다시 선을 긋고, 찾아본 위키 별을 번쩍인다
+  const seenTurns = useRef(0);
+  useEffect(() => {
+    if (turns.length > seenTurns.current && turns.length > 0) fireSky(turns[turns.length - 1].looked, Math.max(60, sentAt.current + BEAM_AFTER - clockNow()));
+    seenTurns.current = turns.length;
+    // fireSky는 타이머·ref만 쓰므로 턴 수가 바뀔 때만 부른다
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [turns]);
+
   const send = async (msg = ask) => {
     const m = msg.trim();
     if (!profile || !m || pending) return;
+    launchShower();
+    sentAt.current = clockNow();
+    fireSky([], BEAM_AFTER);
     setPending(m);
     setAsk("");
     setError(null);
@@ -249,16 +368,19 @@ export default function MeView() {
                 {profile.method === "rule" && <p className={styles.note}>모델 없이 규칙으로 정리했어요 (가짜 모드이거나 모델이 실패했을 때).</p>}
               </section>
 
-              <section className={styles.panel} aria-labelledby="cmp-h">
+              <section ref={cmpRef} className={`${styles.panel} ${styles.cmp}`} aria-labelledby="cmp-h">
                 <h2 id="cmp-h">같은 말, 두 AI</h2>
                 <p className={styles.help}>
                   둘 다 앞의 대화 기록은 받지 않아요. 오른쪽 AI는 사전 프롬프트와 기억 위키만으로 나를 기억해요.
                 </p>
+                <div ref={skyBoxRef} className={styles.skyBox}>
+                  <CompareSky wiki={profile.wiki} event={skyEvent} />
+                </div>
                 <div className={styles.cmpHead} aria-hidden="true">
                   <span>기본 AI</span>
                   <span className={styles.mine}>내 AI</span>
                 </div>
-                <div className={styles.thread} role="log" aria-live="polite" aria-label="비교 대화">
+                <div ref={threadRef} className={styles.thread} role="log" aria-live="polite" aria-label="비교 대화">
                   {turns.length === 0 && !pending && (
                     <div className={styles.samples}>
                       {SAMPLE_ASKS.map((s) => (
@@ -288,8 +410,8 @@ export default function MeView() {
                     <div className={styles.turn}>
                       <p className={styles.me}>{pending}</p>
                       <div className={styles.pairs}>
-                        <p className={`${styles.basic} ${styles.wait}`} aria-label="답을 만드는 중" />
-                        <p className={`${styles.personal} ${styles.wait}`} aria-label="기억을 찾아보는 중">
+                        <p className={`${styles.basic} ${styles.wait}`} data-side="basic" aria-label="답을 만드는 중" />
+                        <p className={`${styles.personal} ${styles.wait}`} data-side="personal" aria-label="기억을 찾아보는 중">
                           기억 위키를 찾아보는 중…
                         </p>
                       </div>
@@ -319,10 +441,39 @@ export default function MeView() {
                     placeholder="두 AI에게 같은 말을 걸어 보세요"
                     onChange={(e) => setAsk(e.target.value)}
                   />
-                  <button type="submit" className={styles.primary} disabled={!ask.trim() || !!pending}>
+                  <button ref={sendBtnRef} type="submit" className={styles.primary} disabled={!ask.trim() || !!pending}>
                     보내기
                   </button>
                 </form>
+
+                {/* 답변 칸 왼쪽 벽에서 천구까지 올라가는 선 (글 뒤에 깔린다) */}
+                {beams && (
+                  <svg key={beams.id} className={styles.beams} aria-hidden="true">
+                    {beams.lines.map((b, i) => (
+                      <line
+                        key={i}
+                        className={b.kind === "personal" ? styles.beamP : styles.beamB}
+                        x1={b.x}
+                        y1={b.y1}
+                        x2={b.x}
+                        y2={b.y2}
+                        pathLength={1}
+                      />
+                    ))}
+                  </svg>
+                )}
+                {shots.map((m) => (
+                  <span
+                    key={m.id}
+                    className={styles.meteor}
+                    style={{ left: m.x, top: m.y, animationDelay: `${m.delay}ms`, ["--fly" as string]: `${-m.fly}px` }}
+                    aria-hidden="true"
+                    onAnimationEnd={() => setShots((all) => all.filter((x) => x.id !== m.id))}
+                  >
+                    <span className={styles.meteorTail} />
+                    <span className={styles.meteorHead} />
+                  </span>
+                ))}
               </section>
 
               <section className={styles.panel} aria-labelledby="take-h">

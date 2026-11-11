@@ -122,6 +122,11 @@ export const api = {
       meanings: s.meanings,
     };
   },
+  /** 별자리 화면: 모든 노드와 의미 (원문 없이) */
+  sky: async () => {
+    const s = await call<ServerState>("/state");
+    return { nodes: s.nodes, meanings: s.meanings };
+  },
   deleteNode: (id: number) => call<{ ok: true }>(`/nodes/${id}`, { method: "DELETE" }),
   deleteStory: (id: number) => call<{ ok: true }>(`/stories/${id}`, { method: "DELETE" }),
   deleteSession: (sessionId: string) =>

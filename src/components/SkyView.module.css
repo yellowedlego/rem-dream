@@ -1,0 +1,20 @@
+.shell {
+  height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  background: var(--bg);
+}
+.header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 14px 24px;
+}
+.header h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+.main {
+  min-height: 0;
+}
