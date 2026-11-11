@@ -1,0 +1,686 @@
+{
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/taste-skill/assets/base.js": {
+    "mtime": 1794374686320.1497,
+    "hash": "059f84401869a3c87212e3fc68f68272"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/taste-skill/assets/charts.js": {
+    "mtime": 1794374686320.1497,
+    "hash": "9ce51b3b3ba15f4a8f144f5bbb71cde4"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/taste-skill/assets/scenes/stage.js": {
+    "mtime": 1794374686322.8696,
+    "hash": "4c7759ef9b00c32d8b0f0e0b00c5e47c"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/taste-skill/scripts/assets.mjs": {
+    "mtime": 1794374686355.5872,
+    "hash": "7e6a5f115b03d78e63198d94bed1a8a8"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/taste-skill/scripts/draw.mjs": {
+    "mtime": 1794374686355.5872,
+    "hash": "120e1cccaf53946269ba72c450e6bc62"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/taste-skill/scripts/inspect.mjs": {
+    "mtime": 1794374686355.5872,
+    "hash": "78c3b2a4dd0d52b7ac83561199222f36"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/taste-skill/scripts/lib/app-draw.mjs": {
+    "mtime": 1794374686358.626,
+    "hash": "b9039275b634c2636e42617f13cf8e50"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/taste-skill/scripts/lib/cdp.mjs": {
+    "mtime": 1794374686358.626,
+    "hash": "9b3bc7a3912dbfb853cd2cb0947fc481"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/taste-skill/scripts/lib/inspection-files.mjs": {
+    "mtime": 1794374686358.626,
+    "hash": "04cccc73d3b9119bb5a3bc89c4139ba1"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/taste-skill/scripts/lib/probe.mjs": {
+    "mtime": 1794374686361.421,
+    "hash": "d515edefc76339f827e7cd204dee457d"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/taste-skill/scripts/lib/rules.mjs": {
+    "mtime": 1794374686362.4531,
+    "hash": "24752271a34e29b30e5deafdd30194b1"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/taste-skill/scripts/lint.mjs": {
+    "mtime": 1794374686363.7712,
+    "hash": "c3f93ceaf0cb2ea3a6db1b05c91a2fe3"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/taste-skill/scripts/scenes.mjs": {
+    "mtime": 1794374686363.875,
+    "hash": "dc421250af452ffd028e182beac026b7"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/ui-ux-pro-max/scripts/core.py": {
+    "mtime": 1794374686413.3464,
+    "hash": "e3dff76b3201df3388604d8e10a998e9"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/ui-ux-pro-max/scripts/design_system.py": {
+    "mtime": 1794374686413.3464,
+    "hash": "1a66a8527db3c6dd4f230a1b9a144d5c"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/ui-ux-pro-max/scripts/reasoning_contract.py": {
+    "mtime": 1794374686413.3464,
+    "hash": "653e45c1072a3662322d66a81c89d548"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/ui-ux-pro-max/scripts/search.py": {
+    "mtime": 1794374686413.3464,
+    "hash": "e833376534576f28a72cc52cd73e00bc"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/ui-ux-pro-max/scripts/tests/test_catalog_refresh.py": {
+    "mtime": 1794374686445.5986,
+    "hash": "fbf0e330d0f949e1a6ab72b5e6ef9083"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/ui-ux-pro-max/scripts/tests/test_catalog_summary_line_endings.py": {
+    "mtime": 1794374686445.5986,
+    "hash": "8a5e4bdde1e3f2acabfbe7a5a908f382"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/ui-ux-pro-max/scripts/tests/test_core.py": {
+    "mtime": 1794374686445.5986,
+    "hash": "1ff514f53f20f2fb0239e15ce9a1d7c5"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/ui-ux-pro-max/scripts/tests/test_core_data_quality.py": {
+    "mtime": 1794374686445.5986,
+    "hash": "ba36618da592989e75420cbb0d7ac13c"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/ui-ux-pro-max/scripts/tests/test_data_contracts.py": {
+    "mtime": 1794374686445.5986,
+    "hash": "03e87e8ffa0c20f42fb342c5038a8f6f"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/ui-ux-pro-max/scripts/tests/test_design_system_mode.py": {
+    "mtime": 1794374686445.5986,
+    "hash": "52f887a45931fcad38b04bf508281e8e"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/ui-ux-pro-max/scripts/tests/test_design_system_stack.py": {
+    "mtime": 1794374686445.5986,
+    "hash": "e70276086496f6c075b2bae176288133"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/ui-ux-pro-max/scripts/tests/test_native_desktop_stack_freshness.py": {
+    "mtime": 1794374686445.5986,
+    "hash": "8bf3a83850e18f4150a0f8e2eafe8c14"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/ui-ux-pro-max/scripts/tests/test_relevance_evaluator.py": {
+    "mtime": 1794374686445.5986,
+    "hash": "f976384d686802fd2ea0ae806965c38d"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/ui-ux-pro-max/scripts/tests/test_rtl_support.py": {
+    "mtime": 1794374686445.5986,
+    "hash": "71caf5e93e5e319e23e73ed60ea11987"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/ui-ux-pro-max/scripts/tests/test_skill_script_paths.py": {
+    "mtime": 1794374686445.5986,
+    "hash": "430fb0f2e1790c05baa93622a753a61c"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/ui-ux-pro-max/scripts/tests/test_style_taxonomy.py": {
+    "mtime": 1794374686445.5986,
+    "hash": "00df6840db7177e5e1c17745db356bf6"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/ui-ux-pro-max/scripts/tests/test_text_layout_resilience.py": {
+    "mtime": 1794374686445.5986,
+    "hash": "3db737530578556a377d542c6fc910c1"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/ui-ux-pro-max/scripts/tests/test_web_stack_freshness.py": {
+    "mtime": 1794374686445.5986,
+    "hash": "6e99306a25de56900f232609baba67a6"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/ui-ux-pro-max/scripts/validate_data.py": {
+    "mtime": 1794374686461.263,
+    "hash": "e26c33d4272866a8b1e67dc228a39bc2"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/eslint.config.mjs": {
+    "mtime": 1794374686462.1973,
+    "hash": "3c115a917994e70951ca99320d49a8d5"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/next.config.ts": {
+    "mtime": 1794374686477.9092,
+    "hash": "af3f45417125cec85f978b0026113d34"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/playwright.config.ts": {
+    "mtime": 1794374686478.7554,
+    "hash": "2ba4bc22b6012685c6b30260a8f19acb"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/scripts/make-fake-store.mjs": {
+    "mtime": 1794374686495.069,
+    "hash": "f38b10cef864369ae7bd24dd20722be0"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/app/admin/page.tsx": {
+    "mtime": 1794374686495.7969,
+    "hash": "a2cd2d916598720d04b92ffc15947ebc"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/app/api/admin/mails/route.ts": {
+    "mtime": 1794374686495.7969,
+    "hash": "97e53534cbadb20c6122ce9121da6481"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/app/api/admin/prune/route.ts": {
+    "mtime": 1794374686495.7969,
+    "hash": "cac00a0e488048e32bc5da63330dd76a"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/app/api/admin/records/route.ts": {
+    "mtime": 1794374686495.7969,
+    "hash": "0254ab6ea91809e414800a6c7ae5fb4d"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/app/api/chat/route.ts": {
+    "mtime": 1794374686495.7969,
+    "hash": "6e895f437b531d874518c8d7adbd542a"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/app/api/debug/reset-all/route.ts": {
+    "mtime": 1794374686495.7969,
+    "hash": "29db6813f04f306a8fa584fa58b3abd8"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/app/api/demo/route.ts": {
+    "mtime": 1794374686495.7969,
+    "hash": "ee3a0f1d68ae0fa105aab9a2b8e9d434"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/app/api/images/[id]/route.ts": {
+    "mtime": 1794374686495.7969,
+    "hash": "44507664809780f24ee163b46b88b87d"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/app/api/insights/[id]/route.ts": {
+    "mtime": 1794374686495.7969,
+    "hash": "d46e364cb1fecd67da6b39c647c9cae3"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/app/api/mail/route.ts": {
+    "mtime": 1794374686495.7969,
+    "hash": "2685f2cdf1dabb3e555cb93014a01b0f"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/app/api/meanings/[id]/route.ts": {
+    "mtime": 1794374686495.7969,
+    "hash": "6ef466b8ad9d9d8ecdbeff96ad68bd71"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/app/api/meanings/route.ts": {
+    "mtime": 1794374686495.7969,
+    "hash": "2ca599b70ca81f99a1f31dcbfcd47579"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/app/api/nodes/[id]/route.ts": {
+    "mtime": 1794374686511.3674,
+    "hash": "e459b70806c01583bbafd1487de96647"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/app/api/nodes/route.ts": {
+    "mtime": 1794374686512.1887,
+    "hash": "44c12d3ebc08a7bfca1d5883b40939f2"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/app/api/profiles/[id]/compare/route.ts": {
+    "mtime": 1794374686512.1887,
+    "hash": "10877ac69cea386804ca4ace0b6aa6e2"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/app/api/profiles/[id]/mail/route.ts": {
+    "mtime": 1794374686512.1887,
+    "hash": "e1acf3d294702bb81e1804430323ce5a"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/app/api/profiles/[id]/route.ts": {
+    "mtime": 1794374686512.1887,
+    "hash": "81e2d740cf82a258ed0dca19e1bd9aa4"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/app/api/profiles/route.ts": {
+    "mtime": 1794374686512.1887,
+    "hash": "d10823ebb11a26377b95e7a3d3fe15c5"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/app/api/sessions/[sessionId]/route.ts": {
+    "mtime": 1794374686512.1887,
+    "hash": "5fac92029b81be695d3d2f8d19020cc8"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/app/api/sessions/route.ts": {
+    "mtime": 1794374686512.1887,
+    "hash": "927e8a4533cbe792589abdbb659e7508"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/app/api/state/route.ts": {
+    "mtime": 1794374686512.1887,
+    "hash": "9678d1aae8616ebafe5499a5dbfe4528"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/app/api/stories/[id]/route.ts": {
+    "mtime": 1794374686512.1887,
+    "hash": "e613bf20ba0d72b2ed6fbdd2fa81ec51"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/app/api/story/route.ts": {
+    "mtime": 1794374686512.1887,
+    "hash": "91b98b472f191b4c8fd56767a23ce805"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/app/chat/page.tsx": {
+    "mtime": 1794374686512.1887,
+    "hash": "f95b8146dfb84c209d00938c3379891d"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/app/debug/page.tsx": {
+    "mtime": 1794374686512.1887,
+    "hash": "affcc062f82acd154099a7c4bc08a177"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/app/layout.tsx": {
+    "mtime": 1794374686512.1887,
+    "hash": "2311f7bc0462b9e6d0e73c185d074a6d"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/app/me/page.tsx": {
+    "mtime": 1794374686512.1887,
+    "hash": "33e0e2150c23b3c778fd08b4926f1203"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/app/page.tsx": {
+    "mtime": 1794374686512.1887,
+    "hash": "a4e82455be905bc1d676c2812472103b"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/app/sky/page.tsx": {
+    "mtime": 1794374686512.1887,
+    "hash": "2c365420f47035d96219f4466b60d3c3"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/app/story/page.tsx": {
+    "mtime": 1794374686528.8203,
+    "hash": "072f286d17fa5cd3674ce74b8072787b"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/components/AdminView.tsx": {
+    "mtime": 1794374686528.8203,
+    "hash": "1fb94d99234a7895404a19e0735251a3"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/components/AppNav.tsx": {
+    "mtime": 1794374686528.8203,
+    "hash": "e04c6d00ada13fe2d3aa16245b189a1e"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/components/ChatView.tsx": {
+    "mtime": 1794374686528.8203,
+    "hash": "56a1188d9f63d533ec9ae9f525fe4c53"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/components/CompareSky.tsx": {
+    "mtime": 1794374686528.8203,
+    "hash": "7b01fd7bf12055b42a6da2c598402bc7"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/components/DebugConsole.tsx": {
+    "mtime": 1794374686528.8203,
+    "hash": "6ec69427ab5bb8500938dc2ee645f4ac"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/components/Exhibit.tsx": {
+    "mtime": 1794374686528.8203,
+    "hash": "45cfc740a59a7aac7abf3332892e4e14"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/components/MeView.tsx": {
+    "mtime": 1794374686528.8203,
+    "hash": "1fb615e91b0b32064d2182c4dd65da2c"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/components/MeaningSky.tsx": {
+    "mtime": 1794374686528.8203,
+    "hash": "75aa25ebba51dac9ea86690763062fd2"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/components/MicButton.tsx": {
+    "mtime": 1794374686528.8203,
+    "hash": "8b1b2b5ea740102eb86496f692cb0717"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/components/Moon.tsx": {
+    "mtime": 1794374686528.8203,
+    "hash": "460e59289928aa76c142b1b24acc45dc"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/components/MoonPlane.tsx": {
+    "mtime": 1794374686528.8203,
+    "hash": "0ff0e3dae4377bac14b878ada6673517"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/components/PromptCard.tsx": {
+    "mtime": 1794374686545.3015,
+    "hash": "ff38d306c67169c3d7c8c62da7b88bf1"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/components/SkyView.tsx": {
+    "mtime": 1794374686545.5273,
+    "hash": "acbccd5f522694cf6c6767bbde283887"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/components/StoryCloud.tsx": {
+    "mtime": 1794374686545.5273,
+    "hash": "ae4cd18238098f22fe93a943ea719cd5"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/components/StoryView.tsx": {
+    "mtime": 1794374686545.5273,
+    "hash": "772b8c66e3634704669899430b7ff3a5"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/components/api.ts": {
+    "mtime": 1794374686545.5273,
+    "hash": "5ac322d35f59c322e44e2b16dc1116f2"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/components/camera.ts": {
+    "mtime": 1794374686545.5273,
+    "hash": "e94c53fae238c1a8924564e3b650709b"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/components/imageFiles.ts": {
+    "mtime": 1794374686545.5273,
+    "hash": "fea1c6390ec271bf2b240d8d7d4856e3"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/components/sky.ts": {
+    "mtime": 1794374686545.5273,
+    "hash": "45112a9ba5b87c50ac883937420d9193"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/components/storyFocus.ts": {
+    "mtime": 1794374686545.5273,
+    "hash": "0ca8691a2d5c6e16c620efa13265b7b0"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/components/storySamples.ts": {
+    "mtime": 1794374686545.5273,
+    "hash": "454e52718647040c0a64cf3a73348263"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/components/wallLayout.ts": {
+    "mtime": 1794374686545.5273,
+    "hash": "3bc883ebf14d177ff6f246790dad4254"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/lib/demo.ts": {
+    "mtime": 1794374686545.5273,
+    "hash": "69f15da2b014dd23d6567c3cc3003a0e"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/lib/env.ts": {
+    "mtime": 1794374686545.5273,
+    "hash": "c57bd3d647be73dcc0d351769ccafea9"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/lib/images.ts": {
+    "mtime": 1794374686545.5273,
+    "hash": "e0c168f8e79513b6ed0e46a477f4aea4"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/lib/mail.ts": {
+    "mtime": 1794374686545.5273,
+    "hash": "ba6ec2eef0c9ed57f67a51a6515142e5"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/lib/model/client.ts": {
+    "mtime": 1794374686545.5273,
+    "hash": "793886f86d52f062b13530eb37d2c3f4"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/lib/model/mock.ts": {
+    "mtime": 1794374686545.5273,
+    "hash": "02a0f9fb6300d65b1712475024ddf6ee"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/lib/profile/build.ts": {
+    "mtime": 1794374686561.3855,
+    "hash": "a57d6263067b74313a19b75c9258f502"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/lib/profile/make.ts": {
+    "mtime": 1794374686562.1887,
+    "hash": "a824bcd67ac346c393d8288980e1c618"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/lib/prompts/profile.ts": {
+    "mtime": 1794374686562.1887,
+    "hash": "a8b5566a85b8bcd2bd3bb89b9a2c630f"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/lib/prompts/safety.ts": {
+    "mtime": 1794374686562.1887,
+    "hash": "b4670a6e5a7dfa1de130346978ea2308"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/lib/prompts/story.ts": {
+    "mtime": 1794374686562.1887,
+    "hash": "1a7b21f4787a146ea7580d27de139146"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/lib/records.ts": {
+    "mtime": 1794374686562.1887,
+    "hash": "85721395ee659d61a714d9e881b79de0"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/lib/store.ts": {
+    "mtime": 1794374686562.1887,
+    "hash": "8e3d29094f0a186cf7a6c6977059c29a"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/lib/story/groups.ts": {
+    "mtime": 1794374686562.1887,
+    "hash": "4db4c8756d4d2e1715f7aeea3f089f2b"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/lib/story/preprocess.ts": {
+    "mtime": 1794374686562.1887,
+    "hash": "cdc2588b496a224c9bf1187ae08f2285"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/lib/story/speakers.ts": {
+    "mtime": 1794374686562.1887,
+    "hash": "a1172a1059f938cccdacc738c1c8c689"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/lib/story/split.ts": {
+    "mtime": 1794374686562.1887,
+    "hash": "cb9e58bc364cee29237efbc678710e53"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/lib/types.ts": {
+    "mtime": 1794374686562.1887,
+    "hash": "4b06e5d6b49067f22e73a69325ab335e"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/src/lib/uploads.ts": {
+    "mtime": 1794374686562.1887,
+    "hash": "2f879107a3a004d80107428dd366820f"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/tests/api-chat.spec.ts": {
+    "mtime": 1794374686562.1887,
+    "hash": "858708e6e7b7f6ed16bb1946b5c79fb3"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/tests/api-debug.spec.ts": {
+    "mtime": 1794374686562.1887,
+    "hash": "58e7fb78723a5d448c8a47ec32f94f41"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/tests/api-images.spec.ts": {
+    "mtime": 1794374686562.1887,
+    "hash": "4edf21157ae346d37ab81d4969c2109a"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/tests/api-profile.spec.ts": {
+    "mtime": 1794374686562.1887,
+    "hash": "be203021c5d825588e1fe33917bcf012"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/tests/api-proposal.spec.ts": {
+    "mtime": 1794374686562.1887,
+    "hash": "b3739e46df33d746ee268e96fe443e87"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/tests/api-rem.spec.ts": {
+    "mtime": 1794374686562.1887,
+    "hash": "fe77707c0cf418bcebc2bb3bffb4c853"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/tests/api-story.spec.ts": {
+    "mtime": 1794374686562.1887,
+    "hash": "de0119e24d968a24c36cf1b2dba24d9f"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/tests/challenger-m1-2.spec.ts": {
+    "mtime": 1794374686562.1887,
+    "hash": "55ab23165a82e1856eaaff7db4ca2837"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/tests/chat-images.spec.ts": {
+    "mtime": 1794374686577.7036,
+    "hash": "24d8b2a3554e7edd5f246d4fd73a8237"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/tests/me-ui.spec.ts": {
+    "mtime": 1794374686578.6348,
+    "hash": "a6df602f734b1e0bcf4f41ba8b47cf89"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/tests/sky-ui.spec.ts": {
+    "mtime": 1794374686578.9595,
+    "hash": "858b409ecf1fa833ba9ef49b039ca24d"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/tests/stage1.spec.ts": {
+    "mtime": 1794374686578.9595,
+    "hash": "3ab6ae6105af0df075277664558f0386"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/tests/story-focus.spec.ts": {
+    "mtime": 1794374686578.9595,
+    "hash": "a150ef47b2755f88e66ff93c8ed9ae5c"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/tests/unit/camera.unit.ts": {
+    "mtime": 1794374686578.9595,
+    "hash": "342a774194efa695b041c65259a801fb"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/tests/unit/images.unit.ts": {
+    "mtime": 1794374686582.1504,
+    "hash": "dc73e69c6d9b55a9f93da08b8c524a1f"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/tests/unit/profile-build.unit.ts": {
+    "mtime": 1794374686582.1504,
+    "hash": "388d82de930b2de2dd680a98ce87213a"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/tests/unit/push-focus.unit.ts": {
+    "mtime": 1794374686582.1504,
+    "hash": "b7eacc44c3fbe4de8bb4cc5d11670c1c"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/tests/unit/sky.unit.ts": {
+    "mtime": 1794374686582.1504,
+    "hash": "26aff35f46b56bfa19a21c8696a3b3ed"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/tests/unit/speakers.unit.ts": {
+    "mtime": 1794374686582.1504,
+    "hash": "a4ece5c273384b3b3cd0fb5948c1c975"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/tests/unit/story-focus.unit.ts": {
+    "mtime": 1794374686582.1504,
+    "hash": "e5937ab639b42aeed952e1c78d4dab90"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/tests/unit/story-groups.unit.ts": {
+    "mtime": 1794374686582.1504,
+    "hash": "017bb05214e633ad96387dcb8b86e1df"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/tests/unit/wall-layout.unit.ts": {
+    "mtime": 1794374686582.1504,
+    "hash": "ac8c8dbee742751bb80531119b714d88"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/graphify/SKILL.md": {
+    "mtime": 1794374686313.6863,
+    "hash": "92641ae83a3f91ab3d4441bdd832d87f"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/taste-skill/README.md": {
+    "mtime": 1794374686313.6863,
+    "hash": "572eefa17225dca7b0e96b18f8bbcf7d"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/taste-skill/SKILL.md": {
+    "mtime": 1794374686313.6863,
+    "hash": "928fa9b81025a85642f83b0a2b35bb6f"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/taste-skill/references/app-screens.md": {
+    "mtime": 1794374686344.7935,
+    "hash": "b05d8dde85ed5e8fbb287f224daad8ef"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/taste-skill/references/colour.md": {
+    "mtime": 1794374686346.4556,
+    "hash": "813d4dbbd43bcbb16635b475ef0a152b"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/taste-skill/references/copy.md": {
+    "mtime": 1794374686347.167,
+    "hash": "f6a31b12e2a93044cf707b0b48ff54f2"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/taste-skill/references/critique.md": {
+    "mtime": 1794374686347.167,
+    "hash": "876353ccd5e73cd0da5ed361dae7a41b"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/taste-skill/references/imagery.md": {
+    "mtime": 1794374686347.167,
+    "hash": "20bc64cb09e3e9117991ade949013117"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/taste-skill/references/layout.md": {
+    "mtime": 1794374686347.167,
+    "hash": "f6ec23d6d9fb2b72c7aa8ef64967b95a"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/taste-skill/references/motion.md": {
+    "mtime": 1794374686347.167,
+    "hash": "a3aa668a4a47c951b4253d3a0750217c"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/taste-skill/references/research.md": {
+    "mtime": 1794374686351.8274,
+    "hash": "80a1e52831085197e13b6e5a15fba92d"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/taste-skill/references/scenes.md": {
+    "mtime": 1794374686352.3801,
+    "hash": "fafe4cfae94452813d057657e4f590d3"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/taste-skill/references/tells.md": {
+    "mtime": 1794374686352.8845,
+    "hash": "575f2697b6725cd080c9b112ab4a848c"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/taste-skill/references/type.md": {
+    "mtime": 1794374686352.8845,
+    "hash": "3c038076f4078e89a5bcf4115f05e128"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/ui-ux-pro-max/SKILL.md": {
+    "mtime": 1794374686363.875,
+    "hash": "c8687d12b57651b373ac94aea80121df"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/ui-ux-pro-max/references/pro-rules.md": {
+    "mtime": 1794374686409.0605,
+    "hash": "09930cd335a0c214a382ed1559add8ea"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/.claude/skills/ui-ux-pro-max/references/quick-reference.md": {
+    "mtime": 1794374686413.3464,
+    "hash": "8f2640b17bff62ca22892d5c4da5eafe"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/AGENTS.md": {
+    "mtime": 1794374686462.1973,
+    "hash": "efb888862c9f94a087a633f105bfafb5"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/README.md": {
+    "mtime": 1794374686462.1973,
+    "hash": "010ed67eb54865808d74fe492e5aedb5"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/TEST_INFRA.md": {
+    "mtime": 1794374686462.1973,
+    "hash": "d557a53995265abfe3d57b9a91b2c348"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/TEST_READY.md": {
+    "mtime": 1794374686462.1973,
+    "hash": "5e106f356f07e7dc5a65f929d1b106ac"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/docs/backend-plan.md": {
+    "mtime": 1794374686462.1973,
+    "hash": "e9e841cdfa7901d59a5abea88c6f98c7"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/docs/design-reference/Debug.dc.html": {
+    "mtime": 1794374686462.1973,
+    "hash": "43dd490e8db618fd4846b213b28cd49a"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/docs/design-reference/Main.dc.html": {
+    "mtime": 1794374686462.1973,
+    "hash": "8c012fe98db15a6ef6ca5f6bc87993d2"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/docs/design-reference/Rem.dc.html": {
+    "mtime": 1794374686462.1973,
+    "hash": "09e24becfab040d7f738617f51b3ebdb"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/docs/frontend-handoff.md": {
+    "mtime": 1794374686462.1973,
+    "hash": "3adfe1407f7214213264dbe2927c2ff6"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/docs/handoff-README.md": {
+    "mtime": 1794374686462.1973,
+    "hash": "6a98adef558ac4537e08a6d38416cc61"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/docs/my-ai.md": {
+    "mtime": 1794374686462.1973,
+    "hash": "bc8dab54d0cedabd4326bfd13cea815c"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/docs/persona-architecture.md": {
+    "mtime": 1794374686462.1973,
+    "hash": "c6a84140da3da1b8d69fce1b455b5184"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/docs/plan.md": {
+    "mtime": 1794374686462.1973,
+    "hash": "3515b3d0c37b92a9eef547f93bd62a62"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/docs/prompts.md": {
+    "mtime": 1794374686462.1973,
+    "hash": "c9e00405cbbc3dc9e5d013fb95d962da"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/docs/review-stage2.md": {
+    "mtime": 1794374686462.1973,
+    "hash": "82229d88b55d7f15b342964afe47b6b0"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/public/file.svg": {
+    "mtime": 1794374686478.7554,
+    "hash": "d09f95206c3fa0bb9bd9fefabfd0ea71"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/public/globe.svg": {
+    "mtime": 1794374686478.7554,
+    "hash": "2aaafa6a49b6563925fe440891e32717"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/public/next.svg": {
+    "mtime": 1794374686478.7554,
+    "hash": "8e061864f388b47f33a1c3780831193e"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/public/vercel.svg": {
+    "mtime": 1794374686478.7554,
+    "hash": "c0af2f507b369b085b35ef4bbe3bcf1e"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/public/window.svg": {
+    "mtime": 1794374686478.7554,
+    "hash": "a2760511c65806022ad20adf74370ff3"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/screenshots/debug.png": {
+    "mtime": 1794374686478.7554,
+    "hash": "846510ee97d19d271b1c71a6fccd83dc"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/screenshots/exhibit-hover.png": {
+    "mtime": 1794374686478.7554,
+    "hash": "c817087d3ad20024d45ff894942cda04"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/screenshots/exhibit-moons.png": {
+    "mtime": 1794374686478.7554,
+    "hash": "2b4141564ea0eefc7b3af3379e68abf2"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/screenshots/exhibit-scrolled.png": {
+    "mtime": 1794374686478.7554,
+    "hash": "99307db75481e594c6408d91a396fa1e"
+  },
+  "C:/Users/User/.gemini/antigravity/scratch/rem-dream/screenshots/exhibit-top.png": {
+    "mtime": 1794374686478.7554,
+    "hash": "975aa92975dd71d000d2a983b95241e7"
+  }
+}

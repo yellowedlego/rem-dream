@@ -1,0 +1,2424 @@
+{
+  "version": 1,
+  "generatedAt": "2026-11-11T06:13:15.506Z",
+  "graphPath": "C:\\Users\\User\\.gemini\\antigravity\\scratch\\rem-dream\\.engram\\graph.json",
+  "maxDepth": 15,
+  "includeTests": false,
+  "warnings": [],
+  "flows": [
+    {
+      "id": "flow:scripts_validate_data_main",
+      "name": "main",
+      "entryPoint": "scripts_validate_data_main",
+      "entryPointId": "scripts_validate_data_main",
+      "path": [
+        "scripts_validate_data_main",
+        "scripts_validate_data_validate",
+        "scripts_validate_data_check_catalog_contract",
+        "scripts_validate_data_check_core_data_contract",
+        "scripts_validate_data_check_file",
+        "scripts_validate_data_check_provenance",
+        "scripts_validate_data_check_reasoning_contract",
+        "scripts_validate_data_check_stack_freshness_contract",
+        "scripts_validate_data_check_style_contract",
+        "scripts_validate_data_split",
+        "scripts_validate_data_valid_date",
+        "scripts_validate_data_check_catalog_summary",
+        "scripts_validate_data_check_font_catalog",
+        "scripts_validate_data_check_phosphor_catalog",
+        "scripts_validate_data_load_catalog_json",
+        "scripts_validate_data_check_app_interface_contract",
+        "scripts_validate_data_check_chart_contract",
+        "scripts_validate_data_check_color_contract",
+        "scripts_validate_data_check_icon_contract",
+        "scripts_validate_data_check_landing_claims",
+        "scripts_validate_data_check_motion_contract",
+        "scripts_validate_data_check_react_contract",
+        "scripts_validate_data_check_typography_contract",
+        "scripts_validate_data_check_ux_contract",
+        "scripts_validate_data_read_rows",
+        "scripts_validate_data_valid_catalog_source_key",
+        "scripts_validate_data_valid_confidence",
+        "scripts_validate_data_valid_dataset_source_key",
+        "scripts_validate_data_valid_provenance_source",
+        "scripts_validate_data_catalog_date",
+        "scripts_validate_data_font_families",
+        "scripts_validate_data_imported_weights",
+        "scripts_validate_data_valid_google_fonts_exclusion_source",
+        "scripts_validate_data_contrast_ratio",
+        "scripts_validate_data_configured_font_names",
+        "scripts_validate_data_declared_weights",
+        "scripts_validate_data_font_names",
+        "scripts_validate_data_relative_luminance"
+      ],
+      "qualifiedPath": [
+        "scripts_validate_data_main",
+        "scripts_validate_data_validate",
+        "scripts_validate_data_check_catalog_contract",
+        "scripts_validate_data_check_core_data_contract",
+        "scripts_validate_data_check_file",
+        "scripts_validate_data_check_provenance",
+        "scripts_validate_data_check_reasoning_contract",
+        "scripts_validate_data_check_stack_freshness_contract",
+        "scripts_validate_data_check_style_contract",
+        "scripts_validate_data_split",
+        "scripts_validate_data_valid_date",
+        "scripts_validate_data_check_catalog_summary",
+        "scripts_validate_data_check_font_catalog",
+        "scripts_validate_data_check_phosphor_catalog",
+        "scripts_validate_data_load_catalog_json",
+        "scripts_validate_data_check_app_interface_contract",
+        "scripts_validate_data_check_chart_contract",
+        "scripts_validate_data_check_color_contract",
+        "scripts_validate_data_check_icon_contract",
+        "scripts_validate_data_check_landing_claims",
+        "scripts_validate_data_check_motion_contract",
+        "scripts_validate_data_check_react_contract",
+        "scripts_validate_data_check_typography_contract",
+        "scripts_validate_data_check_ux_contract",
+        "scripts_validate_data_read_rows",
+        "scripts_validate_data_valid_catalog_source_key",
+        "scripts_validate_data_valid_confidence",
+        "scripts_validate_data_valid_dataset_source_key",
+        "scripts_validate_data_valid_provenance_source",
+        "scripts_validate_data_catalog_date",
+        "scripts_validate_data_font_families",
+        "scripts_validate_data_imported_weights",
+        "scripts_validate_data_valid_google_fonts_exclusion_source",
+        "scripts_validate_data_contrast_ratio",
+        "scripts_validate_data_configured_font_names",
+        "scripts_validate_data_declared_weights",
+        "scripts_validate_data_font_names",
+        "scripts_validate_data_relative_luminance"
+      ],
+      "depth": 5,
+      "nodeCount": 38,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/ui-ux-pro-max/scripts/validate_data.py"
+      ],
+      "criticality": 0.45,
+      "warnings": []
+    },
+    {
+      "id": "flow:scripts_design_system_generate_design_system",
+      "name": "generate_design_system",
+      "entryPoint": "scripts_design_system_generate_design_system",
+      "entryPointId": "scripts_design_system_generate_design_system",
+      "path": [
+        "scripts_design_system_generate_design_system",
+        "scripts_design_system_designsystemgenerator",
+        "scripts_design_system_designsystemgenerator_generate",
+        "scripts_design_system_format_ascii_box",
+        "scripts_design_system_format_markdown",
+        "scripts_design_system_persist_design_system",
+        "scripts_design_system_designsystemgenerator_apply_reasoning",
+        "scripts_design_system_designsystemgenerator_extract_results",
+        "scripts_design_system_designsystemgenerator_multi_domain_search",
+        "scripts_design_system_designsystemgenerator_select_best_match",
+        "scripts_design_system_filter_anti_patterns_for_mode",
+        "scripts_design_system_resolve_color_mode",
+        "scripts_design_system_resolve_dial",
+        "scripts_design_system_select_palette_for_mode",
+        "scripts_design_system_ansi_ljust",
+        "scripts_design_system_hex_to_ansi",
+        "scripts_design_system_mode_support_labels",
+        "scripts_design_system_section_header",
+        "scripts_design_system_format_master_md",
+        "scripts_design_system_format_page_override_md",
+        "scripts_design_system_safe_slug",
+        "scripts_design_system_write_persisted_file",
+        "scripts_design_system_designsystemgenerator_find_reasoning_rule",
+        "scripts_design_system_designsystemgenerator_resolve_style",
+        "scripts_design_system_query_wants_dark",
+        "scripts_design_system_style_is_dark_primary",
+        "scripts_design_system_derive_dark_palette",
+        "scripts_design_system_palette_is_dark",
+        "scripts_design_system_button_outline_text_color",
+        "scripts_design_system_generate_intelligent_overrides",
+        "scripts_design_system_contrast_ratio",
+        "scripts_design_system_relative_luminance",
+        "scripts_design_system_detect_page_type"
+      ],
+      "qualifiedPath": [
+        "scripts_design_system_generate_design_system",
+        "scripts_design_system_designsystemgenerator",
+        "scripts_design_system_designsystemgenerator_generate",
+        "scripts_design_system_format_ascii_box",
+        "scripts_design_system_format_markdown",
+        "scripts_design_system_persist_design_system",
+        "scripts_design_system_designsystemgenerator_apply_reasoning",
+        "scripts_design_system_designsystemgenerator_extract_results",
+        "scripts_design_system_designsystemgenerator_multi_domain_search",
+        "scripts_design_system_designsystemgenerator_select_best_match",
+        "scripts_design_system_filter_anti_patterns_for_mode",
+        "scripts_design_system_resolve_color_mode",
+        "scripts_design_system_resolve_dial",
+        "scripts_design_system_select_palette_for_mode",
+        "scripts_design_system_ansi_ljust",
+        "scripts_design_system_hex_to_ansi",
+        "scripts_design_system_mode_support_labels",
+        "scripts_design_system_section_header",
+        "scripts_design_system_format_master_md",
+        "scripts_design_system_format_page_override_md",
+        "scripts_design_system_safe_slug",
+        "scripts_design_system_write_persisted_file",
+        "scripts_design_system_designsystemgenerator_find_reasoning_rule",
+        "scripts_design_system_designsystemgenerator_resolve_style",
+        "scripts_design_system_query_wants_dark",
+        "scripts_design_system_style_is_dark_primary",
+        "scripts_design_system_derive_dark_palette",
+        "scripts_design_system_palette_is_dark",
+        "scripts_design_system_button_outline_text_color",
+        "scripts_design_system_generate_intelligent_overrides",
+        "scripts_design_system_contrast_ratio",
+        "scripts_design_system_relative_luminance",
+        "scripts_design_system_detect_page_type"
+      ],
+      "depth": 4,
+      "nodeCount": 33,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/ui-ux-pro-max/scripts/design_system.py"
+      ],
+      "criticality": 0.44,
+      "warnings": []
+    },
+    {
+      "id": "flow:scripts_design_system_designsystemgenerator_init",
+      "name": ".__init",
+      "entryPoint": "scripts_design_system_designsystemgenerator_init",
+      "entryPointId": "scripts_design_system_designsystemgenerator_init",
+      "path": [
+        "scripts_design_system_designsystemgenerator_init",
+        "scripts_design_system_designsystemgenerator_build_style_lookup",
+        "scripts_design_system_designsystemgenerator_load_landing_patterns",
+        "scripts_design_system_designsystemgenerator_load_reasoning",
+        "scripts_design_system_designsystemgenerator_load_styles"
+      ],
+      "qualifiedPath": [
+        "scripts_design_system_designsystemgenerator_init",
+        "scripts_design_system_designsystemgenerator_build_style_lookup",
+        "scripts_design_system_designsystemgenerator_load_landing_patterns",
+        "scripts_design_system_designsystemgenerator_load_reasoning",
+        "scripts_design_system_designsystemgenerator_load_styles"
+      ],
+      "depth": 1,
+      "nodeCount": 5,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/ui-ux-pro-max/scripts/design_system.py"
+      ],
+      "criticality": 0.41,
+      "warnings": []
+    },
+    {
+      "id": "flow:components_storyview_storyview",
+      "name": "StoryView",
+      "entryPoint": "components_storyview_storyview",
+      "entryPointId": "components_storyview_storyview",
+      "path": [
+        "components_storyview_storyview",
+        "components_storyview_verify"
+      ],
+      "qualifiedPath": [
+        "components_storyview_storyview",
+        "components_storyview_verify"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        "src/components/StoryView.tsx"
+      ],
+      "criticality": 0.285,
+      "warnings": []
+    },
+    {
+      "id": "flow:components_api_currentsessionid",
+      "name": "currentSessionId",
+      "entryPoint": "components_api_currentsessionid",
+      "entryPointId": "components_api_currentsessionid",
+      "path": [
+        "components_api_currentsessionid",
+        "components_api_newid"
+      ],
+      "qualifiedPath": [
+        "components_api_currentsessionid",
+        "components_api_newid"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        "src/components/api.ts"
+      ],
+      "criticality": 0.285,
+      "warnings": []
+    },
+    {
+      "id": "flow:components_storycloud_hash",
+      "name": "hash",
+      "entryPoint": "components_storycloud_hash",
+      "entryPointId": "components_storycloud_hash",
+      "path": [
+        "components_storycloud_hash",
+        "components_storycloud_frac"
+      ],
+      "qualifiedPath": [
+        "components_storycloud_hash",
+        "components_storycloud_frac"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        "src/components/StoryCloud.tsx"
+      ],
+      "criticality": 0.285,
+      "warnings": []
+    },
+    {
+      "id": "flow:scripts_assets_keyof",
+      "name": "keyOf",
+      "entryPoint": "scripts_assets_keyof",
+      "entryPointId": "scripts_assets_keyof",
+      "path": [
+        "scripts_assets_keyof",
+        "scripts_assets_noquery"
+      ],
+      "qualifiedPath": [
+        "scripts_assets_keyof",
+        "scripts_assets_noquery"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/assets.mjs"
+      ],
+      "criticality": 0.285,
+      "warnings": []
+    },
+    {
+      "id": "flow:scripts_reasoning_contract_parse_decision_rules",
+      "name": "parse_decision_rules",
+      "entryPoint": "scripts_reasoning_contract_parse_decision_rules",
+      "entryPointId": "scripts_reasoning_contract_parse_decision_rules",
+      "path": [
+        "scripts_reasoning_contract_parse_decision_rules",
+        "scripts_reasoning_contract_validate_action"
+      ],
+      "qualifiedPath": [
+        "scripts_reasoning_contract_parse_decision_rules",
+        "scripts_reasoning_contract_validate_action"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/ui-ux-pro-max/scripts/reasoning_contract.py"
+      ],
+      "criticality": 0.285,
+      "warnings": []
+    },
+    {
+      "id": "flow:scripts_assets_searchaic",
+      "name": "searchAic",
+      "entryPoint": "scripts_assets_searchaic",
+      "entryPointId": "scripts_assets_searchaic",
+      "path": [
+        "scripts_assets_searchaic",
+        "scripts_assets_querywords"
+      ],
+      "qualifiedPath": [
+        "scripts_assets_searchaic",
+        "scripts_assets_querywords"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/assets.mjs"
+      ],
+      "criticality": 0.285,
+      "warnings": []
+    },
+    {
+      "id": "flow:components_api_startnewsession",
+      "name": "startNewSession",
+      "entryPoint": "components_api_startnewsession",
+      "entryPointId": "components_api_startnewsession",
+      "path": [
+        "components_api_startnewsession",
+        "components_api_newid"
+      ],
+      "qualifiedPath": [
+        "components_api_startnewsession",
+        "components_api_newid"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        "src/components/api.ts"
+      ],
+      "criticality": 0.285,
+      "warnings": []
+    },
+    {
+      "id": "flow:story_groups_validatemeanings",
+      "name": "validateMeanings",
+      "entryPoint": "story_groups_validatemeanings",
+      "entryPointId": "story_groups_validatemeanings",
+      "path": [
+        "story_groups_validatemeanings",
+        "story_groups_clip"
+      ],
+      "qualifiedPath": [
+        "story_groups_validatemeanings",
+        "story_groups_clip"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        "src/lib/story/groups.ts"
+      ],
+      "criticality": 0.285,
+      "warnings": []
+    },
+    {
+      "id": "flow:scripts_core_search_csv",
+      "name": "search_csv",
+      "entryPoint": "scripts_core_search_csv",
+      "entryPointId": "scripts_core_search_csv",
+      "path": [
+        "scripts_core_search_csv",
+        "scripts_core_search_csv_detailed",
+        "scripts_core_bm25_score",
+        "scripts_core_get_bm25",
+        "scripts_core_load_csv_snapshot",
+        "scripts_core_normalize",
+        "scripts_core_query_coverage",
+        "scripts_core_rewrite_query_for_domain",
+        "scripts_core_bm25_tokenize",
+        "scripts_core_bm25",
+        "scripts_core_bm25_fit",
+        "scripts_core_file_signature",
+        "scripts_core_bm25_vocabulary",
+        "scripts_core_contains_phrase",
+        "scripts_core_domain_keywords",
+        "scripts_core_search",
+        "scripts_core_load_product_keywords",
+        "scripts_core_exact_match_diagnostic",
+        "scripts_core_exact_row_identity",
+        "scripts_core_load_rows_or_empty",
+        "scripts_core_normalize_rtl_level",
+        "scripts_core_project_row",
+        "scripts_core_rtl_row_filter",
+        "scripts_core_style_identity",
+        "scripts_core_style_search_destination",
+        "scripts_core_suggest_identities",
+        "scripts_core_suggest_terms",
+        "scripts_core_valid_max_results",
+        "scripts_core_load_csv",
+        "scripts_core_row_identities",
+        "scripts_core_passes_threshold"
+      ],
+      "qualifiedPath": [
+        "scripts_core_search_csv",
+        "scripts_core_search_csv_detailed",
+        "scripts_core_bm25_score",
+        "scripts_core_get_bm25",
+        "scripts_core_load_csv_snapshot",
+        "scripts_core_normalize",
+        "scripts_core_query_coverage",
+        "scripts_core_rewrite_query_for_domain",
+        "scripts_core_bm25_tokenize",
+        "scripts_core_bm25",
+        "scripts_core_bm25_fit",
+        "scripts_core_file_signature",
+        "scripts_core_bm25_vocabulary",
+        "scripts_core_contains_phrase",
+        "scripts_core_domain_keywords",
+        "scripts_core_search",
+        "scripts_core_load_product_keywords",
+        "scripts_core_exact_match_diagnostic",
+        "scripts_core_exact_row_identity",
+        "scripts_core_load_rows_or_empty",
+        "scripts_core_normalize_rtl_level",
+        "scripts_core_project_row",
+        "scripts_core_rtl_row_filter",
+        "scripts_core_style_identity",
+        "scripts_core_style_search_destination",
+        "scripts_core_suggest_identities",
+        "scripts_core_suggest_terms",
+        "scripts_core_valid_max_results",
+        "scripts_core_load_csv",
+        "scripts_core_row_identities",
+        "scripts_core_passes_threshold"
+      ],
+      "depth": 6,
+      "nodeCount": 31,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/ui-ux-pro-max/scripts/core.py"
+      ],
+      "criticality": 0.2423,
+      "warnings": []
+    },
+    {
+      "id": "flow:scripts_core_search_stack",
+      "name": "search_stack",
+      "entryPoint": "scripts_core_search_stack",
+      "entryPointId": "scripts_core_search_stack",
+      "path": [
+        "scripts_core_search_stack",
+        "scripts_core_exact_match_diagnostic",
+        "scripts_core_exact_stack_identifier",
+        "scripts_core_legacy_successor_guidance",
+        "scripts_core_load_rows_or_empty",
+        "scripts_core_project_row",
+        "scripts_core_search_csv_detailed",
+        "scripts_core_stack_row_filter",
+        "scripts_core_suggest_terms",
+        "scripts_core_valid_max_results",
+        "scripts_core_normalize",
+        "scripts_core_search",
+        "scripts_core_load_csv",
+        "scripts_core_bm25_score",
+        "scripts_core_get_bm25",
+        "scripts_core_load_csv_snapshot",
+        "scripts_core_query_coverage",
+        "scripts_core_rewrite_query_for_domain",
+        "scripts_core_stack_query_requests_legacy",
+        "scripts_core_bm25_tokenize",
+        "scripts_core_bm25_vocabulary",
+        "scripts_core_passes_threshold",
+        "scripts_core_exact_row_identity",
+        "scripts_core_normalize_rtl_level",
+        "scripts_core_rtl_row_filter",
+        "scripts_core_style_identity",
+        "scripts_core_style_search_destination",
+        "scripts_core_suggest_identities",
+        "scripts_core_bm25",
+        "scripts_core_bm25_fit",
+        "scripts_core_file_signature",
+        "scripts_core_contains_phrase",
+        "scripts_core_domain_keywords",
+        "scripts_core_row_identities",
+        "scripts_core_load_product_keywords"
+      ],
+      "qualifiedPath": [
+        "scripts_core_search_stack",
+        "scripts_core_exact_match_diagnostic",
+        "scripts_core_exact_stack_identifier",
+        "scripts_core_legacy_successor_guidance",
+        "scripts_core_load_rows_or_empty",
+        "scripts_core_project_row",
+        "scripts_core_search_csv_detailed",
+        "scripts_core_stack_row_filter",
+        "scripts_core_suggest_terms",
+        "scripts_core_valid_max_results",
+        "scripts_core_normalize",
+        "scripts_core_search",
+        "scripts_core_load_csv",
+        "scripts_core_bm25_score",
+        "scripts_core_get_bm25",
+        "scripts_core_load_csv_snapshot",
+        "scripts_core_query_coverage",
+        "scripts_core_rewrite_query_for_domain",
+        "scripts_core_stack_query_requests_legacy",
+        "scripts_core_bm25_tokenize",
+        "scripts_core_bm25_vocabulary",
+        "scripts_core_passes_threshold",
+        "scripts_core_exact_row_identity",
+        "scripts_core_normalize_rtl_level",
+        "scripts_core_rtl_row_filter",
+        "scripts_core_style_identity",
+        "scripts_core_style_search_destination",
+        "scripts_core_suggest_identities",
+        "scripts_core_bm25",
+        "scripts_core_bm25_fit",
+        "scripts_core_file_signature",
+        "scripts_core_contains_phrase",
+        "scripts_core_domain_keywords",
+        "scripts_core_row_identities",
+        "scripts_core_load_product_keywords"
+      ],
+      "depth": 4,
+      "nodeCount": 35,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/ui-ux-pro-max/scripts/core.py"
+      ],
+      "criticality": 0.2257,
+      "warnings": []
+    },
+    {
+      "id": "flow:lib_app_draw_render",
+      "name": "render",
+      "entryPoint": "lib_app_draw_render",
+      "entryPointId": "lib_app_draw_render",
+      "path": [
+        "lib_app_draw_render",
+        "lib_app_draw_fontlink",
+        "lib_app_draw_kebab",
+        "lib_app_draw_signaturesfor"
+      ],
+      "qualifiedPath": [
+        "lib_app_draw_render",
+        "lib_app_draw_fontlink",
+        "lib_app_draw_kebab",
+        "lib_app_draw_signaturesfor"
+      ],
+      "depth": 1,
+      "nodeCount": 4,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/lib/app-draw.mjs"
+      ],
+      "criticality": 0.2225,
+      "warnings": []
+    },
+    {
+      "id": "flow:scripts_core_detect_domain",
+      "name": "detect_domain",
+      "entryPoint": "scripts_core_detect_domain",
+      "entryPointId": "scripts_core_detect_domain",
+      "path": [
+        "scripts_core_detect_domain",
+        "scripts_core_contains_phrase",
+        "scripts_core_domain_keywords",
+        "scripts_core_normalize",
+        "scripts_core_search",
+        "scripts_core_file_signature",
+        "scripts_core_load_product_keywords",
+        "scripts_core_exact_match_diagnostic",
+        "scripts_core_exact_row_identity",
+        "scripts_core_load_rows_or_empty",
+        "scripts_core_normalize_rtl_level",
+        "scripts_core_project_row",
+        "scripts_core_rtl_row_filter",
+        "scripts_core_search_csv_detailed",
+        "scripts_core_style_identity",
+        "scripts_core_style_search_destination",
+        "scripts_core_suggest_identities",
+        "scripts_core_suggest_terms",
+        "scripts_core_valid_max_results",
+        "scripts_core_load_csv",
+        "scripts_core_row_identities",
+        "scripts_core_bm25_score",
+        "scripts_core_get_bm25",
+        "scripts_core_load_csv_snapshot",
+        "scripts_core_query_coverage",
+        "scripts_core_rewrite_query_for_domain",
+        "scripts_core_bm25",
+        "scripts_core_bm25_tokenize",
+        "scripts_core_bm25_vocabulary",
+        "scripts_core_passes_threshold",
+        "scripts_core_bm25_fit"
+      ],
+      "qualifiedPath": [
+        "scripts_core_detect_domain",
+        "scripts_core_contains_phrase",
+        "scripts_core_domain_keywords",
+        "scripts_core_normalize",
+        "scripts_core_search",
+        "scripts_core_file_signature",
+        "scripts_core_load_product_keywords",
+        "scripts_core_exact_match_diagnostic",
+        "scripts_core_exact_row_identity",
+        "scripts_core_load_rows_or_empty",
+        "scripts_core_normalize_rtl_level",
+        "scripts_core_project_row",
+        "scripts_core_rtl_row_filter",
+        "scripts_core_search_csv_detailed",
+        "scripts_core_style_identity",
+        "scripts_core_style_search_destination",
+        "scripts_core_suggest_identities",
+        "scripts_core_suggest_terms",
+        "scripts_core_valid_max_results",
+        "scripts_core_load_csv",
+        "scripts_core_row_identities",
+        "scripts_core_bm25_score",
+        "scripts_core_get_bm25",
+        "scripts_core_load_csv_snapshot",
+        "scripts_core_query_coverage",
+        "scripts_core_rewrite_query_for_domain",
+        "scripts_core_bm25",
+        "scripts_core_bm25_tokenize",
+        "scripts_core_bm25_vocabulary",
+        "scripts_core_passes_threshold",
+        "scripts_core_bm25_fit"
+      ],
+      "depth": 4,
+      "nodeCount": 31,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/ui-ux-pro-max/scripts/core.py"
+      ],
+      "criticality": 0.2223,
+      "warnings": []
+    },
+    {
+      "id": "flow:scripts_assets_searchmet",
+      "name": "searchMet",
+      "entryPoint": "scripts_assets_searchmet",
+      "entryPointId": "scripts_assets_searchmet",
+      "path": [
+        "scripts_assets_searchmet",
+        "scripts_assets_getjson",
+        "scripts_assets_maplimit",
+        "scripts_assets_querywords",
+        "scripts_assets_sleep"
+      ],
+      "qualifiedPath": [
+        "scripts_assets_searchmet",
+        "scripts_assets_getjson",
+        "scripts_assets_maplimit",
+        "scripts_assets_querywords",
+        "scripts_assets_sleep"
+      ],
+      "depth": 2,
+      "nodeCount": 5,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/assets.mjs"
+      ],
+      "criticality": 0.22,
+      "warnings": []
+    },
+    {
+      "id": "flow:scripts_assets_searchnasa",
+      "name": "searchNasa",
+      "entryPoint": "scripts_assets_searchnasa",
+      "entryPointId": "scripts_assets_searchnasa",
+      "path": [
+        "scripts_assets_searchnasa",
+        "scripts_assets_getjson",
+        "scripts_assets_maplimit",
+        "scripts_assets_querywords",
+        "scripts_assets_sleep"
+      ],
+      "qualifiedPath": [
+        "scripts_assets_searchnasa",
+        "scripts_assets_getjson",
+        "scripts_assets_maplimit",
+        "scripts_assets_querywords",
+        "scripts_assets_sleep"
+      ],
+      "depth": 2,
+      "nodeCount": 5,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/assets.mjs"
+      ],
+      "criticality": 0.22,
+      "warnings": []
+    },
+    {
+      "id": "flow:scripts_assets_searchopenverse",
+      "name": "searchOpenverse",
+      "entryPoint": "scripts_assets_searchopenverse",
+      "entryPointId": "scripts_assets_searchopenverse",
+      "path": [
+        "scripts_assets_searchopenverse",
+        "scripts_assets_wikimediasizes",
+        "scripts_assets_applythumb",
+        "scripts_assets_commonsapi",
+        "scripts_assets_getjson",
+        "scripts_assets_noquery",
+        "scripts_assets_sleep"
+      ],
+      "qualifiedPath": [
+        "scripts_assets_searchopenverse",
+        "scripts_assets_wikimediasizes",
+        "scripts_assets_applythumb",
+        "scripts_assets_commonsapi",
+        "scripts_assets_getjson",
+        "scripts_assets_noquery",
+        "scripts_assets_sleep"
+      ],
+      "depth": 3,
+      "nodeCount": 7,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/assets.mjs"
+      ],
+      "criticality": 0.2157,
+      "warnings": []
+    },
+    {
+      "id": "flow:model_client_callmodeljson",
+      "name": "callModelJson",
+      "entryPoint": "model_client_callmodeljson",
+      "entryPointId": "model_client_callmodeljson",
+      "path": [
+        "model_client_callmodeljson",
+        "model_client_callmodel",
+        "model_client_modelcallerror",
+        "model_client_estimatetokens",
+        "model_client_networkcause",
+        "model_client_scrub"
+      ],
+      "qualifiedPath": [
+        "model_client_callmodeljson",
+        "model_client_callmodel",
+        "model_client_modelcallerror",
+        "model_client_estimatetokens",
+        "model_client_networkcause",
+        "model_client_scrub"
+      ],
+      "depth": 2,
+      "nodeCount": 6,
+      "fileCount": 1,
+      "files": [
+        "src/lib/model/client.ts"
+      ],
+      "criticality": 0.2117,
+      "warnings": []
+    },
+    {
+      "id": "flow:scripts_assets_searcharchive",
+      "name": "searchArchive",
+      "entryPoint": "scripts_assets_searcharchive",
+      "entryPointId": "scripts_assets_searcharchive",
+      "path": [
+        "scripts_assets_searcharchive",
+        "scripts_assets_getjson",
+        "scripts_assets_maplimit",
+        "scripts_assets_querywords",
+        "scripts_assets_short",
+        "scripts_assets_text",
+        "scripts_assets_sleep"
+      ],
+      "qualifiedPath": [
+        "scripts_assets_searcharchive",
+        "scripts_assets_getjson",
+        "scripts_assets_maplimit",
+        "scripts_assets_querywords",
+        "scripts_assets_short",
+        "scripts_assets_text",
+        "scripts_assets_sleep"
+      ],
+      "depth": 2,
+      "nodeCount": 7,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/assets.mjs"
+      ],
+      "criticality": 0.2057,
+      "warnings": []
+    },
+    {
+      "id": "flow:story_split_splitstory",
+      "name": "splitStory",
+      "entryPoint": "story_split_splitstory",
+      "entryPointId": "story_split_splitstory",
+      "path": [
+        "story_split_splitstory",
+        "story_split_extracttopic",
+        "story_split_heuristicsplit",
+        "story_split_payloadtoolargeerror",
+        "story_split_validatespanintegrity",
+        "story_split_mergespanstocap",
+        "story_split_spansfromcutpoints"
+      ],
+      "qualifiedPath": [
+        "story_split_splitstory",
+        "story_split_extracttopic",
+        "story_split_heuristicsplit",
+        "story_split_payloadtoolargeerror",
+        "story_split_validatespanintegrity",
+        "story_split_mergespanstocap",
+        "story_split_spansfromcutpoints"
+      ],
+      "depth": 2,
+      "nodeCount": 7,
+      "fileCount": 1,
+      "files": [
+        "src/lib/story/split.ts"
+      ],
+      "criticality": 0.2057,
+      "warnings": []
+    },
+    {
+      "id": "flow:scripts_assets_getall",
+      "name": "getAll",
+      "entryPoint": "scripts_assets_getall",
+      "entryPointId": "scripts_assets_getall",
+      "path": [
+        "scripts_assets_getall",
+        "scripts_assets_creditspath",
+        "scripts_assets_getone",
+        "scripts_assets_rel",
+        "scripts_assets_commonsapi",
+        "scripts_assets_commonsinfo",
+        "scripts_assets_credit",
+        "scripts_assets_creditrequired",
+        "scripts_assets_dims",
+        "scripts_assets_esc",
+        "scripts_assets_fromaic",
+        "scripts_assets_fromarchive",
+        "scripts_assets_fromcommons",
+        "scripts_assets_fromcommonsvideo",
+        "scripts_assets_frommet",
+        "scripts_assets_fromnasa",
+        "scripts_assets_fromopenverse",
+        "scripts_assets_getjson",
+        "scripts_assets_getvideo",
+        "scripts_assets_imageheaders",
+        "scripts_assets_licencelabel",
+        "scripts_assets_licencenotes",
+        "scripts_assets_licenceurl",
+        "scripts_assets_nasaurl",
+        "scripts_assets_probe",
+        "scripts_assets_readcredits",
+        "scripts_assets_recordcredit",
+        "scripts_assets_short",
+        "scripts_assets_size",
+        "scripts_assets_slug",
+        "scripts_assets_targetfile",
+        "scripts_assets_wikimediasizes",
+        "scripts_assets_base",
+        "scripts_assets_text",
+        "scripts_assets_first",
+        "scripts_assets_licencefromurl",
+        "scripts_assets_pickrendition",
+        "scripts_assets_seconds",
+        "scripts_assets_userendition",
+        "scripts_assets_applythumb",
+        "scripts_assets_commonslicence",
+        "scripts_assets_sleep",
+        "scripts_assets_clock",
+        "scripts_assets_mp4info",
+        "scripts_assets_videonotes",
+        "scripts_assets_noquery"
+      ],
+      "qualifiedPath": [
+        "scripts_assets_getall",
+        "scripts_assets_creditspath",
+        "scripts_assets_getone",
+        "scripts_assets_rel",
+        "scripts_assets_commonsapi",
+        "scripts_assets_commonsinfo",
+        "scripts_assets_credit",
+        "scripts_assets_creditrequired",
+        "scripts_assets_dims",
+        "scripts_assets_esc",
+        "scripts_assets_fromaic",
+        "scripts_assets_fromarchive",
+        "scripts_assets_fromcommons",
+        "scripts_assets_fromcommonsvideo",
+        "scripts_assets_frommet",
+        "scripts_assets_fromnasa",
+        "scripts_assets_fromopenverse",
+        "scripts_assets_getjson",
+        "scripts_assets_getvideo",
+        "scripts_assets_imageheaders",
+        "scripts_assets_licencelabel",
+        "scripts_assets_licencenotes",
+        "scripts_assets_licenceurl",
+        "scripts_assets_nasaurl",
+        "scripts_assets_probe",
+        "scripts_assets_readcredits",
+        "scripts_assets_recordcredit",
+        "scripts_assets_short",
+        "scripts_assets_size",
+        "scripts_assets_slug",
+        "scripts_assets_targetfile",
+        "scripts_assets_wikimediasizes",
+        "scripts_assets_base",
+        "scripts_assets_text",
+        "scripts_assets_first",
+        "scripts_assets_licencefromurl",
+        "scripts_assets_pickrendition",
+        "scripts_assets_seconds",
+        "scripts_assets_userendition",
+        "scripts_assets_applythumb",
+        "scripts_assets_commonslicence",
+        "scripts_assets_sleep",
+        "scripts_assets_clock",
+        "scripts_assets_mp4info",
+        "scripts_assets_videonotes",
+        "scripts_assets_noquery"
+      ],
+      "depth": 4,
+      "nodeCount": 46,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/assets.mjs"
+      ],
+      "criticality": 0.1954,
+      "warnings": []
+    },
+    {
+      "id": "flow:lib_store_getactivepersona",
+      "name": "getActivePersona",
+      "entryPoint": "lib_store_getactivepersona",
+      "entryPointId": "lib_store_getactivepersona",
+      "path": [
+        "lib_store_getactivepersona",
+        "lib_store_readstore",
+        "lib_store_ensurestore",
+        "lib_store_doensurestore",
+        "lib_store_atomicwritestore",
+        "lib_store_recoverdanglingruns"
+      ],
+      "qualifiedPath": [
+        "lib_store_getactivepersona",
+        "lib_store_readstore",
+        "lib_store_ensurestore",
+        "lib_store_doensurestore",
+        "lib_store_atomicwritestore",
+        "lib_store_recoverdanglingruns"
+      ],
+      "depth": 4,
+      "nodeCount": 6,
+      "fileCount": 1,
+      "files": [
+        "src/lib/store.ts"
+      ],
+      "criticality": 0.19,
+      "warnings": []
+    },
+    {
+      "id": "flow:lib_store_getactiverun",
+      "name": "getActiveRun",
+      "entryPoint": "lib_store_getactiverun",
+      "entryPointId": "lib_store_getactiverun",
+      "path": [
+        "lib_store_getactiverun",
+        "lib_store_readstore",
+        "lib_store_ensurestore",
+        "lib_store_doensurestore",
+        "lib_store_atomicwritestore",
+        "lib_store_recoverdanglingruns"
+      ],
+      "qualifiedPath": [
+        "lib_store_getactiverun",
+        "lib_store_readstore",
+        "lib_store_ensurestore",
+        "lib_store_doensurestore",
+        "lib_store_atomicwritestore",
+        "lib_store_recoverdanglingruns"
+      ],
+      "depth": 4,
+      "nodeCount": 6,
+      "fileCount": 1,
+      "files": [
+        "src/lib/store.ts"
+      ],
+      "criticality": 0.19,
+      "warnings": []
+    },
+    {
+      "id": "flow:scripts_draw_deal",
+      "name": "deal",
+      "entryPoint": "scripts_draw_deal",
+      "entryPointId": "scripts_draw_deal",
+      "path": [
+        "scripts_draw_deal",
+        "scripts_draw_dealhero",
+        "scripts_draw_dealpalette",
+        "scripts_draw_dealphotos",
+        "scripts_draw_dealreferences",
+        "scripts_draw_dealscenes",
+        "scripts_draw_dealsection",
+        "scripts_draw_dealtype",
+        "scripts_draw_directionpool",
+        "scripts_draw_fresh",
+        "scripts_draw_imagerymode",
+        "scripts_draw_pick",
+        "scripts_draw_recent",
+        "scripts_draw_briefwords",
+        "scripts_draw_shuffle",
+        "scripts_draw_rnd",
+        "scripts_draw_sectionpool",
+        "scripts_draw_briefstop"
+      ],
+      "qualifiedPath": [
+        "scripts_draw_deal",
+        "scripts_draw_dealhero",
+        "scripts_draw_dealpalette",
+        "scripts_draw_dealphotos",
+        "scripts_draw_dealreferences",
+        "scripts_draw_dealscenes",
+        "scripts_draw_dealsection",
+        "scripts_draw_dealtype",
+        "scripts_draw_directionpool",
+        "scripts_draw_fresh",
+        "scripts_draw_imagerymode",
+        "scripts_draw_pick",
+        "scripts_draw_recent",
+        "scripts_draw_briefwords",
+        "scripts_draw_shuffle",
+        "scripts_draw_rnd",
+        "scripts_draw_sectionpool",
+        "scripts_draw_briefstop"
+      ],
+      "depth": 3,
+      "nodeCount": 18,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/draw.mjs"
+      ],
+      "criticality": 0.18,
+      "warnings": []
+    },
+    {
+      "id": "flow:lib_cdp_browser_launch",
+      "name": ".launch",
+      "entryPoint": "lib_cdp_browser_launch",
+      "entryPointId": "lib_cdp_browser_launch",
+      "path": [
+        "lib_cdp_browser_launch",
+        "lib_cdp_browser",
+        "lib_cdp_findchrome",
+        "lib_cdp_sweepprofiles",
+        "lib_cdp_alive"
+      ],
+      "qualifiedPath": [
+        "lib_cdp_browser_launch",
+        "lib_cdp_browser",
+        "lib_cdp_findchrome",
+        "lib_cdp_sweepprofiles",
+        "lib_cdp_alive"
+      ],
+      "depth": 2,
+      "nodeCount": 5,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/lib/cdp.mjs"
+      ],
+      "criticality": 0.17,
+      "warnings": []
+    },
+    {
+      "id": "flow:components_sky_convergepos",
+      "name": "convergePos",
+      "entryPoint": "components_sky_convergepos",
+      "entryPointId": "components_sky_convergepos",
+      "path": [
+        "components_sky_convergepos",
+        "components_sky_easein",
+        "components_sky_easeinout",
+        "components_sky_phase",
+        "components_sky_clamp01"
+      ],
+      "qualifiedPath": [
+        "components_sky_convergepos",
+        "components_sky_easein",
+        "components_sky_easeinout",
+        "components_sky_phase",
+        "components_sky_clamp01"
+      ],
+      "depth": 2,
+      "nodeCount": 5,
+      "fileCount": 1,
+      "files": [
+        "src/components/sky.ts"
+      ],
+      "criticality": 0.17,
+      "warnings": []
+    },
+    {
+      "id": "flow:lib_app_draw_deal",
+      "name": "deal",
+      "entryPoint": "lib_app_draw_deal",
+      "entryPointId": "lib_app_draw_deal",
+      "path": [
+        "lib_app_draw_deal",
+        "lib_app_draw_dealscreen",
+        "lib_app_draw_dealshell",
+        "lib_app_draw_dealstyle",
+        "lib_app_draw_pick",
+        "lib_app_draw_rnd",
+        "lib_app_draw_stylepool"
+      ],
+      "qualifiedPath": [
+        "lib_app_draw_deal",
+        "lib_app_draw_dealscreen",
+        "lib_app_draw_dealshell",
+        "lib_app_draw_dealstyle",
+        "lib_app_draw_pick",
+        "lib_app_draw_rnd",
+        "lib_app_draw_stylepool"
+      ],
+      "depth": 2,
+      "nodeCount": 7,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/lib/app-draw.mjs"
+      ],
+      "criticality": 0.17,
+      "warnings": []
+    },
+    {
+      "id": "flow:scripts_draw_dealoptions",
+      "name": "dealOptions",
+      "entryPoint": "scripts_draw_dealoptions",
+      "entryPointId": "scripts_draw_dealoptions",
+      "path": [
+        "scripts_draw_dealoptions",
+        "scripts_draw_directionpool",
+        "scripts_draw_fresh",
+        "scripts_draw_pick",
+        "scripts_draw_recent",
+        "scripts_draw_imagerymode",
+        "scripts_draw_rnd"
+      ],
+      "qualifiedPath": [
+        "scripts_draw_dealoptions",
+        "scripts_draw_directionpool",
+        "scripts_draw_fresh",
+        "scripts_draw_pick",
+        "scripts_draw_recent",
+        "scripts_draw_imagerymode",
+        "scripts_draw_rnd"
+      ],
+      "depth": 2,
+      "nodeCount": 7,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/draw.mjs"
+      ],
+      "criticality": 0.17,
+      "warnings": []
+    },
+    {
+      "id": "flow:profile_make_makeprofile",
+      "name": "makeProfile",
+      "entryPoint": "profile_make_makeprofile",
+      "entryPointId": "profile_make_makeprofile",
+      "path": [
+        "profile_make_makeprofile",
+        "profile_make_checkanswer",
+        "profile_make_ruleprofile",
+        "profile_make_clip"
+      ],
+      "qualifiedPath": [
+        "profile_make_makeprofile",
+        "profile_make_checkanswer",
+        "profile_make_ruleprofile",
+        "profile_make_clip"
+      ],
+      "depth": 2,
+      "nodeCount": 4,
+      "fileCount": 1,
+      "files": [
+        "src/lib/profile/make.ts"
+      ],
+      "criticality": 0.17,
+      "warnings": []
+    },
+    {
+      "id": "flow:scripts_draw_render",
+      "name": "render",
+      "entryPoint": "scripts_draw_render",
+      "entryPointId": "scripts_draw_render",
+      "path": [
+        "scripts_draw_render",
+        "scripts_draw_assetqueries",
+        "scripts_draw_sitecard",
+        "scripts_draw_briefstop"
+      ],
+      "qualifiedPath": [
+        "scripts_draw_render",
+        "scripts_draw_assetqueries",
+        "scripts_draw_sitecard",
+        "scripts_draw_briefstop"
+      ],
+      "depth": 2,
+      "nodeCount": 4,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/draw.mjs"
+      ],
+      "criticality": 0.17,
+      "warnings": []
+    },
+    {
+      "id": "flow:scripts_assets_searchcommons",
+      "name": "searchCommons",
+      "entryPoint": "scripts_assets_searchcommons",
+      "entryPointId": "scripts_assets_searchcommons",
+      "path": [
+        "scripts_assets_searchcommons",
+        "scripts_assets_commonsapi",
+        "scripts_assets_commonsinfo",
+        "scripts_assets_getjson",
+        "scripts_assets_sleep"
+      ],
+      "qualifiedPath": [
+        "scripts_assets_searchcommons",
+        "scripts_assets_commonsapi",
+        "scripts_assets_commonsinfo",
+        "scripts_assets_getjson",
+        "scripts_assets_sleep"
+      ],
+      "depth": 2,
+      "nodeCount": 5,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/assets.mjs"
+      ],
+      "criticality": 0.17,
+      "warnings": []
+    },
+    {
+      "id": "flow:scripts_assets_searchcommonsvideo",
+      "name": "searchCommonsVideo",
+      "entryPoint": "scripts_assets_searchcommonsvideo",
+      "entryPointId": "scripts_assets_searchcommonsvideo",
+      "path": [
+        "scripts_assets_searchcommonsvideo",
+        "scripts_assets_commonsapi",
+        "scripts_assets_commonsinfo",
+        "scripts_assets_getjson",
+        "scripts_assets_sleep"
+      ],
+      "qualifiedPath": [
+        "scripts_assets_searchcommonsvideo",
+        "scripts_assets_commonsapi",
+        "scripts_assets_commonsinfo",
+        "scripts_assets_getjson",
+        "scripts_assets_sleep"
+      ],
+      "depth": 2,
+      "nodeCount": 5,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/assets.mjs"
+      ],
+      "criticality": 0.17,
+      "warnings": []
+    },
+    {
+      "id": "flow:lib_mail_sendmail",
+      "name": "sendMail",
+      "entryPoint": "lib_mail_sendmail",
+      "entryPointId": "lib_mail_sendmail",
+      "path": [
+        "lib_mail_sendmail",
+        "lib_mail_mailcontent",
+        "lib_mail_mailstatus",
+        "lib_mail_esc"
+      ],
+      "qualifiedPath": [
+        "lib_mail_sendmail",
+        "lib_mail_mailcontent",
+        "lib_mail_mailstatus",
+        "lib_mail_esc"
+      ],
+      "depth": 2,
+      "nodeCount": 4,
+      "fileCount": 1,
+      "files": [
+        "src/lib/mail.ts"
+      ],
+      "criticality": 0.17,
+      "warnings": []
+    },
+    {
+      "id": "flow:lib_cdp_browser_close",
+      "name": ".close",
+      "entryPoint": "lib_cdp_browser_close",
+      "entryPointId": "lib_cdp_browser_close",
+      "path": [
+        "lib_cdp_browser_close",
+        "lib_cdp_sleep"
+      ],
+      "qualifiedPath": [
+        "lib_cdp_browser_close",
+        "lib_cdp_sleep"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/lib/cdp.mjs"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:lib_cdp_page_constructor",
+      "name": ".constructor",
+      "entryPoint": "lib_cdp_page_constructor",
+      "entryPointId": "lib_cdp_page_constructor",
+      "path": [
+        "lib_cdp_page_constructor",
+        "lib_cdp_browser_on"
+      ],
+      "qualifiedPath": [
+        "lib_cdp_page_constructor",
+        "lib_cdp_browser_on"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/lib/cdp.mjs"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:lib_cdp_page_goto",
+      "name": ".goto",
+      "entryPoint": "lib_cdp_page_goto",
+      "entryPointId": "lib_cdp_page_goto",
+      "path": [
+        "lib_cdp_page_goto",
+        "lib_cdp_sleep"
+      ],
+      "qualifiedPath": [
+        "lib_cdp_page_goto",
+        "lib_cdp_sleep"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/lib/cdp.mjs"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:lib_cdp_browser_newpage",
+      "name": ".newPage",
+      "entryPoint": "lib_cdp_browser_newpage",
+      "entryPointId": "lib_cdp_browser_newpage",
+      "path": [
+        "lib_cdp_browser_newpage",
+        "lib_cdp_page",
+        "lib_cdp_page_setviewport"
+      ],
+      "qualifiedPath": [
+        "lib_cdp_browser_newpage",
+        "lib_cdp_page",
+        "lib_cdp_page_setviewport"
+      ],
+      "depth": 1,
+      "nodeCount": 3,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/lib/cdp.mjs"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:lib_cdp_page_wheel",
+      "name": ".wheel",
+      "entryPoint": "lib_cdp_page_wheel",
+      "entryPointId": "lib_cdp_page_wheel",
+      "path": [
+        "lib_cdp_page_wheel",
+        "lib_cdp_sleep"
+      ],
+      "qualifiedPath": [
+        "lib_cdp_page_wheel",
+        "lib_cdp_sleep"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/lib/cdp.mjs"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:components_meaningsky_meaningsky",
+      "name": "MeaningSky",
+      "entryPoint": "components_meaningsky_meaningsky",
+      "entryPointId": "components_meaningsky_meaningsky",
+      "path": [
+        "components_meaningsky_meaningsky",
+        "components_meaningsky_clip"
+      ],
+      "qualifiedPath": [
+        "components_meaningsky_meaningsky",
+        "components_meaningsky_clip"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        "src/components/MeaningSky.tsx"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:compare_route_post",
+      "name": "POST",
+      "entryPoint": "compare_route_post",
+      "entryPointId": "compare_route_post",
+      "path": [
+        "compare_route_post",
+        "compare_route_turns"
+      ],
+      "qualifiedPath": [
+        "compare_route_post",
+        "compare_route_turns"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        "src/app/api/profiles/[id]/compare/route.ts"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:lib_store_addmodelcall",
+      "name": "addModelCall",
+      "entryPoint": "lib_store_addmodelcall",
+      "entryPointId": "lib_store_addmodelcall",
+      "path": [
+        "lib_store_addmodelcall",
+        "lib_store_updatestore"
+      ],
+      "qualifiedPath": [
+        "lib_store_addmodelcall",
+        "lib_store_updatestore"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        "src/lib/store.ts"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:lib_store_addnode",
+      "name": "addNode",
+      "entryPoint": "lib_store_addnode",
+      "entryPointId": "lib_store_addnode",
+      "path": [
+        "lib_store_addnode",
+        "lib_store_updatestore"
+      ],
+      "qualifiedPath": [
+        "lib_store_addnode",
+        "lib_store_updatestore"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        "src/lib/store.ts"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:assets_charts_axes",
+      "name": "axes",
+      "entryPoint": "assets_charts_axes",
+      "entryPointId": "assets_charts_axes",
+      "path": [
+        "assets_charts_axes",
+        "assets_charts_xpicks"
+      ],
+      "qualifiedPath": [
+        "assets_charts_axes",
+        "assets_charts_xpicks"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/assets/charts.js"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:assets_charts_bars",
+      "name": "bars",
+      "entryPoint": "assets_charts_bars",
+      "entryPointId": "assets_charts_bars",
+      "path": [
+        "assets_charts_bars",
+        "assets_charts_settle",
+        "assets_charts_watch"
+      ],
+      "qualifiedPath": [
+        "assets_charts_bars",
+        "assets_charts_settle",
+        "assets_charts_watch"
+      ],
+      "depth": 1,
+      "nodeCount": 3,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/assets/charts.js"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:profile_build_buildprompt",
+      "name": "buildPrompt",
+      "entryPoint": "profile_build_buildprompt",
+      "entryPointId": "profile_build_buildprompt",
+      "path": [
+        "profile_build_buildprompt",
+        "profile_build_styleline"
+      ],
+      "qualifiedPath": [
+        "profile_build_buildprompt",
+        "profile_build_styleline"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        "src/lib/profile/build.ts"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:components_api_call",
+      "name": "call",
+      "entryPoint": "components_api_call",
+      "entryPointId": "components_api_call",
+      "path": [
+        "components_api_call",
+        "components_api_apierror"
+      ],
+      "qualifiedPath": [
+        "components_api_call",
+        "components_api_apierror"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        "src/components/api.ts"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:lib_images_checkimages",
+      "name": "checkImages",
+      "entryPoint": "lib_images_checkimages",
+      "entryPointId": "lib_images_checkimages",
+      "path": [
+        "lib_images_checkimages",
+        "lib_images_decodebase64",
+        "lib_images_sniffmime"
+      ],
+      "qualifiedPath": [
+        "lib_images_checkimages",
+        "lib_images_decodebase64",
+        "lib_images_sniffmime"
+      ],
+      "depth": 1,
+      "nodeCount": 3,
+      "fileCount": 1,
+      "files": [
+        "src/lib/images.ts"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:lib_uploads_clearuploads",
+      "name": "clearUploads",
+      "entryPoint": "lib_uploads_clearuploads",
+      "entryPointId": "lib_uploads_clearuploads",
+      "path": [
+        "lib_uploads_clearuploads",
+        "lib_uploads_uploadsdir"
+      ],
+      "qualifiedPath": [
+        "lib_uploads_clearuploads",
+        "lib_uploads_uploadsdir"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        "src/lib/uploads.ts"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:lib_rules_colourfamily",
+      "name": "colourFamily",
+      "entryPoint": "lib_rules_colourfamily",
+      "entryPointId": "lib_rules_colourfamily",
+      "path": [
+        "lib_rules_colourfamily",
+        "lib_rules_inrange"
+      ],
+      "qualifiedPath": [
+        "lib_rules_colourfamily",
+        "lib_rules_inrange"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/lib/rules.mjs"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:assets_charts_diverging",
+      "name": "diverging",
+      "entryPoint": "assets_charts_diverging",
+      "entryPointId": "assets_charts_diverging",
+      "path": [
+        "assets_charts_diverging",
+        "assets_charts_legendel",
+        "assets_charts_settle",
+        "assets_charts_watch"
+      ],
+      "qualifiedPath": [
+        "assets_charts_diverging",
+        "assets_charts_legendel",
+        "assets_charts_settle",
+        "assets_charts_watch"
+      ],
+      "depth": 1,
+      "nodeCount": 4,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/assets/charts.js"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:components_sky_domestars",
+      "name": "domeStars",
+      "entryPoint": "components_sky_domestars",
+      "entryPointId": "components_sky_domestars",
+      "path": [
+        "components_sky_domestars",
+        "components_sky_domey",
+        "components_sky_seeded"
+      ],
+      "qualifiedPath": [
+        "components_sky_domestars",
+        "components_sky_domey",
+        "components_sky_seeded"
+      ],
+      "depth": 1,
+      "nodeCount": 3,
+      "fileCount": 1,
+      "files": [
+        "src/components/sky.ts"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:scripts_assets_fits",
+      "name": "fits",
+      "entryPoint": "scripts_assets_fits",
+      "entryPointId": "scripts_assets_fits",
+      "path": [
+        "scripts_assets_fits",
+        "scripts_assets_shape"
+      ],
+      "qualifiedPath": [
+        "scripts_assets_fits",
+        "scripts_assets_shape"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/assets.mjs"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:components_storyfocus_focusedmoons",
+      "name": "focusedMoons",
+      "entryPoint": "components_storyfocus_focusedmoons",
+      "entryPointId": "components_storyfocus_focusedmoons",
+      "path": [
+        "components_storyfocus_focusedmoons",
+        "components_storyfocus_relatedof"
+      ],
+      "qualifiedPath": [
+        "components_storyfocus_focusedmoons",
+        "components_storyfocus_relatedof"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        "src/components/storyFocus.ts"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:lib_env_getliveapikey",
+      "name": "getLiveApiKey",
+      "entryPoint": "lib_env_getliveapikey",
+      "entryPointId": "lib_env_getliveapikey",
+      "path": [
+        "lib_env_getliveapikey",
+        "lib_env_getenv"
+      ],
+      "qualifiedPath": [
+        "lib_env_getliveapikey",
+        "lib_env_getenv"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        "src/lib/env.ts"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:lib_rules_judge",
+      "name": "judge",
+      "entryPoint": "lib_rules_judge",
+      "entryPointId": "lib_rules_judge",
+      "path": [
+        "lib_rules_judge",
+        "lib_rules_hextohsl"
+      ],
+      "qualifiedPath": [
+        "lib_rules_judge",
+        "lib_rules_hextohsl"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/lib/rules.mjs"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:assets_charts_line",
+      "name": "line",
+      "entryPoint": "assets_charts_line",
+      "entryPointId": "assets_charts_line",
+      "path": [
+        "assets_charts_line",
+        "assets_charts_legendel",
+        "assets_charts_settle",
+        "assets_charts_watch"
+      ],
+      "qualifiedPath": [
+        "assets_charts_line",
+        "assets_charts_legendel",
+        "assets_charts_settle",
+        "assets_charts_watch"
+      ],
+      "depth": 1,
+      "nodeCount": 4,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/assets/charts.js"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:assets_charts_matrix",
+      "name": "matrix",
+      "entryPoint": "assets_charts_matrix",
+      "entryPointId": "assets_charts_matrix",
+      "path": [
+        "assets_charts_matrix",
+        "assets_charts_legendel",
+        "assets_charts_settle",
+        "assets_charts_watch"
+      ],
+      "qualifiedPath": [
+        "assets_charts_matrix",
+        "assets_charts_legendel",
+        "assets_charts_settle",
+        "assets_charts_watch"
+      ],
+      "depth": 1,
+      "nodeCount": 4,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/assets/charts.js"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:components_sky_namedstars",
+      "name": "namedStars",
+      "entryPoint": "components_sky_namedstars",
+      "entryPointId": "components_sky_namedstars",
+      "path": [
+        "components_sky_namedstars",
+        "components_sky_seeded"
+      ],
+      "qualifiedPath": [
+        "components_sky_namedstars",
+        "components_sky_seeded"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        "src/components/sky.ts"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:scripts_assets_number",
+      "name": "number",
+      "entryPoint": "scripts_assets_number",
+      "entryPointId": "scripts_assets_number",
+      "path": [
+        "scripts_assets_number",
+        "scripts_assets_fail"
+      ],
+      "qualifiedPath": [
+        "scripts_assets_number",
+        "scripts_assets_fail"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/assets.mjs"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:scripts_assets_picklicences",
+      "name": "pickLicences",
+      "entryPoint": "scripts_assets_picklicences",
+      "entryPointId": "scripts_assets_picklicences",
+      "path": [
+        "scripts_assets_picklicences",
+        "scripts_assets_fail"
+      ],
+      "qualifiedPath": [
+        "scripts_assets_picklicences",
+        "scripts_assets_fail"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/assets.mjs"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:scripts_assets_pickorientation",
+      "name": "pickOrientation",
+      "entryPoint": "scripts_assets_pickorientation",
+      "entryPointId": "scripts_assets_pickorientation",
+      "path": [
+        "scripts_assets_pickorientation",
+        "scripts_assets_fail"
+      ],
+      "qualifiedPath": [
+        "scripts_assets_pickorientation",
+        "scripts_assets_fail"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/assets.mjs"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:scripts_assets_picksources",
+      "name": "pickSources",
+      "entryPoint": "scripts_assets_picksources",
+      "entryPointId": "scripts_assets_picksources",
+      "path": [
+        "scripts_assets_picksources",
+        "scripts_assets_fail"
+      ],
+      "qualifiedPath": [
+        "scripts_assets_picksources",
+        "scripts_assets_fail"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/assets.mjs"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:assets_charts_prepnotes",
+      "name": "prepNotes",
+      "entryPoint": "assets_charts_prepnotes",
+      "entryPointId": "assets_charts_prepnotes",
+      "path": [
+        "assets_charts_prepnotes",
+        "assets_charts_lane"
+      ],
+      "qualifiedPath": [
+        "assets_charts_prepnotes",
+        "assets_charts_lane"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/assets/charts.js"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:components_imagefiles_prepareimage",
+      "name": "prepareImage",
+      "entryPoint": "components_imagefiles_prepareimage",
+      "entryPointId": "components_imagefiles_prepareimage",
+      "path": [
+        "components_imagefiles_prepareimage",
+        "components_imagefiles_blobtobase64",
+        "components_imagefiles_canvastoblob"
+      ],
+      "qualifiedPath": [
+        "components_imagefiles_prepareimage",
+        "components_imagefiles_blobtobase64",
+        "components_imagefiles_canvastoblob"
+      ],
+      "depth": 1,
+      "nodeCount": 3,
+      "fileCount": 1,
+      "files": [
+        "src/components/imageFiles.ts"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:scripts_assets_printcredits",
+      "name": "printCredits",
+      "entryPoint": "scripts_assets_printcredits",
+      "entryPointId": "scripts_assets_printcredits",
+      "path": [
+        "scripts_assets_printcredits",
+        "scripts_assets_clock",
+        "scripts_assets_creditspath",
+        "scripts_assets_readcredits",
+        "scripts_assets_rel"
+      ],
+      "qualifiedPath": [
+        "scripts_assets_printcredits",
+        "scripts_assets_clock",
+        "scripts_assets_creditspath",
+        "scripts_assets_readcredits",
+        "scripts_assets_rel"
+      ],
+      "depth": 1,
+      "nodeCount": 5,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/assets.mjs"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:lib_uploads_readimage",
+      "name": "readImage",
+      "entryPoint": "lib_uploads_readimage",
+      "entryPointId": "lib_uploads_readimage",
+      "path": [
+        "lib_uploads_readimage",
+        "lib_uploads_isimageid",
+        "lib_uploads_uploadsdir"
+      ],
+      "qualifiedPath": [
+        "lib_uploads_readimage",
+        "lib_uploads_isimageid",
+        "lib_uploads_uploadsdir"
+      ],
+      "depth": 1,
+      "nodeCount": 3,
+      "fileCount": 1,
+      "files": [
+        "src/lib/uploads.ts"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:lib_store_resetstore",
+      "name": "resetStore",
+      "entryPoint": "lib_store_resetstore",
+      "entryPointId": "lib_store_resetstore",
+      "path": [
+        "lib_store_resetstore",
+        "lib_store_updatestore"
+      ],
+      "qualifiedPath": [
+        "lib_store_resetstore",
+        "lib_store_updatestore"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        "src/lib/store.ts"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:scripts_scenes_run",
+      "name": "run",
+      "entryPoint": "scripts_scenes_run",
+      "entryPointId": "scripts_scenes_run",
+      "path": [
+        "scripts_scenes_run",
+        "scripts_scenes_go",
+        "scripts_scenes_rel",
+        "scripts_scenes_sheet"
+      ],
+      "qualifiedPath": [
+        "scripts_scenes_run",
+        "scripts_scenes_go",
+        "scripts_scenes_rel",
+        "scripts_scenes_sheet"
+      ],
+      "depth": 1,
+      "nodeCount": 4,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/scenes.mjs"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:lib_uploads_saveimages",
+      "name": "saveImages",
+      "entryPoint": "lib_uploads_saveimages",
+      "entryPointId": "lib_uploads_saveimages",
+      "path": [
+        "lib_uploads_saveimages",
+        "lib_uploads_deleteimages",
+        "lib_uploads_uploadsdir"
+      ],
+      "qualifiedPath": [
+        "lib_uploads_saveimages",
+        "lib_uploads_deleteimages",
+        "lib_uploads_uploadsdir"
+      ],
+      "depth": 1,
+      "nodeCount": 3,
+      "fileCount": 1,
+      "files": [
+        "src/lib/uploads.ts"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:lib_inspection_files_screenshotlabel",
+      "name": "screenshotLabel",
+      "entryPoint": "lib_inspection_files_screenshotlabel",
+      "entryPointId": "lib_inspection_files_screenshotlabel",
+      "path": [
+        "lib_inspection_files_screenshotlabel",
+        "lib_inspection_files_viewportclass"
+      ],
+      "qualifiedPath": [
+        "lib_inspection_files_screenshotlabel",
+        "lib_inspection_files_viewportclass"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/lib/inspection-files.mjs"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:scripts_assets_search",
+      "name": "search",
+      "entryPoint": "scripts_assets_search",
+      "entryPointId": "scripts_assets_search",
+      "path": [
+        "scripts_assets_search",
+        "scripts_assets_clock",
+        "scripts_assets_credit",
+        "scripts_assets_creditrequired",
+        "scripts_assets_licencelabel",
+        "scripts_assets_licencenotes",
+        "scripts_assets_licenceurl",
+        "scripts_assets_maplimit",
+        "scripts_assets_shape",
+        "scripts_assets_short",
+        "scripts_assets_size",
+        "scripts_assets_videonotes"
+      ],
+      "qualifiedPath": [
+        "scripts_assets_search",
+        "scripts_assets_clock",
+        "scripts_assets_credit",
+        "scripts_assets_creditrequired",
+        "scripts_assets_licencelabel",
+        "scripts_assets_licencenotes",
+        "scripts_assets_licenceurl",
+        "scripts_assets_maplimit",
+        "scripts_assets_shape",
+        "scripts_assets_short",
+        "scripts_assets_size",
+        "scripts_assets_videonotes"
+      ],
+      "depth": 1,
+      "nodeCount": 12,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/assets.mjs"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:profile_build_searchwiki",
+      "name": "searchWiki",
+      "entryPoint": "profile_build_searchwiki",
+      "entryPointId": "profile_build_searchwiki",
+      "path": [
+        "profile_build_searchwiki",
+        "profile_build_grams"
+      ],
+      "qualifiedPath": [
+        "profile_build_searchwiki",
+        "profile_build_grams"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        "src/lib/profile/build.ts"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:story_speakers_speakersof",
+      "name": "speakersOf",
+      "entryPoint": "story_speakers_speakersof",
+      "entryPointId": "story_speakers_speakersof",
+      "path": [
+        "story_speakers_speakersof",
+        "story_speakers_labelof"
+      ],
+      "qualifiedPath": [
+        "story_speakers_speakersof",
+        "story_speakers_labelof"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        "src/lib/story/speakers.ts"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:components_storycloud_step",
+      "name": "step",
+      "entryPoint": "components_storycloud_step",
+      "entryPointId": "components_storycloud_step",
+      "path": [
+        "components_storycloud_step",
+        "components_storycloud_starhomex"
+      ],
+      "qualifiedPath": [
+        "components_storycloud_step",
+        "components_storycloud_starhomex"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        "src/components/StoryCloud.tsx"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:assets_charts_timestrip",
+      "name": "timeStrip",
+      "entryPoint": "assets_charts_timestrip",
+      "entryPointId": "assets_charts_timestrip",
+      "path": [
+        "assets_charts_timestrip",
+        "assets_charts_legendel",
+        "assets_charts_settle",
+        "assets_charts_watch"
+      ],
+      "qualifiedPath": [
+        "assets_charts_timestrip",
+        "assets_charts_legendel",
+        "assets_charts_settle",
+        "assets_charts_watch"
+      ],
+      "depth": 1,
+      "nodeCount": 4,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/assets/charts.js"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:assets_charts_timeline",
+      "name": "timeline",
+      "entryPoint": "assets_charts_timeline",
+      "entryPointId": "assets_charts_timeline",
+      "path": [
+        "assets_charts_timeline",
+        "assets_charts_legendel",
+        "assets_charts_settle",
+        "assets_charts_watch"
+      ],
+      "qualifiedPath": [
+        "assets_charts_timeline",
+        "assets_charts_legendel",
+        "assets_charts_settle",
+        "assets_charts_watch"
+      ],
+      "depth": 1,
+      "nodeCount": 4,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/assets/charts.js"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:components_storyfocus_togglefocus",
+      "name": "toggleFocus",
+      "entryPoint": "components_storyfocus_togglefocus",
+      "entryPointId": "components_storyfocus_togglefocus",
+      "path": [
+        "components_storyfocus_togglefocus",
+        "components_storyfocus_samefocus"
+      ],
+      "qualifiedPath": [
+        "components_storyfocus_togglefocus",
+        "components_storyfocus_samefocus"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        "src/components/storyFocus.ts"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:scripts_draw_workswithoutpictures",
+      "name": "worksWithoutPictures",
+      "entryPoint": "scripts_draw_workswithoutpictures",
+      "entryPointId": "scripts_draw_workswithoutpictures",
+      "path": [
+        "scripts_draw_workswithoutpictures",
+        "scripts_draw_pictureled"
+      ],
+      "qualifiedPath": [
+        "scripts_draw_workswithoutpictures",
+        "scripts_draw_pictureled"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/draw.mjs"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:lib_app_draw_writehist",
+      "name": "writeHist",
+      "entryPoint": "lib_app_draw_writehist",
+      "entryPointId": "lib_app_draw_writehist",
+      "path": [
+        "lib_app_draw_writehist",
+        "lib_app_draw_readhist"
+      ],
+      "qualifiedPath": [
+        "lib_app_draw_writehist",
+        "lib_app_draw_readhist"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/lib/app-draw.mjs"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    },
+    {
+      "id": "flow:scripts_draw_writehist",
+      "name": "writeHist",
+      "entryPoint": "scripts_draw_writehist",
+      "entryPointId": "scripts_draw_writehist",
+      "path": [
+        "scripts_draw_writehist",
+        "scripts_draw_readhist"
+      ],
+      "qualifiedPath": [
+        "scripts_draw_writehist",
+        "scripts_draw_readhist"
+      ],
+      "depth": 1,
+      "nodeCount": 2,
+      "fileCount": 1,
+      "files": [
+        ".claude/skills/taste-skill/scripts/draw.mjs"
+      ],
+      "criticality": 0.16,
+      "warnings": []
+    }
+  ]
+}

@@ -1,0 +1,1405 @@
+{
+  "meta": {
+    "generatedAt": "2026-11-11T06:14:01.447Z",
+    "tool": "@sentropic/engram (graphifyy)",
+    "totalNodes": 1223,
+    "totalEdges": 2566,
+    "communities": 60
+  },
+  "apiRoutes": [
+    {
+      "file": "src/app/api/admin/mails/route.ts",
+      "id": "mails_route",
+      "label": "route.ts",
+      "imports": [
+        {
+          "target": "store.ts",
+          "file": "src/lib/store.ts"
+        },
+        {
+          "target": "updateStore()",
+          "file": "src/lib/store.ts"
+        }
+      ],
+      "containedSymbols": [
+        {
+          "name": "DELETE()",
+          "type": "code"
+        }
+      ],
+      "referencedBy": [
+        {
+          "source": "0051278 내 AI: 의미성으로 말이 잘 통하는 AI 만들기·비교·가져가기, 기록 관리, 마이크 입력",
+          "file": "git",
+          "relation": "MODIFIES"
+        },
+        {
+          "source": "a439f1b 내 AI(의미성으로 말이 잘 통하는 AI)·기록 관리·마이크 입력을 master에 합침 (feature/personal-prompt)",
+          "file": "git",
+          "relation": "MODIFIES"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/admin/mails/route.ts",
+      "id": "mails_route_delete",
+      "label": "DELETE()",
+      "imports": [],
+      "containedSymbols": [],
+      "referencedBy": [
+        {
+          "source": "route.ts",
+          "file": "src/app/api/admin/mails/route.ts",
+          "relation": "contains"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/admin/prune/route.ts",
+      "id": "prune_route",
+      "label": "route.ts",
+      "imports": [
+        {
+          "target": "records.ts",
+          "file": "src/lib/records.ts"
+        },
+        {
+          "target": "removeSession()",
+          "file": "src/lib/records.ts"
+        },
+        {
+          "target": "sessionLastAt()",
+          "file": "src/lib/records.ts"
+        },
+        {
+          "target": "store.ts",
+          "file": "src/lib/store.ts"
+        },
+        {
+          "target": "updateStore()",
+          "file": "src/lib/store.ts"
+        },
+        {
+          "target": "uploads.ts",
+          "file": "src/lib/uploads.ts"
+        },
+        {
+          "target": "deleteImages()",
+          "file": "src/lib/uploads.ts"
+        }
+      ],
+      "containedSymbols": [
+        {
+          "name": "POST()",
+          "type": "code"
+        }
+      ],
+      "referencedBy": [
+        {
+          "source": "0051278 내 AI: 의미성으로 말이 잘 통하는 AI 만들기·비교·가져가기, 기록 관리, 마이크 입력",
+          "file": "git",
+          "relation": "MODIFIES"
+        },
+        {
+          "source": "a439f1b 내 AI(의미성으로 말이 잘 통하는 AI)·기록 관리·마이크 입력을 master에 합침 (feature/personal-prompt)",
+          "file": "git",
+          "relation": "MODIFIES"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/admin/prune/route.ts",
+      "id": "prune_route_post",
+      "label": "POST()",
+      "imports": [],
+      "containedSymbols": [],
+      "referencedBy": [
+        {
+          "source": "route.ts",
+          "file": "src/app/api/admin/prune/route.ts",
+          "relation": "contains"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/admin/records/route.ts",
+      "id": "records_route",
+      "label": "route.ts",
+      "imports": [
+        {
+          "target": "records.ts",
+          "file": "src/lib/records.ts"
+        },
+        {
+          "target": "sessionLastAt()",
+          "file": "src/lib/records.ts"
+        },
+        {
+          "target": "store.ts",
+          "file": "src/lib/store.ts"
+        },
+        {
+          "target": "readStore()",
+          "file": "src/lib/store.ts"
+        }
+      ],
+      "containedSymbols": [
+        {
+          "name": "GET()",
+          "type": "code"
+        },
+        {
+          "name": "SessionRecord",
+          "type": "code"
+        }
+      ],
+      "referencedBy": [
+        {
+          "source": "0051278 내 AI: 의미성으로 말이 잘 통하는 AI 만들기·비교·가져가기, 기록 관리, 마이크 입력",
+          "file": "git",
+          "relation": "MODIFIES"
+        },
+        {
+          "source": "a439f1b 내 AI(의미성으로 말이 잘 통하는 AI)·기록 관리·마이크 입력을 master에 합침 (feature/personal-prompt)",
+          "file": "git",
+          "relation": "MODIFIES"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/admin/records/route.ts",
+      "id": "records_route_sessionrecord",
+      "label": "SessionRecord",
+      "imports": [],
+      "containedSymbols": [],
+      "referencedBy": [
+        {
+          "source": "route.ts",
+          "file": "src/app/api/admin/records/route.ts",
+          "relation": "contains"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/admin/records/route.ts",
+      "id": "records_route_get",
+      "label": "GET()",
+      "imports": [],
+      "containedSymbols": [],
+      "referencedBy": [
+        {
+          "source": "route.ts",
+          "file": "src/app/api/admin/records/route.ts",
+          "relation": "contains"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/chat/route.ts",
+      "id": "chat_route",
+      "label": "route.ts",
+      "imports": [
+        {
+          "target": "images.ts",
+          "file": "src/lib/images.ts"
+        },
+        {
+          "target": "checkImages()",
+          "file": "src/lib/images.ts"
+        },
+        {
+          "target": "store.ts",
+          "file": "src/lib/store.ts"
+        },
+        {
+          "target": "addNode()",
+          "file": "src/lib/store.ts"
+        },
+        {
+          "target": "getActivePersona()",
+          "file": "src/lib/store.ts"
+        },
+        {
+          "target": "readStore()",
+          "file": "src/lib/store.ts"
+        },
+        {
+          "target": "uploads.ts",
+          "file": "src/lib/uploads.ts"
+        },
+        {
+          "target": "deleteImages()",
+          "file": "src/lib/uploads.ts"
+        },
+        {
+          "target": "saveImages()",
+          "file": "src/lib/uploads.ts"
+        },
+        {
+          "target": "client.ts",
+          "file": "src/lib/model/client.ts"
+        },
+        {
+          "target": "callModel()",
+          "file": "src/lib/model/client.ts"
+        },
+        {
+          "target": "ChatTurn",
+          "file": "src/lib/model/client.ts"
+        },
+        {
+          "target": "ModelCallError",
+          "file": "src/lib/model/client.ts"
+        },
+        {
+          "target": "safety.ts",
+          "file": "src/lib/prompts/safety.ts"
+        },
+        {
+          "target": "buildChatSystemPrompt()",
+          "file": "src/lib/prompts/safety.ts"
+        }
+      ],
+      "containedSymbols": [
+        {
+          "name": "ChatRequestBody",
+          "type": "code"
+        },
+        {
+          "name": "POST()",
+          "type": "code"
+        }
+      ],
+      "referencedBy": [
+        {
+          "source": "3105a1c 사진 첨부와 이야기 화면 별·노드 목록 분리를 master에 합침 (feature/chat-images)",
+          "file": "git",
+          "relation": "MODIFIES"
+        },
+        {
+          "source": "6584244 프론트+백엔드 통합 버전을 master에 합침",
+          "file": "git",
+          "relation": "MODIFIES"
+        },
+        {
+          "source": "727411c 2단계 백엔드 API 및 이야기 쪼개기·검색·삭제 기능 구현",
+          "file": "git",
+          "relation": "MODIFIES"
+        },
+        {
+          "source": "912b60c 대화에 사진 첨부: 클립·Ctrl+V·끌어 놓기, 입력창 테두리가 사진까지 감싸며 늘어남, 달은 삭에서 천천히 차오름",
+          "file": "git",
+          "relation": "MODIFIES"
+        },
+        {
+          "source": "f7e69ef WIP: 2단계 점검 수정 중 — 모델 호출(헤더 키·대화 기록·JSON), 대화 API(기록·안전 규칙·길이 제한), 이야기 AI 전처리 모듈 (story 라우트·테스트 미완)",
+          "file": "git",
+          "relation": "MODIFIES"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/chat/route.ts",
+      "id": "chat_route_chatrequestbody",
+      "label": "ChatRequestBody",
+      "imports": [],
+      "containedSymbols": [],
+      "referencedBy": [
+        {
+          "source": "route.ts",
+          "file": "src/app/api/chat/route.ts",
+          "relation": "contains"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/chat/route.ts",
+      "id": "chat_route_post",
+      "label": "POST()",
+      "imports": [],
+      "containedSymbols": [],
+      "referencedBy": [
+        {
+          "source": "route.ts",
+          "file": "src/app/api/chat/route.ts",
+          "relation": "contains"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/debug/reset-all/route.ts",
+      "id": "reset_all_route",
+      "label": "route.ts",
+      "imports": [
+        {
+          "target": "store.ts",
+          "file": "src/lib/store.ts"
+        },
+        {
+          "target": "resetStore()",
+          "file": "src/lib/store.ts"
+        },
+        {
+          "target": "uploads.ts",
+          "file": "src/lib/uploads.ts"
+        },
+        {
+          "target": "clearUploads()",
+          "file": "src/lib/uploads.ts"
+        }
+      ],
+      "containedSymbols": [
+        {
+          "name": "POST()",
+          "type": "code"
+        }
+      ],
+      "referencedBy": [
+        {
+          "source": "3105a1c 사진 첨부와 이야기 화면 별·노드 목록 분리를 master에 합침 (feature/chat-images)",
+          "file": "git",
+          "relation": "MODIFIES"
+        },
+        {
+          "source": "6584244 프론트+백엔드 통합 버전을 master에 합침",
+          "file": "git",
+          "relation": "MODIFIES"
+        },
+        {
+          "source": "9030495 프론트를 진짜 백엔드(/api)에 연결: 응답 모양 차이는 api.ts에서 맞추고, 가짜 API(api-mock) 삭제, /api/debug/reset-all 추가",
+          "file": "git",
+          "relation": "MODIFIES"
+        },
+        {
+          "source": "912b60c 대화에 사진 첨부: 클립·Ctrl+V·끌어 놓기, 입력창 테두리가 사진까지 감싸며 늘어남, 달은 삭에서 천천히 차오름",
+          "file": "git",
+          "relation": "MODIFIES"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/debug/reset-all/route.ts",
+      "id": "reset_all_route_post",
+      "label": "POST()",
+      "imports": [],
+      "containedSymbols": [],
+      "referencedBy": [
+        {
+          "source": "route.ts",
+          "file": "src/app/api/debug/reset-all/route.ts",
+          "relation": "contains"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/demo/route.ts",
+      "id": "demo_route",
+      "label": "route.ts",
+      "imports": [
+        {
+          "target": "demo.ts",
+          "file": "src/lib/demo.ts"
+        },
+        {
+          "target": "addDemo()",
+          "file": "src/lib/demo.ts"
+        }
+      ],
+      "containedSymbols": [
+        {
+          "name": "POST()",
+          "type": "code"
+        }
+      ],
+      "referencedBy": [
+        {
+          "source": "8590b78 예시 기억(모델 없이 별자리·내 AI 보기)을 master에 합침 (feature/demo)",
+          "file": "git",
+          "relation": "MODIFIES"
+        },
+        {
+          "source": "de79e23 예시 기억: 모델·인터넷 없이 별자리와 내 AI를 볼 수 있게",
+          "file": "git",
+          "relation": "MODIFIES"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/demo/route.ts",
+      "id": "demo_route_post",
+      "label": "POST()",
+      "imports": [],
+      "containedSymbols": [],
+      "referencedBy": [
+        {
+          "source": "route.ts",
+          "file": "src/app/api/demo/route.ts",
+          "relation": "contains"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/stories/[id]/route.ts",
+      "id": "id_route",
+      "label": "route.ts",
+      "imports": [
+        {
+          "target": "store.ts",
+          "file": "src/lib/store.ts"
+        },
+        {
+          "target": "updateStore()",
+          "file": "src/lib/store.ts"
+        },
+        {
+          "target": "uploads.ts",
+          "file": "src/lib/uploads.ts"
+        },
+        {
+          "target": "deleteImages()",
+          "file": "src/lib/uploads.ts"
+        },
+        {
+          "target": "isImageId()",
+          "file": "src/lib/uploads.ts"
+        },
+        {
+          "target": "mimeOfId()",
+          "file": "src/lib/uploads.ts"
+        },
+        {
+          "target": "readImage()",
+          "file": "src/lib/uploads.ts"
+        }
+      ],
+      "containedSymbols": [
+        {
+          "name": "DELETE()",
+          "type": "code"
+        },
+        {
+          "name": "GET()",
+          "type": "code"
+        }
+      ],
+      "referencedBy": [
+        {
+          "source": "0051278 내 AI: 의미성으로 말이 잘 통하는 AI 만들기·비교·가져가기, 기록 관리, 마이크 입력",
+          "file": "git",
+          "relation": "MODIFIES"
+        },
+        {
+          "source": "3105a1c 사진 첨부와 이야기 화면 별·노드 목록 분리를 master에 합침 (feature/chat-images)",
+          "file": "git",
+          "relation": "MODIFIES"
+        },
+        {
+          "source": "6584244 프론트+백엔드 통합 버전을 master에 합침",
+          "file": "git",
+          "relation": "MODIFIES"
+        },
+        {
+          "source": "727411c 2단계 백엔드 API 및 이야기 쪼개기·검색·삭제 기능 구현",
+          "file": "git",
+          "relation": "MODIFIES"
+        },
+        {
+          "source": "912b60c 대화에 사진 첨부: 클립·Ctrl+V·끌어 놓기, 입력창 테두리가 사진까지 감싸며 늘어남, 달은 삭에서 천천히 차오름",
+          "file": "git",
+          "relation": "MODIFIES"
+        },
+        {
+          "source": "a439f1b 내 AI(의미성으로 말이 잘 통하는 AI)·기록 관리·마이크 입력을 master에 합침 (feature/personal-prompt)",
+          "file": "git",
+          "relation": "MODIFIES"
+        },
+        {
+          "source": "d42c110 2단계 점검 수정 마무리: 이야기 AI 전처리·의미 파일 API·삭제 연쇄·테스트",
+          "file": "git",
+          "relation": "MODIFIES"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/images/[id]/route.ts",
+      "id": "id_route_get",
+      "label": "GET()",
+      "imports": [],
+      "containedSymbols": [],
+      "referencedBy": [
+        {
+          "source": "route.ts",
+          "file": "src/app/api/stories/[id]/route.ts",
+          "relation": "contains"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/stories/[id]/route.ts",
+      "id": "id_route_delete",
+      "label": "DELETE()",
+      "imports": [],
+      "containedSymbols": [],
+      "referencedBy": [
+        {
+          "source": "route.ts",
+          "file": "src/app/api/stories/[id]/route.ts",
+          "relation": "contains"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/profiles/[id]/mail/route.ts",
+      "id": "mail_route",
+      "label": "route.ts",
+      "imports": [
+        {
+          "target": "mail.ts",
+          "file": "src/lib/mail.ts"
+        },
+        {
+          "target": "mailStatus()",
+          "file": "src/lib/mail.ts"
+        },
+        {
+          "target": "sendMail()",
+          "file": "src/lib/mail.ts"
+        },
+        {
+          "target": "store.ts",
+          "file": "src/lib/store.ts"
+        },
+        {
+          "target": "readStore()",
+          "file": "src/lib/store.ts"
+        },
+        {
+          "target": "updateStore()",
+          "file": "src/lib/store.ts"
+        },
+        {
+          "target": "build.ts",
+          "file": "src/lib/profile/build.ts"
+        },
+        {
+          "target": "isEmail()",
+          "file": "src/lib/profile/build.ts"
+        },
+        {
+          "target": "maskEmail()",
+          "file": "src/lib/profile/build.ts"
+        }
+      ],
+      "containedSymbols": [
+        {
+          "name": "GET()",
+          "type": "code"
+        },
+        {
+          "name": "POST()",
+          "type": "code"
+        }
+      ],
+      "referencedBy": [
+        {
+          "source": "0051278 내 AI: 의미성으로 말이 잘 통하는 AI 만들기·비교·가져가기, 기록 관리, 마이크 입력",
+          "file": "git",
+          "relation": "MODIFIES"
+        },
+        {
+          "source": "a439f1b 내 AI(의미성으로 말이 잘 통하는 AI)·기록 관리·마이크 입력을 master에 합침 (feature/personal-prompt)",
+          "file": "git",
+          "relation": "MODIFIES"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/mail/route.ts",
+      "id": "mail_route_get",
+      "label": "GET()",
+      "imports": [],
+      "containedSymbols": [],
+      "referencedBy": [
+        {
+          "source": "route.ts",
+          "file": "src/app/api/profiles/[id]/mail/route.ts",
+          "relation": "contains"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/meanings/route.ts",
+      "id": "meanings_route",
+      "label": "route.ts",
+      "imports": [
+        {
+          "target": "store.ts",
+          "file": "src/lib/store.ts"
+        },
+        {
+          "target": "readStore()",
+          "file": "src/lib/store.ts"
+        }
+      ],
+      "containedSymbols": [
+        {
+          "name": "GET()",
+          "type": "code"
+        }
+      ],
+      "referencedBy": [
+        {
+          "source": "6584244 프론트+백엔드 통합 버전을 master에 합침",
+          "file": "git",
+          "relation": "MODIFIES"
+        },
+        {
+          "source": "d42c110 2단계 점검 수정 마무리: 이야기 AI 전처리·의미 파일 API·삭제 연쇄·테스트",
+          "file": "git",
+          "relation": "MODIFIES"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/meanings/route.ts",
+      "id": "meanings_route_get",
+      "label": "GET()",
+      "imports": [],
+      "containedSymbols": [],
+      "referencedBy": [
+        {
+          "source": "route.ts",
+          "file": "src/app/api/meanings/route.ts",
+          "relation": "contains"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/nodes/route.ts",
+      "id": "nodes_route",
+      "label": "route.ts",
+      "imports": [
+        {
+          "target": "store.ts",
+          "file": "src/lib/store.ts"
+        },
+        {
+          "target": "readStore()",
+          "file": "src/lib/store.ts"
+        }
+      ],
+      "containedSymbols": [
+        {
+          "name": "GET()",
+          "type": "code"
+        }
+      ],
+      "referencedBy": [
+        {
+          "source": "6584244 프론트+백엔드 통합 버전을 master에 합침",
+          "file": "git",
+          "relation": "MODIFIES"
+        },
+        {
+          "source": "727411c 2단계 백엔드 API 및 이야기 쪼개기·검색·삭제 기능 구현",
+          "file": "git",
+          "relation": "MODIFIES"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/nodes/route.ts",
+      "id": "nodes_route_get",
+      "label": "GET()",
+      "imports": [],
+      "containedSymbols": [],
+      "referencedBy": [
+        {
+          "source": "route.ts",
+          "file": "src/app/api/nodes/route.ts",
+          "relation": "contains"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/profiles/[id]/compare/route.ts",
+      "id": "compare_route",
+      "label": "route.ts",
+      "imports": [
+        {
+          "target": "store.ts",
+          "file": "src/lib/store.ts"
+        },
+        {
+          "target": "readStore()",
+          "file": "src/lib/store.ts"
+        },
+        {
+          "target": "client.ts",
+          "file": "src/lib/model/client.ts"
+        },
+        {
+          "target": "callModel()",
+          "file": "src/lib/model/client.ts"
+        },
+        {
+          "target": "ChatTurn",
+          "file": "src/lib/model/client.ts"
+        },
+        {
+          "target": "ModelCallError",
+          "file": "src/lib/model/client.ts"
+        },
+        {
+          "target": "build.ts",
+          "file": "src/lib/profile/build.ts"
+        },
+        {
+          "target": "searchWiki()",
+          "file": "src/lib/profile/build.ts"
+        },
+        {
+          "target": "wikiContext()",
+          "file": "src/lib/profile/build.ts"
+        },
+        {
+          "target": "profile.ts",
+          "file": "src/lib/prompts/profile.ts"
+        },
+        {
+          "target": "safety.ts",
+          "file": "src/lib/prompts/safety.ts"
+        },
+        {
+          "target": "buildChatSystemPrompt()",
+          "file": "src/lib/prompts/safety.ts"
+        }
+      ],
+      "containedSymbols": [
+        {
+          "name": "POST()",
+          "type": "code"
+        },
+        {
+          "name": "turns()",
+          "type": "code"
+        }
+      ],
+      "referencedBy": [
+        {
+          "source": "0051278 내 AI: 의미성으로 말이 잘 통하는 AI 만들기·비교·가져가기, 기록 관리, 마이크 입력",
+          "file": "git",
+          "relation": "MODIFIES"
+        },
+        {
+          "source": "a439f1b 내 AI(의미성으로 말이 잘 통하는 AI)·기록 관리·마이크 입력을 master에 합침 (feature/personal-prompt)",
+          "file": "git",
+          "relation": "MODIFIES"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/profiles/[id]/compare/route.ts",
+      "id": "compare_route_turns",
+      "label": "turns()",
+      "imports": [],
+      "containedSymbols": [],
+      "referencedBy": [
+        {
+          "source": "route.ts",
+          "file": "src/app/api/profiles/[id]/compare/route.ts",
+          "relation": "contains"
+        },
+        {
+          "source": "POST()",
+          "file": "src/app/api/profiles/[id]/compare/route.ts",
+          "relation": "calls"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/profiles/[id]/compare/route.ts",
+      "id": "compare_route_post",
+      "label": "POST()",
+      "imports": [],
+      "containedSymbols": [],
+      "referencedBy": [
+        {
+          "source": "route.ts",
+          "file": "src/app/api/profiles/[id]/compare/route.ts",
+          "relation": "contains"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/profiles/[id]/mail/route.ts",
+      "id": "mail_route_post",
+      "label": "POST()",
+      "imports": [],
+      "containedSymbols": [],
+      "referencedBy": [
+        {
+          "source": "route.ts",
+          "file": "src/app/api/profiles/[id]/mail/route.ts",
+          "relation": "contains"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/profiles/route.ts",
+      "id": "profiles_route",
+      "label": "route.ts",
+      "imports": [
+        {
+          "target": "store.ts",
+          "file": "src/lib/store.ts"
+        },
+        {
+          "target": "readStore()",
+          "file": "src/lib/store.ts"
+        },
+        {
+          "target": "build.ts",
+          "file": "src/lib/profile/build.ts"
+        },
+        {
+          "target": "isRelation()",
+          "file": "src/lib/profile/build.ts"
+        },
+        {
+          "target": "make.ts",
+          "file": "src/lib/profile/make.ts"
+        },
+        {
+          "target": "makeProfile()",
+          "file": "src/lib/profile/make.ts"
+        }
+      ],
+      "containedSymbols": [
+        {
+          "name": "GET()",
+          "type": "code"
+        },
+        {
+          "name": "POST()",
+          "type": "code"
+        }
+      ],
+      "referencedBy": [
+        {
+          "source": "0051278 내 AI: 의미성으로 말이 잘 통하는 AI 만들기·비교·가져가기, 기록 관리, 마이크 입력",
+          "file": "git",
+          "relation": "MODIFIES"
+        },
+        {
+          "source": "a439f1b 내 AI(의미성으로 말이 잘 통하는 AI)·기록 관리·마이크 입력을 master에 합침 (feature/personal-prompt)",
+          "file": "git",
+          "relation": "MODIFIES"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/profiles/route.ts",
+      "id": "profiles_route_get",
+      "label": "GET()",
+      "imports": [],
+      "containedSymbols": [],
+      "referencedBy": [
+        {
+          "source": "route.ts",
+          "file": "src/app/api/profiles/route.ts",
+          "relation": "contains"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/profiles/route.ts",
+      "id": "profiles_route_post",
+      "label": "POST()",
+      "imports": [],
+      "containedSymbols": [],
+      "referencedBy": [
+        {
+          "source": "route.ts",
+          "file": "src/app/api/profiles/route.ts",
+          "relation": "contains"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/sessions/[sessionId]/route.ts",
+      "id": "sessionid_route",
+      "label": "route.ts",
+      "imports": [
+        {
+          "target": "records.ts",
+          "file": "src/lib/records.ts"
+        },
+        {
+          "target": "removeSession()",
+          "file": "src/lib/records.ts"
+        },
+        {
+          "target": "store.ts",
+          "file": "src/lib/store.ts"
+        },
+        {
+          "target": "updateStore()",
+          "file": "src/lib/store.ts"
+        },
+        {
+          "target": "uploads.ts",
+          "file": "src/lib/uploads.ts"
+        },
+        {
+          "target": "deleteImages()",
+          "file": "src/lib/uploads.ts"
+        }
+      ],
+      "containedSymbols": [
+        {
+          "name": "DELETE()",
+          "type": "code"
+        }
+      ],
+      "referencedBy": [
+        {
+          "source": "0051278 내 AI: 의미성으로 말이 잘 통하는 AI 만들기·비교·가져가기, 기록 관리, 마이크 입력",
+          "file": "git",
+          "relation": "MODIFIES"
+        },
+        {
+          "source": "3105a1c 사진 첨부와 이야기 화면 별·노드 목록 분리를 master에 합침 (feature/chat-images)",
+          "file": "git",
+          "relation": "MODIFIES"
+        },
+        {
+          "source": "6584244 프론트+백엔드 통합 버전을 master에 합침",
+          "file": "git",
+          "relation": "MODIFIES"
+        },
+        {
+          "source": "727411c 2단계 백엔드 API 및 이야기 쪼개기·검색·삭제 기능 구현",
+          "file": "git",
+          "relation": "MODIFIES"
+        },
+        {
+          "source": "912b60c 대화에 사진 첨부: 클립·Ctrl+V·끌어 놓기, 입력창 테두리가 사진까지 감싸며 늘어남, 달은 삭에서 천천히 차오름",
+          "file": "git",
+          "relation": "MODIFIES"
+        },
+        {
+          "source": "a439f1b 내 AI(의미성으로 말이 잘 통하는 AI)·기록 관리·마이크 입력을 master에 합침 (feature/personal-prompt)",
+          "file": "git",
+          "relation": "MODIFIES"
+        },
+        {
+          "source": "d42c110 2단계 점검 수정 마무리: 이야기 AI 전처리·의미 파일 API·삭제 연쇄·테스트",
+          "file": "git",
+          "relation": "MODIFIES"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/sessions/[sessionId]/route.ts",
+      "id": "sessionid_route_delete",
+      "label": "DELETE()",
+      "imports": [],
+      "containedSymbols": [],
+      "referencedBy": [
+        {
+          "source": "route.ts",
+          "file": "src/app/api/sessions/[sessionId]/route.ts",
+          "relation": "contains"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/sessions/route.ts",
+      "id": "sessions_route",
+      "label": "route.ts",
+      "imports": [
+        {
+          "target": "store.ts",
+          "file": "src/lib/store.ts"
+        },
+        {
+          "target": "readStore()",
+          "file": "src/lib/store.ts"
+        },
+        {
+          "target": "types.ts",
+          "file": "src/lib/types.ts"
+        },
+        {
+          "target": "MemoryNode",
+          "file": "src/lib/types.ts"
+        }
+      ],
+      "containedSymbols": [
+        {
+          "name": "GET()",
+          "type": "code"
+        },
+        {
+          "name": "SessionSummary",
+          "type": "code"
+        }
+      ],
+      "referencedBy": [
+        {
+          "source": "6584244 프론트+백엔드 통합 버전을 master에 합침",
+          "file": "git",
+          "relation": "MODIFIES"
+        },
+        {
+          "source": "727411c 2단계 백엔드 API 및 이야기 쪼개기·검색·삭제 기능 구현",
+          "file": "git",
+          "relation": "MODIFIES"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/sessions/route.ts",
+      "id": "sessions_route_sessionsummary",
+      "label": "SessionSummary",
+      "imports": [],
+      "containedSymbols": [],
+      "referencedBy": [
+        {
+          "source": "route.ts",
+          "file": "src/app/api/sessions/route.ts",
+          "relation": "contains"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/sessions/route.ts",
+      "id": "sessions_route_get",
+      "label": "GET()",
+      "imports": [],
+      "containedSymbols": [],
+      "referencedBy": [
+        {
+          "source": "route.ts",
+          "file": "src/app/api/sessions/route.ts",
+          "relation": "contains"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/state/route.ts",
+      "id": "state_route",
+      "label": "route.ts",
+      "imports": [
+        {
+          "target": "store.ts",
+          "file": "src/lib/store.ts"
+        },
+        {
+          "target": "readStore()",
+          "file": "src/lib/store.ts"
+        }
+      ],
+      "containedSymbols": [
+        {
+          "name": "GET()",
+          "type": "code"
+        }
+      ],
+      "referencedBy": [
+        {
+          "source": "6584244 프론트+백엔드 통합 버전을 master에 합침",
+          "file": "git",
+          "relation": "MODIFIES"
+        },
+        {
+          "source": "727411c 2단계 백엔드 API 및 이야기 쪼개기·검색·삭제 기능 구현",
+          "file": "git",
+          "relation": "MODIFIES"
+        },
+        {
+          "source": "d42c110 2단계 점검 수정 마무리: 이야기 AI 전처리·의미 파일 API·삭제 연쇄·테스트",
+          "file": "git",
+          "relation": "MODIFIES"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/state/route.ts",
+      "id": "state_route_get",
+      "label": "GET()",
+      "imports": [],
+      "containedSymbols": [],
+      "referencedBy": [
+        {
+          "source": "route.ts",
+          "file": "src/app/api/state/route.ts",
+          "relation": "contains"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/story/route.ts",
+      "id": "story_route",
+      "label": "route.ts",
+      "imports": [
+        {
+          "target": "store.ts",
+          "file": "src/lib/store.ts"
+        },
+        {
+          "target": "updateStore()",
+          "file": "src/lib/store.ts"
+        },
+        {
+          "target": "types.ts",
+          "file": "src/lib/types.ts"
+        },
+        {
+          "target": "Meaning",
+          "file": "src/lib/types.ts"
+        },
+        {
+          "target": "MemoryNode",
+          "file": "src/lib/types.ts"
+        },
+        {
+          "target": "SplitMethod",
+          "file": "src/lib/types.ts"
+        },
+        {
+          "target": "Story",
+          "file": "src/lib/types.ts"
+        },
+        {
+          "target": "groups.ts",
+          "file": "src/lib/story/groups.ts"
+        },
+        {
+          "target": "MeaningDraft",
+          "file": "src/lib/story/groups.ts"
+        },
+        {
+          "target": "Piece",
+          "file": "src/lib/story/groups.ts"
+        },
+        {
+          "target": "pieceText()",
+          "file": "src/lib/story/groups.ts"
+        },
+        {
+          "target": "preprocess.ts",
+          "file": "src/lib/story/preprocess.ts"
+        },
+        {
+          "target": "extractMeanings()",
+          "file": "src/lib/story/preprocess.ts"
+        },
+        {
+          "target": "splitWithModel()",
+          "file": "src/lib/story/preprocess.ts"
+        }
+      ],
+      "containedSymbols": [
+        {
+          "name": "POST()",
+          "type": "code"
+        },
+        {
+          "name": "StoryRequestBody",
+          "type": "code"
+        }
+      ],
+      "referencedBy": [
+        {
+          "source": "6584244 프론트+백엔드 통합 버전을 master에 합침",
+          "file": "git",
+          "relation": "MODIFIES"
+        },
+        {
+          "source": "727411c 2단계 백엔드 API 및 이야기 쪼개기·검색·삭제 기능 구현",
+          "file": "git",
+          "relation": "MODIFIES"
+        },
+        {
+          "source": "d42c110 2단계 점검 수정 마무리: 이야기 AI 전처리·의미 파일 API·삭제 연쇄·테스트",
+          "file": "git",
+          "relation": "MODIFIES"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/story/route.ts",
+      "id": "story_route_storyrequestbody",
+      "label": "StoryRequestBody",
+      "imports": [],
+      "containedSymbols": [],
+      "referencedBy": [
+        {
+          "source": "route.ts",
+          "file": "src/app/api/story/route.ts",
+          "relation": "contains"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/story/route.ts",
+      "id": "story_route_post",
+      "label": "POST()",
+      "imports": [],
+      "containedSymbols": [],
+      "referencedBy": [
+        {
+          "source": "route.ts",
+          "file": "src/app/api/story/route.ts",
+          "relation": "contains"
+        }
+      ]
+    }
+  ],
+  "modules": {},
+  "coreEntities": [],
+  "topHubs": [
+    {
+      "id": "scripts_assets",
+      "label": "assets.mjs",
+      "file": ".claude/skills/taste-skill/scripts/assets.mjs",
+      "community": "Community 0",
+      "degree": 86
+    },
+    {
+      "id": "lib_types",
+      "label": "types.ts",
+      "file": "src/lib/types.ts",
+      "community": "Community 15",
+      "degree": 60
+    },
+    {
+      "id": "lib_store",
+      "label": "store.ts",
+      "file": "src/lib/store.ts",
+      "community": "Community 5",
+      "degree": 53
+    },
+    {
+      "id": "commit:repo:github.com/yellowedlego/rem-dream@6584244055faf125d3cefbcc96a2002760fd18e5",
+      "label": "6584244 프론트+백엔드 통합 버전을 master에 합침",
+      "file": "git",
+      "community": "Community 14",
+      "degree": 53
+    },
+    {
+      "id": "components_chatview",
+      "label": "ChatView.tsx",
+      "file": "src/components/ChatView.tsx",
+      "community": "Community 21",
+      "degree": 48
+    },
+    {
+      "id": "scripts_draw",
+      "label": "draw.mjs",
+      "file": ".claude/skills/taste-skill/scripts/draw.mjs",
+      "community": "Community 4",
+      "degree": 46
+    },
+    {
+      "id": "components_api",
+      "label": "api.ts",
+      "file": "src/components/api.ts",
+      "community": "Community 1",
+      "degree": 46
+    },
+    {
+      "id": "branch:repo:github.com/yellowedlego/rem-dream#backend",
+      "label": "backend",
+      "file": "git",
+      "community": "Community 16",
+      "degree": 46
+    },
+    {
+      "id": "branch:repo:github.com/yellowedlego/rem-dream#master",
+      "label": "master",
+      "file": "git",
+      "community": "Community 16",
+      "degree": 46
+    },
+    {
+      "id": "commit:repo:github.com/yellowedlego/rem-dream@a439f1bd171a17a70835b43ddf7a50b5936c7104",
+      "label": "a439f1b 내 AI(의미성으로 말이 잘 통하는 AI)·기록 관리·마이크 입력을 master에 합침 (feature/personal-prompt)",
+      "file": "git",
+      "community": "Community 9",
+      "degree": 42
+    },
+    {
+      "id": "scripts_validate_data",
+      "label": "validate_data.py",
+      "file": ".claude/skills/ui-ux-pro-max/scripts/validate_data.py",
+      "community": "Community 6",
+      "degree": 40
+    },
+    {
+      "id": "commit:repo:github.com/yellowedlego/rem-dream@00512781f63453e0bd1e46d90732844fbd14dcc6",
+      "label": "0051278 내 AI: 의미성으로 말이 잘 통하는 AI 만들기·비교·가져가기, 기록 관리, 마이크 입력",
+      "file": "git",
+      "community": "Community 9",
+      "degree": 40
+    },
+    {
+      "id": "components_moonplane",
+      "label": "MoonPlane.tsx",
+      "file": "src/components/MoonPlane.tsx",
+      "community": "Community 14",
+      "degree": 39
+    },
+    {
+      "id": "scripts_inspect",
+      "label": "inspect.mjs",
+      "file": ".claude/skills/taste-skill/scripts/inspect.mjs",
+      "community": "Community 18",
+      "degree": 37
+    },
+    {
+      "id": "scripts_core",
+      "label": "core.py",
+      "file": ".claude/skills/ui-ux-pro-max/scripts/core.py",
+      "community": "Community 2",
+      "degree": 35
+    },
+    {
+      "id": "story_preprocess",
+      "label": "preprocess.ts",
+      "file": "src/lib/story/preprocess.ts",
+      "community": "Community 8",
+      "degree": 35
+    },
+    {
+      "id": "scripts_design_system_designsystemgenerator",
+      "label": "DesignSystemGenerator",
+      "file": ".claude/skills/ui-ux-pro-max/scripts/design_system.py",
+      "community": "Community 27",
+      "degree": 34
+    },
+    {
+      "id": "profile_make",
+      "label": "make.ts",
+      "file": "src/lib/profile/make.ts",
+      "community": "Community 12",
+      "degree": 32
+    },
+    {
+      "id": "scripts_assets_getone",
+      "label": "getOne()",
+      "file": ".claude/skills/taste-skill/scripts/assets.mjs",
+      "community": "Community 0",
+      "degree": 31
+    },
+    {
+      "id": "components_meview",
+      "label": "MeView.tsx",
+      "file": "src/components/MeView.tsx",
+      "community": "Community 1",
+      "degree": 30
+    }
+  ]
+}
