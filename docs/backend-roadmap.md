@@ -40,7 +40,7 @@
 | 인격 범위 | **둘 다**: ① 관람객마다 따로 자라는 **개인 AI**, ② 여러 관람객의 이야기로 자라는 공용 **학교 AI** (3절) |
 | 학교 AI 재료 | 모든 세션의 의미를 **개인정보를 지운 뒤** 받는다. 전시가 끝나면 통째로 지운다 |
 | 학교 AI 승인 | **자동 적용(범위 제한)**. 자동 적용 금지 원칙의 **유일한 예외** |
-| 추가 기능 | 전후 비교 자동 기록, 관리자 PIN 잠금, 오프라인 대비(녹화 재생) |
+| 추가 기능 | 전후 비교 자동 기록, 관리자 로그인(아이디 admin + 비밀번호, 비밀번호는 해시로 서버 .env.local에만), 오프라인 대비(녹화 재생) |
 | 작업 단위 | 티켓마다 브랜치 1개 |
 | 마감 | 약 1달 (7절 주차표) |
 
@@ -71,7 +71,7 @@
   - 노트는 `persona/validate.ts`의 모든 검증 + **근거 의미가 서로 다른 출처 3개 이상**일 때만
   - 노트 상한 10개, 넘으면 `addNote`는 적용하지 않음
   - 적용할 때마다 새 버전으로 남기고, `/admin`에서 **되돌리기·학교 AI 전체 지우기** 버튼
-- **끝나면 삭제**: `DELETE /api/admin/school` (PIN 필요)로 학교 의미 풀과 학교 AI 버전을 전부 지우고 v1로.
+- **끝나면 삭제**: `DELETE /api/admin/school` (관리자 로그인 필요)로 학교 의미 풀과 학교 AI 버전을 전부 지우고 v1로.
 - `persona-architecture.md` 11절의 "관람객 간 기억 공유는 하지 않는다"는 **이 조건(익명 의미만·명시·전시 후 삭제)으로 바뀐다**. 그 문서도 같이 고친다(티켓 B-09).
 
 ## 4. 데이터 모양 변경 (`types.ts`) — 티켓 B-00에서 한 번에
@@ -160,7 +160,7 @@ export interface Comparison {
 | `GET /api/school` | 학교 AI 활성 버전, 노트·수치, 의미 풀 수, 최근 자동 적용 기록 | B-09 |
 | `POST /api/admin/school/rem` | 학교 REM 지금 돌리기 | B-10 |
 | `POST /api/admin/school/revert` `{ version }` · `DELETE /api/admin/school` | 학교 AI 되돌리기 · 전부 지우기 | B-10 |
-| `POST /api/admin/login` `{ pin }` / `POST /api/admin/logout` | PIN 맞으면 httpOnly 쿠키 | B-12 |
+| `POST /api/admin/login` `{ username, password }` / `POST /api/admin/logout` | 맞으면 `{ ok: true }` + HttpOnly 세션 쿠키 (비밀번호·해시는 응답·로그에 절대 없음) | B-12 |
 
 오류는 기존대로 `{ error: "문장" }` + 상태 코드. 모든 새 API는 `MODEL_MOCK=1`에서 끝까지 돌아야 한다.
 
@@ -260,12 +260,21 @@ export interface Comparison {
 - 끝 기준: 인터넷을 끊은(또는 `GEMINI_API_KEY`를 틀린 값으로 둔) 상태에서 예시 기억 → 잠들기 → 제안 카드까지 화면이 끝까지 감.
 - 선행: B-07
 
-### B-12 관리자 PIN 잠금
-- 브랜치 `backend/b12-admin-pin`
-- 파일: `src/proxy.ts`(Next 16에서는 middleware가 proxy로 바뀜. 먼저 `node_modules/next/dist/docs/01-app/01-getting-started/16-proxy.md`를 읽을 것), `src/app/api/admin/{login,logout}/route.ts`, `.env.example`(`ADMIN_PIN`)
-- 잠그는 것: `/admin`, `/debug` 화면, `/api/admin/**`, `/api/debug/**`, 남의 세션을 지우는 삭제 API, `/api/demo`. **관람객이 자기 세션을 지우는 "나 잊기"는 잠그지 않는다.**
-- 끝 기준: PIN 없이 잠긴 API가 401, 로그인 뒤 200. `ADMIN_PIN`이 비어 있으면 잠금 없음(개발용) + 서버 시작 때 경고 한 줄.
-- 테스트: `tests/api-admin-pin.spec.ts`
+### B-12 관리자 로그인 (아이디 + 비밀번호)
+- 브랜치 `backend/b12-admin-login`
+- 파일: `src/proxy.ts`(Next 16에서는 middleware가 proxy로 바뀜. 먼저 `node_modules/next/dist/docs/01-app/01-getting-started/16-proxy.md`를 읽을 것), `src/lib/admin-auth.ts`(`import "server-only"`), `src/app/api/admin/{login,logout}/route.ts`, `.env.example`(`ADMIN_USER=`, `ADMIN_PASSWORD_HASH=`, `ADMIN_SESSION_SECRET=` 이름만)
+- 아이디는 `admin`. 비밀번호는 **문서·코드·채팅 어디에도 적지 않는다.** 각자 `node scripts/hash-password.mjs`로 해시를 만들어 자기 `.env.local`에만 넣는다 (비밀번호는 팀 안에서 말로 전달).
+- **비밀번호가 웹사이트 안에 드러나지 않게 하는 규칙** (바이브 코딩에서 자주 새는 곳들):
+  1. 비밀번호·해시·비밀 값을 소스 코드에 문자열로 쓰지 않는다. 기본값(`?? "1234"` 같은 것)도 두지 않는다.
+  2. `NEXT_PUBLIC_` 접두사 금지. 비밀 값을 읽는 파일은 `import "server-only"`로 막아 화면 코드가 import하면 빌드가 실패하게 한다.
+  3. 비교는 서버에서만: 입력을 같은 scrypt 설정으로 계산해 `crypto.timingSafeEqual`로 비교. 화면(클라이언트)에서 비교하지 않는다.
+  4. 로그인 성공 시 응답에는 `{ ok: true }`만. 쿠키는 무작위 세션 토큰(`HttpOnly; Secure(https일 때); SameSite=Strict; Path=/`, 12시간). 토큰에 비밀번호·해시를 담지 않는다.
+  5. 오류 메시지는 아이디·비밀번호 중 무엇이 틀렸는지 말하지 않는다("아이디나 비밀번호가 맞지 않아요"). 10분에 5번 틀리면 그 IP를 10분 잠금.
+  6. 로그·`ModelCall`·디버그 API·오류 스택에 요청 본문을 그대로 남기지 않는다(로그인 본문은 절대).
+  7. 로그인 화면(프론트)의 입력값을 `localStorage`·URL 쿼리에 두지 않는다.
+- 잠그는 것: `/admin`, `/debug` 화면, `/api/admin/**`(login 제외), `/api/debug/**`, 남의 세션을 지우는 삭제 API, `/api/demo`. **관람객이 자기 세션을 지우는 "나 잊기"는 잠그지 않는다.**
+- 끝 기준: 로그인 없이 잠긴 API가 401·화면은 로그인으로 이동, 로그인 뒤 200. `ADMIN_PASSWORD_HASH`가 비어 있으면 잠금 없음(개발용) + 서버 시작 때 경고 한 줄. **`npm run build` 뒤 `.next/static` 전체를 비밀번호·해시 문자열로 검색해 0건**(검수 때 이쪽에서도 다시 한다).
+- 테스트: `tests/api-admin-login.spec.ts` (테스트용 비밀번호는 테스트 안에서 해시를 만들어 환경 변수로 넘김 — 진짜 비밀번호를 테스트에 쓰지 않음)
 - 선행: 없음 (언제든)
 
 ### B-13 모드 가이드와 검증 스크립트
@@ -300,7 +309,7 @@ B-12 (아무 때나)    B-13 (B-08 뒤)
 1. `git fetch && git switch <브랜치>` → `npm install` → `npm run build` → `npx playwright test` → `node --test tests/unit/*.unit.ts` 전부 통과
 2. 티켓의 **끝 기준**을 직접 한 번 해 봄 (mock, 가능하면 실제 Gemini 1번)
 3. 계약: 응답 모양이 5절·`backend-plan.md`와 같은가. 다르면 문서가 먼저 고쳐졌는가
-4. 안전: 키·`.env*`·`data/runtime/`가 커밋에 없음. 모델 호출이 `updateStore` 안에 없음. 사용자 글이 프롬프트에서 `<자료>` 안에만 있음
+4. 안전: 키·`.env*`·`data/runtime/`가 커밋에 없음. 모델 호출이 `updateStore` 안에 없음. 사용자 글이 프롬프트에서 `<자료>` 안에만 있음. 비밀 값(키·비밀번호·해시)이 소스·`NEXT_PUBLIC_`·응답·로그에 없고, 빌드 뒤 `.next/static`을 검색해 0건
 5. 범위: 티켓에 적힌 파일 밖을 건드렸으면 이유가 커밋에 있음. 화면 파일은 안 건드림
 6. 통과하면 이쪽에서 화면을 붙여 같은 브랜치(또는 `integration/...`)에서 다시 테스트 → master에 합침
 
@@ -317,6 +326,7 @@ B-12 (아무 때나)    B-13 (B-08 뒤)
 - 모델은 src/lib/model/client.ts(callModel, callModelJson)로만 부르고, MODEL_MOCK=1에서 끝까지 돌도록 mock.ts에 가짜 응답을 더한다.
 - 사용자 글은 프롬프트에서 <자료> 태그 안에 넣고, 지시가 아니라 데이터로 다룬다(docs/prompts.md 0절).
 - API 키·.env*·data/runtime/은 절대 커밋하지 않는다. 키를 출력·로그에 남기지 않는다.
+- 비밀번호·키 같은 비밀 값을 소스 코드에 문자열로 쓰지 않는다(기본값 포함). NEXT_PUBLIC_ 금지, 비밀을 읽는 파일은 import "server-only".
 - 끝나면: npm run build, npx playwright test, node --test tests/unit/*.unit.ts 를 돌리고,
   티켓의 "끝 기준"을 어떻게 확인했는지 커밋 메시지에 적은 뒤 브랜치를 푸시한다.
 - 계약(응답 모양)을 바꿔야 하면 코드보다 docs/backend-roadmap.md 5절을 먼저 고치고 커밋 메시지에 밝힌다.
