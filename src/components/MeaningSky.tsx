@@ -91,6 +91,7 @@ export default function MeaningSky() {
 
   const startConverge = useCallback(() => {
     if (play.current) return; // 이미 도는 중
+    if (live.current.slots.length === 0) return; // 모일 별이 없으면 연출도 말풍선도 없다 (빈 화면 안내와 겹치지 않게)
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       setTalk(live.current.latest);
       window.setTimeout(() => setTalk(null), 6000);
@@ -191,6 +192,20 @@ export default function MeaningSky() {
       window.removeEventListener("keydown", touch);
     };
   }, [startConverge]);
+
+  // 예시 기억: 모델 없이 관람객 3명 분량을 채운다
+  const addExample = async () => {
+    try {
+      for (let i = 0; i < 3; i++) await api.demo(`demo-${Date.now().toString(36)}${i}`);
+      const s = await api.sky();
+      known.current = new Set(s.meanings.map((m) => m.id));
+      setNodes(s.nodes);
+      setMeanings(s.meanings);
+      setBorn(new Set(s.meanings.map((m) => m.id)));
+    } catch {
+      /* 서버가 안 닿으면 아무 일도 없다 */
+    }
+  };
 
   const cx = size.w / 2;
   const cy = size.h / 2;
@@ -294,7 +309,13 @@ export default function MeaningSky() {
       )}
 
       {meanings.length === 0 && (
-        <p className={styles.empty}>아직 의미가 없어요. 대화하거나 이야기를 넣으면 별이 하나씩 떠올라요.</p>
+        <div className={styles.empty}>
+          <p>아직 의미가 없어요. 대화하거나 이야기를 넣으면 별이 하나씩 떠올라요.</p>
+          <p className={styles.emptyHint}>모델이 안 닿는 컴퓨터라면 예시로 먼저 볼 수 있어요.</p>
+          <button type="button" onClick={() => void addExample()}>
+            예시 별 채우기
+          </button>
+        </div>
       )}
       <p className={styles.caption}>가운데 북극성은 대화하는 AI예요. 별 하나는 관람객의 이야기에서 뽑은 의미 하나, 숫자는 근거가 된 기억 수예요.</p>
     </div>

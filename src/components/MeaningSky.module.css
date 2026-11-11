@@ -238,6 +238,24 @@
 .empty {
   top: calc(50% + 60px);
   color: var(--muted);
+  pointer-events: auto;
+}
+.empty p {
+  margin: 0 0 4px;
+}
+.emptyHint {
+  color: var(--dim);
+}
+.empty button {
+  margin-top: 10px;
+  height: 40px;
+  padding: 0 18px;
+  border: 0;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
 }
 .caption {
   bottom: 14px;
