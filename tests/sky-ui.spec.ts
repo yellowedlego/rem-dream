@@ -108,3 +108,30 @@ test.describe("전시 화면 전환", () => {
     await expect(page.getByRole("region", { name: "기억 노드 시간축" })).toBeVisible();
   });
 });
+
+test.describe("예시 기억", () => {
+  test("의미가 하나도 없으면 북극성을 눌러도 말풍선이 뜨지 않고, '예시 별 채우기'로 별이 뜬다", async ({ page }) => {
+    await page.request.post("/api/debug/reset-all");
+    await page.request.post("/api/admin/prune", { data: { olderThanHours: 0 } });
+    await page.goto("/sky");
+    await expect(page.getByText("아직 의미가 없어요")).toBeVisible();
+    await page.getByRole("button", { name: /북극성/ }).click();
+    await page.waitForTimeout(1500);
+    await expect(page.locator('[class*="talk"]')).toHaveCount(0);
+
+    await page.getByRole("button", { name: "예시 별 채우기" }).click();
+    await expect.poll(() => page.locator("[data-meaning]").count(), { timeout: 5000 }).toBeGreaterThanOrEqual(6);
+    await expect(page.getByText("아직 의미가 없어요")).toHaveCount(0);
+  });
+
+  test("/me에서 기록이 없을 때 '예시 기억 넣기'로 내 AI를 바로 만들 수 있다", async ({ page }) => {
+    const session = `demo-me-${Date.now()}`;
+    await page.addInitScript((s) => localStorage.setItem("rem.sessionId", s), session);
+    await page.goto("/me");
+    await expect(page.getByTitle("이 대화의 세션 번호")).toHaveText(session);
+    await page.getByRole("button", { name: "예시 기억 넣기" }).click();
+    await expect(page.getByText(/이 세션의 기억 노드 \d+개/)).toBeVisible();
+    await page.getByRole("button", { name: "의미성 추출해서 만들기" }).click();
+    await expect(page.getByRole("heading", { name: /기억 위키/ })).toBeVisible();
+  });
+});

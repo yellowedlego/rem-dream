@@ -102,6 +102,18 @@ export default function MeView() {
     });
   }, [load]);
 
+  // 예시 기억: 모델·인터넷 없이 이 세션에 이야기와 별을 채운다
+  const addExample = async () => {
+    if (!sessionId) return;
+    setError(null);
+    try {
+      await api.demo(sessionId);
+      await load(sessionId);
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  };
+
   const make = async () => {
     if (!sessionId) return;
     setMaking(true);
@@ -289,6 +301,9 @@ export default function MeView() {
               {nodeCount === 0 && (
                 <>
                   {" "}
+                  <button type="button" className={styles.demoBtn} onClick={() => void addExample()}>
+                    예시 기억 넣기
+                  </button>{" "}
                   <Link href="/chat">대화하러 가기</Link> · <Link href="/story">이야기 넣기</Link>
                 </>
               )}

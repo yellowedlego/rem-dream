@@ -127,6 +127,9 @@ export const api = {
     const s = await call<ServerState>("/state");
     return { nodes: s.nodes, meanings: s.meanings };
   },
+  /** 예시 기억 채우기 (모델 없이) */
+  demo: (sessionId: string) =>
+    call<{ nodes: number; meanings: number }>("/demo", { method: "POST", body: JSON.stringify({ sessionId }) }),
   deleteNode: (id: number) => call<{ ok: true }>(`/nodes/${id}`, { method: "DELETE" }),
   deleteStory: (id: number) => call<{ ok: true }>(`/stories/${id}`, { method: "DELETE" }),
   deleteSession: (sessionId: string) =>
