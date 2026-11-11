@@ -63,6 +63,21 @@ export async function generateMockResponse(opts: MockModelOptions): Promise<Mock
         text = "말씀해 주셔서 감사해요. 당신의 오늘 이야기를 귀담아듣고 있어요.";
       }
     }
+  } else if (opts.purpose === "compare") {
+    // 비교 체험: 사전 프롬프트가 있는 쪽(내 AI)은 찾은 위키 칸을 꺼내 말하고, 기본 AI는 무난하게 답한다
+    if (sysPrompt.includes("[나와 말이 잘 통하는 AI")) {
+      const polite = sysPrompt.includes("존댓말로");
+      const found = /\[기억 위키에서 찾은[^\n]*\]\n- ([^:\n]+):/.exec(sysPrompt)?.[1];
+      text = found
+        ? polite
+          ? `${found} 이야기 기억나요. 그 뒤로 어떻게 됐어요?`
+          : `${found} 얘기 기억나! 그 뒤로 어떻게 됐어?`
+        : polite
+          ? "그랬군요. 조금 더 이야기해 줄래요?"
+          : "그랬구나. 조금 더 얘기해 줄래?";
+    } else {
+      text = "질문해 주셔서 감사합니다. 더 알려 주시면 도와드릴게요.";
+    }
   } else if (opts.purpose === "rem-step") {
     // Generate deterministic insight strings
     if (prompt.includes("dream") || prompt.includes("짝") || (opts.temperature && opts.temperature >= 1.0)) {

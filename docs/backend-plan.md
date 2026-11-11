@@ -130,6 +130,10 @@ export interface Story {
 | `GET /api/state?sessionId=` | 그 세션의 `nodes`, `insights`, `proposals`, `activePersona`, 지금 `RemRun` 한 번에 반환 (화면이 불러올 때 쓰는 읽기용) | 2 |
 | `POST /api/story` `{ sessionId, text }` | 긴 이야기를 **AI가 맥락을 읽어 노드 여러 개**로 나눠 저장하고, 그 노드들을 합친 의미 파일(별) 1개 이상도 만들어 `{ story, nodes, meanings, method }` 반환 (아래 "이야기 전처리 규칙"·"의미 파일" 참고) | 2 |
 | `GET /api/meanings?sessionId=`, `DELETE /api/meanings/[id]` | 의미 파일 목록·삭제 (디버그 화면용) | 2 |
+| `GET /api/profiles?sessionId=`, `POST /api/profiles` `{ sessionId, relation }`, `DELETE /api/profiles/[id]` | "내 AI" 프로필: 세션의 대화·이야기·의미로 말투(계산)·나에 대해·요령·기억 위키를 만들고 사전 프롬프트(600자 이내)를 조립. `relation`은 `friend`/`teacher`/`mentor`. 기록이 없으면 `404` ([my-ai.md](my-ai.md)) | 2+ |
+| `POST /api/profiles/[id]/compare` `{ message, history? }` | 같은 말을 기본 AI와 내 AI에게 동시에. 둘 다 세션의 이전 대화는 받지 않고, 내 AI만 사전 프롬프트 + 이번 말로 찾은 위키 칸을 받는다. `{ basic, personal, looked }` | 2+ |
+| `POST /api/profiles/[id]/mail` `{ to, consent: true }`, `GET /api/mail` | 사전 프롬프트를 메일로. 주소는 저장하지 않고 가린 주소만 `mails`에 기록, 프로필당 3번. 설정은 `.env.local`의 `SMTP_*`, `MAIL_MOCK=1`이면 `outbox/`에 파일로만 | 2+ |
+| `GET /api/admin/records`, `POST /api/admin/prune` `{ olderThanHours }`, `DELETE /api/admin/mails` | 기록 관리: 세션별 남은 기록 수, N시간 넘은 세션 통째로 지우기(0이면 전부), 메일 기록만 지우기 | 2+ |
 | `GET /api/sessions` | 세션 목록 `[{ sessionId, nodeCount, lastAt, preview }]` (대화 화면 사이드바, 디버그 검색용) | 2 |
 | `GET /api/nodes?sessionId=&q=&limit=` | 세션·내용 검색. `q`는 세션 번호·유저 입력·AI 답변·주제에 부분 일치. `sessionId`를 안 주면 전체 | 2 |
 | `DELETE /api/nodes/[id]` | 노드 하나 삭제 (그 노드를 근거로 한 통찰은 남기되 근거 번호에서 뺌) | 2 |

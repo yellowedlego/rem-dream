@@ -6,7 +6,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MemoryNode } from "@/lib/types";
 import { api, currentSessionId, startNewSession, switchSession, type SessionSummary } from "./api";
+import Link from "next/link";
 import AppNav from "./AppNav";
+import MicButton from "./MicButton";
 import { MAX_IMAGES, PHOTO_ONLY_TEXT } from "@/lib/images";
 import { MoonPlaneBeams, MoonPlaneTrack, chargeLit, useMoonPlane, type Birth } from "./MoonPlane";
 import { hasFiles, imageFilesOf, prepareImage, revokeAttachment, type Attachment } from "./imageFiles";
@@ -72,6 +74,7 @@ export default function ChatView() {
   const [nodes, setNodes] = useState<MemoryNode[]>([]);
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
   const [text, setText] = useState("");
+  const micBase = useRef(""); // 말로 입력을 시작할 때 이미 쓰여 있던 글
   const [pending, setPending] = useState<string | null>(null);
   const [pendingAt, setPendingAt] = useState("");
   // 사진 첨부: 입력줄에 붙어 있는 것(줄이는 중인 것 포함), 답을 기다리는 대화에 보이는 것, 크게 보기, 끌어 오는 별
@@ -354,6 +357,14 @@ export default function ChatView() {
           <button type="button" className={styles.newChat} onClick={newChat} disabled={!!pending}>
             + 새 대화
           </button>
+          <Link
+            href="/me"
+            className={styles.toMe}
+            aria-disabled={nodes.length === 0 ? "true" : undefined}
+            title="이 대화에서 의미성을 뽑아 나와 말이 잘 통하는 AI를 만들어요"
+          >
+            의미성 추출 → 내 AI
+          </Link>
           <ul className={styles.sessions}>
             {sessions.map((s) => (
               <li key={s.sessionId}>
@@ -511,6 +522,15 @@ export default function ChatView() {
                   addFiles(Array.from(e.target.files ?? []));
                   e.target.value = ""; // 같은 파일을 다시 골라도 반응하게
                 }}
+              />
+              <MicButton
+                className={styles.clip}
+                disabled={!!pending}
+                onStart={() => {
+                  micBase.current = text && !/\s$/.test(text) ? `${text} ` : text;
+                }}
+                onText={(done, interim) => setText(micBase.current + done + interim)}
+                onError={setError}
               />
               <div
                 className={styles.field}

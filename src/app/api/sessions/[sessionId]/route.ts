@@ -1,77 +1,15 @@
 import { NextResponse } from "next/server";
 import { updateStore } from "@/lib/store";
 import { deleteImages } from "@/lib/uploads";
+import { removeSession } from "@/lib/records";
 
-export async function DELETE(
-  _req: Request,
-  ctx: { params: Promise<{ sessionId: string }> }
-) {
+/** 세션 하나의 기록을 모두 지운다: 노드·이야기·의미·"내 AI" 프로필·메일 기록·통찰·REM 기록, 사진 파일 */
+export async function DELETE(_req: Request, ctx: { params: Promise<{ sessionId: string }> }) {
   const { sessionId } = await ctx.params;
-
   if (!sessionId || !sessionId.trim()) {
     return NextResponse.json({ error: "sessionId is required" }, { status: 400 });
   }
-
-  const targetSessionId = sessionId.trim();
-
-  let imageIds: string[] = [];
-  await updateStore((store) => {
-    // 0. 이 세션 노드에 붙은 이미지 (저장소를 고친 뒤에 파일을 지운다)
-    imageIds = store.nodes
-      .filter((n) => n.sessionId === targetSessionId)
-      .flatMap((n) => (n.images ?? []).map((i) => i.id));
-
-    // 1. Identify all node IDs belonging to this session
-    const sessionNodeIds = new Set(
-      store.nodes.filter((n) => n.sessionId === targetSessionId).map((n) => n.id)
-    );
-
-    // 2. Identify all run IDs belonging to this session
-    const sessionRunIds = new Set(
-      (store.runs || []).filter((r) => r.sessionId === targetSessionId).map((r) => r.id)
-    );
-
-    // 3. Delete nodes for this session
-    store.nodes = store.nodes.filter((n) => n.sessionId !== targetSessionId);
-
-    // 4. Delete stories for this session
-    if (Array.isArray(store.stories)) {
-      store.stories = store.stories.filter((s) => s.sessionId !== targetSessionId);
-    }
-
-    // 4-1. Delete meanings for this session
-    if (Array.isArray(store.meanings)) {
-      store.meanings = store.meanings.filter((m) => m.sessionId !== targetSessionId);
-    }
-
-    // 5. Delete insights belonging to this session (linked via runId or sourceNodeIds)
-    const sessionRunInsightIds = new Set(
-      (store.runs || [])
-        .filter((r) => r.sessionId === targetSessionId)
-        .flatMap((r) => r.insightIds || [])
-    );
-
-    store.insights = store.insights.filter((i) => {
-      if (sessionRunInsightIds.has(i.id)) return false;
-      // If all source nodes belonged to this session, drop the insight
-      const hasRemainingSourceNode = i.sourceNodeIds.some((nid) => !sessionNodeIds.has(nid));
-      if (!hasRemainingSourceNode && i.sourceNodeIds.length > 0) return false;
-      // Clean up deleted node IDs from remaining insights
-      i.sourceNodeIds = i.sourceNodeIds.filter((nid) => !sessionNodeIds.has(nid));
-      return true;
-    });
-
-    // 6. Delete proposals belonging to this session
-    if (Array.isArray(store.proposals)) {
-      store.proposals = store.proposals.filter((p) => !sessionRunIds.has(p.runId));
-    }
-
-    // 7. Delete runs belonging to this session
-    if (Array.isArray(store.runs)) {
-      store.runs = store.runs.filter((r) => r.sessionId !== targetSessionId);
-    }
-  });
-
+  const imageIds = await updateStore((store) => removeSession(store, sessionId.trim()));
   await deleteImages(imageIds);
   return NextResponse.json({ ok: true }, { status: 200 });
 }

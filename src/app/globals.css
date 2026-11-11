@@ -101,3 +101,30 @@ select {
   inherits: true;
   initial-value: 0px;
 }
+
+/* 인쇄: "내 AI"의 종이 카드(data-print-area) 한 장만 A6 크기로 */
+@page {
+  size: 105mm 148mm;
+  margin: 0;
+}
+@media print {
+  html,
+  body {
+    background: #faf9f5 !important;
+  }
+  body * {
+    visibility: hidden;
+  }
+  [data-print-area],
+  [data-print-area] * {
+    visibility: visible;
+  }
+  [data-print-area] {
+    position: fixed;
+    left: 0;
+    top: 0;
+  }
+  [data-print-area] > * {
+    box-shadow: none !important;
+  }
+}

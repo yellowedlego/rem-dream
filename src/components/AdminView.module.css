@@ -1,0 +1,151 @@
+.shell {
+  min-height: 100dvh;
+  background: var(--bg);
+}
+.header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 14px 24px;
+}
+.header h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+.main {
+  display: grid;
+  gap: 16px;
+  padding: 0 24px 40px;
+  max-width: 1100px;
+}
+.panel {
+  padding: 20px 24px 24px;
+  background: var(--surface);
+}
+.panel h2 {
+  margin: 0 0 8px;
+  font-size: 17px;
+  font-weight: 600;
+}
+.panel h2 span {
+  margin-left: 6px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
+}
+.help {
+  margin: 0 0 12px;
+  max-width: 70ch;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.bar select {
+  height: 44px;
+  padding: 0 12px;
+  border: 0;
+  background: var(--bubble);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+}
+.danger,
+.ghost,
+.rowDel {
+  height: 44px;
+  padding: 0 18px;
+  border: 0;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.danger {
+  background: color-mix(in srgb, var(--warn) 22%, transparent);
+  color: var(--warn);
+}
+.ghost {
+  background: var(--bubble);
+  color: var(--text);
+  font-weight: 500;
+}
+.rowDel {
+  height: 32px;
+  padding: 0 12px;
+  background: transparent;
+  color: var(--warn);
+  font-weight: 500;
+}
+.rowDel:hover {
+  background: color-mix(in srgb, var(--warn) 14%, transparent);
+}
+.danger:disabled,
+.ghost:disabled,
+.rowDel:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.ok {
+  margin: 12px 0 0;
+  font-size: 14px;
+  color: var(--ok);
+}
+.error {
+  margin: 12px 0 0;
+  padding: 8px 12px;
+  background: color-mix(in srgb, var(--warn) 14%, transparent);
+  color: var(--warn);
+  font-size: 14px;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.table th {
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.table td {
+  padding: 6px 10px;
+  border-top: 1px solid var(--line);
+  font-variant-numeric: tabular-nums;
+}
+.table td:last-child {
+  text-align: right;
+}
+.mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.mails {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 4px;
+  font-size: 14px;
+}
+.mails li {
+  display: flex;
+  gap: 16px;
+  color: var(--muted);
+}
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

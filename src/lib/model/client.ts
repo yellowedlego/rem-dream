@@ -60,6 +60,18 @@ export function estimateTokens(text: string): number {
   return Math.max(1, Math.ceil(cjkCount + otherCount / 3.5));
 }
 
+/** 네트워크에서 막혔을 때 화면에 보여 줄 문장 (오류 원문의 이유 코드로 고른다) */
+export const NETWORK_MESSAGE = "인터넷에서 Gemini 서버에 닿지 못했어요. 이 컴퓨터의 네트워크(학교망·방화벽)가 막고 있을 수 있어요.";
+
+/** fetch가 서버에 닿기도 전에 실패한 이유 코드 (ENOTFOUND·ETIMEDOUT·인증서 오류 등). 아니면 null */
+export function networkCause(err: unknown): string | null {
+  if (!(err instanceof Error)) return null;
+  if (err.name === "TimeoutError") return "TIMEOUT";
+  if (!(err instanceof TypeError) || !/fetch failed/i.test(err.message)) return null;
+  const cause = (err as { cause?: { code?: string; message?: string } }).cause;
+  return cause?.code || cause?.message?.slice(0, 60) || "UNKNOWN";
+}
+
 /** 모델 오류 원문에서 키처럼 보이는 값을 지운다 (기록에 남기기 전에) */
 function scrub(text: string): string {
   return text.replace(/AIza[0-9A-Za-z_-]{20,}/g, "[key]").slice(0, 1000);
@@ -76,6 +88,7 @@ export async function callModel(opts: CallModelOptions): Promise<CallModelResult
   let outputTokens = 0;
   let elapsedMs = 0;
   let callError: string | null = null;
+  let netCode: string | null = null;
 
   try {
     if (env.isMock) {
@@ -153,7 +166,8 @@ export async function callModel(opts: CallModelOptions): Promise<CallModelResult
     }
   } catch (err) {
     elapsedMs = Math.round(performance.now() - startTime);
-    callError = scrub(err instanceof Error ? err.message : String(err));
+    netCode = networkCause(err);
+    callError = scrub(netCode ? `network: ${netCode} (${err instanceof Error ? err.message : String(err)})` : err instanceof Error ? err.message : String(err));
   } finally {
     try {
       await addModelCall({
@@ -175,7 +189,10 @@ export async function callModel(opts: CallModelOptions): Promise<CallModelResult
   }
 
   if (callError) {
-    throw new ModelCallError("모델 응답을 받지 못했어요. 잠시 뒤 다시 시도해 주세요.", callError);
+    throw new ModelCallError(
+      netCode ? `${NETWORK_MESSAGE} (${netCode})` : "모델 응답을 받지 못했어요. 잠시 뒤 다시 시도해 주세요.",
+      callError,
+    );
   }
 
   return {

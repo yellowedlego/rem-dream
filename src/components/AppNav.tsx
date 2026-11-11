@@ -8,7 +8,9 @@ const LINKS = [
   { href: "/", label: "전시" },
   { href: "/chat", label: "대화" },
   { href: "/story", label: "이야기" },
+  { href: "/me", label: "내 AI" },
   { href: "/debug", label: "디버그" },
+  { href: "/admin", label: "기록 관리" },
 ];
 
 export default function AppNav() {

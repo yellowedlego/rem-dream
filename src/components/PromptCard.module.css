@@ -1,0 +1,126 @@
+/* 종이 카드: 밤 화면 위에 놓인 따뜻한 크림색 종이 한 장. 크기는 실제 인쇄 크기(A6)와 같다 */
+.card {
+  --paper: #faf9f5;
+  --ink: #2b2622;
+  --soft: #5a524b;
+  --faint: #8a8076;
+  --rule: #e3ddd0;
+  --clay: #c96442;
+
+  width: 105mm;
+  height: 148mm;
+  padding: 9mm 9mm 8mm;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-serif), "Nanum Myeongjo", "AppleMyungjo", Batang, Georgia, serif;
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.4) inset,
+    0 18px 40px rgb(0 0 0 / 0.45);
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  gap: 1.6mm;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 7.5pt;
+  letter-spacing: 0.06em;
+  color: var(--clay);
+}
+.mark {
+  width: 3.6mm;
+  height: 3.6mm;
+  fill: var(--clay);
+}
+.date {
+  margin-left: auto;
+  color: var(--faint);
+  letter-spacing: 0;
+}
+
+.title {
+  margin: 5mm 0 0;
+  font-size: 17pt;
+  line-height: 1.32;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+.title em {
+  font-style: normal;
+  color: var(--clay);
+}
+
+.about {
+  margin: 4mm 0 0;
+  padding-top: 3.4mm;
+  border-top: 0.3mm solid var(--rule);
+  font-size: 9pt;
+  line-height: 1.7;
+  color: var(--soft);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.memo {
+  margin-top: 4mm;
+}
+.memo h3 {
+  margin: 0 0 1.6mm;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 7pt;
+  font-weight: 500;
+  color: var(--faint);
+}
+.memo ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.4mm;
+}
+.memo li {
+  padding: 0.8mm 2.4mm;
+  border: 0.3mm solid var(--rule);
+  border-radius: 99px;
+  font-size: 8pt;
+  color: var(--ink);
+}
+
+.foot {
+  margin-top: auto;
+  display: grid;
+  grid-template-columns: 46mm 1fr;
+  gap: 4mm;
+  align-items: end;
+}
+.qr {
+  width: 46mm;
+  height: 46mm;
+}
+.qr span,
+.qr svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.qrWait {
+  background: repeating-linear-gradient(45deg, var(--rule) 0 2px, transparent 2px 6px);
+}
+.how {
+  margin: 0;
+  font-size: 7.5pt;
+  line-height: 1.65;
+  color: var(--soft);
+}
+.how b {
+  font-weight: 600;
+  color: var(--ink);
+}

@@ -274,6 +274,8 @@ export async function resetStore(): Promise<Store> {
     store.calls = seed.calls ?? [];
     store.stories = seed.stories ?? [];
     store.meanings = seed.meanings ?? [];
+    store.profiles = [];
+    store.mails = [];
     return store;
   });
 }

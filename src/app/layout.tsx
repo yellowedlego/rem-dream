@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Sans_KR, JetBrains_Mono } from "next/font/google";
+import { IBM_Plex_Sans_KR, JetBrains_Mono, Noto_Serif_KR } from "next/font/google";
 import "./globals.css";
 
 // 한글 글꼴은 글자가 많아 미리 불러오기(preload)를 끈다
 const sans = IBM_Plex_Sans_KR({
   variable: "--font-sans",
   weight: ["400", "500", "600"],
+  preload: false,
+});
+
+// 가져가는 종이 카드·메일 미리보기의 따뜻한 명조
+const serif = Noto_Serif_KR({
+  variable: "--font-serif",
+  weight: ["400", "600"],
   preload: false,
 });
 
@@ -21,7 +28,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="ko" className={`${sans.variable} ${mono.variable}`}>
+    <html lang="ko" className={`${sans.variable} ${serif.variable} ${mono.variable}`}>
       <body>{children}</body>
     </html>
   );
