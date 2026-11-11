@@ -1,0 +1,254 @@
+.sky {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 420px;
+  overflow: hidden;
+  background:
+    radial-gradient(60% 55% at 50% 50%, rgb(185 163 245 / 0.07), transparent 70%),
+    radial-gradient(30% 30% at 50% 50%, rgb(239 223 166 / 0.05), transparent 70%),
+    var(--bg);
+}
+.svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+.bgStar {
+  fill: #e9e2f6;
+  opacity: 0.28;
+  animation: twinkle 5s ease-in-out infinite;
+}
+@keyframes twinkle {
+  50% {
+    opacity: 0.08;
+  }
+}
+.orbitRing {
+  fill: none;
+  stroke: rgb(185 163 245 / 0.07);
+  stroke-dasharray: 2 7;
+}
+.tiltRing {
+  fill: none;
+  stroke: rgb(239 223 166 / 0.9);
+  stroke-width: 1.2;
+  filter: drop-shadow(0 0 6px rgb(239 223 166 / 0.6));
+}
+
+/* 의미 별 */
+.star {
+  cursor: default;
+}
+.halo {
+  fill: rgb(239 223 166 / 0.06);
+}
+.core {
+  fill: var(--accent);
+  filter: drop-shadow(0 0 4px rgb(239 223 166 / 0.7));
+}
+.star text {
+  fill: var(--muted);
+  font-size: 11px;
+  font-family: var(--font-serif), serif;
+  pointer-events: none;
+}
+.star .count {
+  fill: var(--point);
+  font-family: var(--font-mono);
+  font-size: 9px;
+}
+.star:hover .core {
+  fill: #fff7d6;
+}
+.star:hover text {
+  fill: var(--text);
+}
+.star[data-born] .core,
+.star[data-born] .halo {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: born 1.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes born {
+  0% {
+    scale: 0;
+    fill: #fff;
+  }
+  40% {
+    scale: 2.2;
+  }
+  100% {
+    scale: 1;
+  }
+}
+
+/* 북극성 */
+.polaris {
+  cursor: pointer;
+  outline: none;
+}
+.polaris:focus-visible .polarisHalo {
+  stroke: var(--accent);
+  stroke-width: 1.5;
+}
+.polarisHalo {
+  fill: rgb(239 223 166 / 0.08);
+  animation: breathe 4s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes breathe {
+  50% {
+    scale: 1.18;
+    opacity: 0.6;
+  }
+}
+.spikes {
+  fill: #fff7d6;
+  filter: drop-shadow(0 0 10px rgb(239 223 166 / 0.95));
+}
+.spikesSmall {
+  fill: rgb(255 247 214 / 0.7);
+}
+.polarisCore {
+  fill: #fff;
+}
+.flash {
+  fill: rgb(255 247 214 / 0.55);
+  filter: blur(6px);
+}
+.polaris:hover .spikes {
+  filter: drop-shadow(0 0 16px rgb(239 223 166 / 1));
+}
+
+/* 숫자판 */
+.hud {
+  position: absolute;
+  top: 18px;
+  left: 24px;
+  z-index: 1;
+  margin: 0;
+  display: flex;
+  gap: 28px;
+}
+.hud div {
+  display: grid;
+  gap: 2px;
+}
+.hud dt {
+  font-size: 12px;
+  color: var(--muted);
+}
+.hud dd {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+  animation: tick 0.9s ease-out;
+}
+@keyframes tick {
+  0% {
+    color: #fff;
+    translate: 0 -6px;
+    text-shadow: 0 0 14px rgb(239 223 166 / 0.9);
+  }
+}
+
+.tip {
+  position: absolute;
+  right: 24px;
+  top: 18px;
+  z-index: 2;
+  max-width: 300px;
+  padding: 12px 14px;
+  background: var(--panel);
+  box-shadow: inset 2px 0 0 var(--accent);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.tip b {
+  font-family: var(--font-serif), serif;
+  font-size: 15px;
+}
+.tip p {
+  margin: 4px 0;
+  color: var(--muted);
+}
+.tip span {
+  font-size: 12px;
+  color: var(--point);
+}
+
+/* 북극성이 들려주는 대화 한 쌍 */
+.talk {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + 52px);
+  z-index: 2;
+  width: min(440px, 80%);
+  translate: -50% 0;
+  display: grid;
+  gap: 6px;
+  pointer-events: none;
+}
+.talk p {
+  margin: 0;
+  padding: 9px 14px;
+  font-size: 14px;
+  line-height: 1.6;
+  opacity: 0;
+  animation: talkIn 0.6s ease-out forwards;
+}
+.talkUser {
+  justify-self: end;
+  max-width: 85%;
+  background: var(--bubble);
+}
+.talkAi {
+  justify-self: start;
+  max-width: 92%;
+  background: var(--bubble-ai);
+  box-shadow: inset 2px 0 0 var(--accent);
+  animation-delay: 0.9s !important;
+}
+@keyframes talkIn {
+  from {
+    opacity: 0;
+    translate: 0 8px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+.empty,
+.caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin: 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--dim);
+  pointer-events: none;
+}
+.empty {
+  top: calc(50% + 60px);
+  color: var(--muted);
+}
+.caption {
+  bottom: 14px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bgStar,
+  .polarisHalo,
+  .hud dd,
+  .star[data-born] .core,
+  .star[data-born] .halo {
+    animation: none;
+  }
+}
