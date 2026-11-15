@@ -33,102 +33,24 @@ export function getActivePersona(store?: Store): PersonaVersion | Promise<Person
   return readStore().then((s) => getActivePersona(s));
 }
 
-/**
- * Approves a pending persona proposal:
- * - Finds proposal by ID (throws 404 if not found, 400 if not pending)
- * - Sets proposal status = 'approved', decidedAt = now
- * - Calculates nextVersion = max(persona.version) + 1
- * - Appends new PersonaVersion to store.personas
- * - Sets store.activePersona = nextVersion
- */
-export async function approveProposal(
-  proposalId: number | string
-): Promise<{ ok: boolean; activePersona: number }> {
-  const numId = typeof proposalId === "string" ? parseInt(proposalId, 10) : proposalId;
-  if (typeof numId !== "number" || Number.isNaN(numId) || !Number.isInteger(numId) || numId <= 0) {
-    throw new PersonaError("Invalid proposal ID", 400);
-  }
-
-  return updateStore((store) => {
-    if (!Array.isArray(store.proposals)) {
-      store.proposals = [];
-    }
-    const proposal = store.proposals.find((p) => p.id === numId);
-    if (!proposal) {
-      throw new PersonaError("Proposal not found", 404);
-    }
-    if (proposal.status !== "pending") {
-      throw new PersonaError("Proposal is not pending", 400);
-    }
-
-    if (!Array.isArray(store.personas)) {
-      store.personas = [];
-    }
-
-    const nextVersion = store.personas.reduce((max, p) => Math.max(max, p.version), 0) + 1;
-    const now = new Date().toISOString();
-
-    proposal.status = "approved";
-    proposal.decidedAt = now;
-
-    const newPersona: PersonaVersion = {
-      version: nextVersion,
-      systemPrompt: proposal.proposedPrompt ?? "",
-      sourceInsightIds: Array.isArray(proposal.sourceInsightIds) ? [...proposal.sourceInsightIds] : [],
-      approvedAt: now,
-      parentVersion: proposal.baseVersion ?? store.activePersona ?? null,
-    };
-    (newPersona as unknown as Record<string, unknown>).createdAt = now;
-
-    store.personas.push(newPersona);
-    store.activePersona = nextVersion;
-
-    return { ok: true, activePersona: nextVersion };
-  });
-}
-
-/**
- * Rejects a pending persona proposal:
- * - Finds proposal by ID (throws 404 if not found, 400 if not pending)
- * - Sets proposal status = 'rejected', decidedAt = now
- * - store.activePersona remains unchanged
- */
-export async function rejectProposal(
-  proposalId: number | string
-): Promise<{ ok: boolean }> {
-  const numId = typeof proposalId === "string" ? parseInt(proposalId, 10) : proposalId;
-  if (typeof numId !== "number" || Number.isNaN(numId) || !Number.isInteger(numId) || numId <= 0) {
-    throw new PersonaError("Invalid proposal ID", 400);
-  }
-
-  return updateStore((store) => {
-    if (!Array.isArray(store.proposals)) {
-      store.proposals = [];
-    }
-    const proposal = store.proposals.find((p) => p.id === numId);
-    if (!proposal) {
-      throw new PersonaError("Proposal not found", 404);
-    }
-    if (proposal.status !== "pending") {
-      throw new PersonaError("Proposal is not pending", 400);
-    }
-
-    const now = new Date().toISOString();
-    proposal.status = "rejected";
-    proposal.decidedAt = now;
-
-    return { ok: true };
-  });
-}
+export {
+  approveProposal,
+  rejectProposal,
+  approveProposalItem,
+  rejectProposalItem,
+  decideProposal,
+} from "./persona/apply.ts";
 
 /**
  * Reverts active persona to an existing version:
  * - Validates version number (throws 400 if invalid)
  * - Checks if version exists in store.personas (throws 404 if not found)
  * - Updates store.activePersona = version
+ * - If sessionId is provided, updates session activePersona
  */
 export async function revertPersona(
-  version: number
+  version: number,
+  sessionId?: string
 ): Promise<{ ok: boolean; activePersona: number }> {
   if (typeof version !== "number" || Number.isNaN(version) || !Number.isInteger(version) || version <= 0) {
     throw new PersonaError("Valid version number is required", 400);
@@ -144,6 +66,11 @@ export async function revertPersona(
     }
 
     store.activePersona = version;
+    if (sessionId) {
+      if (!store.activePersonas) store.activePersonas = {};
+      store.activePersonas[`session:${sessionId}`] = version;
+    }
+
     return { ok: true, activePersona: version };
   });
 }
@@ -153,6 +80,7 @@ export async function revertPersona(
  * - Clears session memory nodes, stories, meanings, profiles, mails, insights, proposals, runs
  * - Deletes associated uploaded image files
  * - Resets store.activePersona = 1
+ * - Clears session activePersona
  */
 export async function resetSession(
   sessionId: string
@@ -165,6 +93,9 @@ export async function resetSession(
   const imageIds = await updateStore((store) => {
     const cleanedImageIds = removeSession(store, trimmedSessionId);
     store.activePersona = 1;
+    if (store.activePersonas && store.activePersonas[`session:${trimmedSessionId}`]) {
+      delete store.activePersonas[`session:${trimmedSessionId}`];
+    }
     return cleanedImageIds;
   });
 

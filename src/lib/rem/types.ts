@@ -23,7 +23,7 @@ export interface RemContext {
     }
   ): Promise<{ text: string }>;
   markReading(nodeIds: number[]): Promise<void>;
-  markMeaning?(meaningIds: number[]): Promise<void>;
+  markMeaning(meaningIds: number[]): Promise<void>;
   shouldStop(): boolean;
   signal?: AbortSignal;
 }

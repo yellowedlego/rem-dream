@@ -57,6 +57,19 @@ export async function POST(req: Request) {
     );
   }
 
+  // Precondition for Mode 2 Dream: At least 2 meanings or 2 nodes
+  if (mode === "dream") {
+    const sessionMeanings = (store.meanings || []).filter(
+      (m) => m.sessionId === trimmedSessionId
+    );
+    if (sessionMeanings.length < 2 && sessionNodes.length < 2) {
+      return NextResponse.json(
+        { error: "최소 2개 이상의 의미(또는 대화 기억)가 필요합니다." },
+        { status: 422 }
+      );
+    }
+  }
+
   const runId = `run-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const run: RemRun = {
     id: runId,

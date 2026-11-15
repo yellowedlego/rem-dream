@@ -3,6 +3,7 @@ import { revertPersona, PersonaError } from "@/lib/persona";
 
 interface RevertRequestBody {
   version?: unknown;
+  sessionId?: unknown;
 }
 
 export async function POST(req: Request) {
@@ -29,7 +30,8 @@ export async function POST(req: Request) {
   }
 
   try {
-    const result = await revertPersona(body.version);
+    const sessionId = typeof body.sessionId === "string" ? body.sessionId.trim() : undefined;
+    const result = await revertPersona(body.version, sessionId);
     return NextResponse.json(result, { status: 200 });
   } catch (err) {
     if (err instanceof PersonaError) {

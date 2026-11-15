@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { rejectProposal, PersonaError } from "@/lib/persona";
+import { PersonaApplyError } from "@/lib/persona/apply";
 
 export async function POST(
   _req: Request,
@@ -15,7 +16,7 @@ export async function POST(
     const result = await rejectProposal(numId);
     return NextResponse.json(result, { status: 200 });
   } catch (err) {
-    if (err instanceof PersonaError) {
+    if (err instanceof PersonaError || err instanceof PersonaApplyError) {
       return NextResponse.json({ error: err.message }, { status: err.status });
     }
     console.error("[/api/proposals/[id]/reject] error:", err);

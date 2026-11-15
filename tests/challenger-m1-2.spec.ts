@@ -417,6 +417,8 @@ test.describe("Challenger M1-2: Empirical Verification & Stress Harness", () => 
               parentVersion: 2,
             };
             store.personas.push(p3);
+          } else {
+            p3.systemPrompt = "너는 관람객의 하루 이야기를 들어 주는 친절한 대화 상대야. 짧고 따뜻하게 답한다.\n상대가 급해 보이면 먼저 할 일을 작게 나눠 준다.\n맛있는 음식이나 좋아하는 것을 언급하며 기운을 북돋운다.";
           }
           store.activePersona = 3;
         });

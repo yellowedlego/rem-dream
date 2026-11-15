@@ -209,7 +209,7 @@ export interface Comparison {
 }
 
 /** 모델을 부른 목적 */
-export type ModelPurpose = "chat" | "story-split" | "story-meaning" | "rem-step" | "rem-proposal" | "profile" | "compare";
+export type ModelPurpose = "chat" | "story-split" | "story-meaning" | "rem-step" | "rem-proposal" | "profile" | "compare" | "rem-compare" | "school-chat";
 
 /** 모델 요청 한 건 (디버그 화면의 로그·수치용) */
 export interface ModelCall {

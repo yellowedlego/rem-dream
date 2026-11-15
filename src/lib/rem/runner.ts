@@ -3,10 +3,9 @@ import { readStore, updateStore } from "../store.ts";
 import { callModel } from "../model/client.ts";
 import { getActivePersona } from "../persona.ts";
 import { getMode } from "./registry.ts";
-import {
-  PROPOSAL_SYSTEM_PROMPT,
-  buildProposalPrompt,
-} from "../prompts/rem.ts";
+import { createComparisonBefore } from "./compare.ts";
+import { generateProposal } from "./proposal.ts";
+import { loadAllReplays } from "./replay.ts";
 import type {
   Insight,
   PersonaProposal,
@@ -99,6 +98,14 @@ export async function startRemRun(run: RemRun): Promise<void> {
             }
           });
         },
+        async markMeaning(meaningIds: number[]): Promise<void> {
+          await updateStore((s) => {
+            const r = s.runs?.find((item) => item.id === run.id);
+            if (r && r.status === "running") {
+              r.currentMeaningIds = [...meaningIds];
+            }
+          });
+        },
         async ask(prompt, opts) {
           if (ctx.shouldStop()) {
             throw new Error("REM run stopped");
@@ -114,6 +121,17 @@ export async function startRemRun(run: RemRun): Promise<void> {
         },
       };
 
+      // 0. Probe comparison baseline before sleep (outside updateStore)
+      try {
+        await createComparisonBefore({
+          runId: run.id,
+          sessionId: run.sessionId,
+          scope: run.scope,
+        });
+      } catch (compErr) {
+        console.error("[rem/runner] createComparisonBefore error:", compErr);
+      }
+
       // 1. Execute mode logic outside updateStore
       const insights = await mode.run(ctx);
 
@@ -128,44 +146,17 @@ export async function startRemRun(run: RemRun): Promise<void> {
         return;
       }
 
-      // 2. Generate proposal outside updateStore
+      // 2. Generate 3-tier structured proposal outside updateStore
       const activePersona = await getActivePersona(initialStore);
-      const proposalPrompt = buildProposalPrompt({
-        currentPrompt: activePersona.systemPrompt,
+      const generatedProposal = await generateProposal({
+        runId: run.id,
+        sessionId: run.sessionId,
+        scope: run.scope,
+        currentPersona: activePersona,
         insights,
         meanings: sessionMeanings,
+        sessionNodes: nodesToProcess,
       });
-
-      const proposalRes = await callModel({
-        prompt: proposalPrompt,
-        systemInstruction: PROPOSAL_SYSTEM_PROMPT,
-        temperature: 0.7,
-        purpose: "rem-proposal",
-        runId: run.id,
-      });
-
-      let proposalSummary = "자는 동안 대화 방식을 다듬었습니다.";
-      let proposalProposedPrompt = activePersona.systemPrompt;
-
-      if (proposalRes && proposalRes.text) {
-        const text = proposalRes.text.trim();
-        if (text.startsWith("{")) {
-          try {
-            const parsed = JSON.parse(text);
-            if (parsed.summary && typeof parsed.summary === "string") {
-              proposalSummary = parsed.summary;
-            }
-            if (
-              parsed.proposedPrompt &&
-              typeof parsed.proposedPrompt === "string"
-            ) {
-              proposalProposedPrompt = parsed.proposedPrompt;
-            }
-          } catch {}
-        } else if (text.length > 0) {
-          proposalSummary = text.slice(0, 100);
-        }
-      }
 
       // 3. Atomically persist results
       await updateStore((s) => {
@@ -197,14 +188,9 @@ export async function startRemRun(run: RemRun): Promise<void> {
 
         const newProposal: PersonaProposal = {
           id: nextProposalId,
-          runId: run.id,
-          summary: proposalSummary,
-          proposedPrompt: proposalProposedPrompt,
-          status: "pending",
-          baseVersion: activePersona.version,
-          createdAt: now,
-          decidedAt: null,
+          ...generatedProposal,
           sourceInsightIds: createdInsightIds,
+          createdAt: now,
         };
         s.proposals.push(newProposal);
 
@@ -216,8 +202,35 @@ export async function startRemRun(run: RemRun): Promise<void> {
         // Keep read node IDs populated for test assertions
         r.currentNodeIds = Array.from(readNodeIds);
       });
-    } catch (err) {
+    } catch (err: any) {
       const isStopped = activeRuns.get(run.id)?.stopped;
+      if (!isStopped) {
+        const isNetworkErr =
+          err?.message?.includes("fetch failed") ||
+          err?.message?.includes("ENOTFOUND") ||
+          err?.message?.includes("ECONNREFUSED") ||
+          err?.name === "NetworkError";
+
+        if (isNetworkErr) {
+          try {
+            const replays = await loadAllReplays();
+            const replay = replays[0];
+            if (replay && replay.proposal) {
+              await updateStore((s) => {
+                const r = s.runs?.find((item) => item.id === run.id);
+                if (r) {
+                  r.status = "done";
+                  r.source = "replay";
+                  r.finishedAt = new Date().toISOString();
+                  r.error = null;
+                }
+              });
+              return;
+            }
+          } catch {}
+        }
+      }
+
       await updateStore((s) => {
         const r = s.runs?.find((item) => item.id === run.id);
         if (r) {
