@@ -1,7 +1,6 @@
-import { connection } from "next/server";
-import { NextResponse } from "next/server";
+import { connection, NextResponse } from "next/server";
 import { readStore } from "@/lib/store";
-
+import { getActivePersona } from "@/lib/persona";
 
 export async function GET(req: Request) {
   // 1. Next.js 16 cache compliance: assert request-time dynamic execution
@@ -27,15 +26,15 @@ export async function GET(req: Request) {
   if (sessionId) {
     const sessionNodeIds = new Set(nodes.map((n) => n.id));
     const sessionRunIds = new Set(
-      store.runs.filter((r) => r.sessionId === sessionId).map((r) => r.id)
+      (store.runs || []).filter((r) => r.sessionId === sessionId).map((r) => r.id)
     );
     const sessionRunInsightIds = new Set(
-      store.runs
+      (store.runs || [])
         .filter((r) => r.sessionId === sessionId)
         .flatMap((r) => r.insightIds)
     );
 
-    insights = store.insights.filter(
+    insights = (store.insights || []).filter(
       (i) =>
         sessionRunInsightIds.has(i.id) ||
         i.sourceNodeIds.some((id) => sessionNodeIds.has(id))
@@ -46,11 +45,13 @@ export async function GET(req: Request) {
     );
   }
 
-  // 5-1. 이야기(원문 제외 요약)와 의미 파일
-  const stories = (sessionId
-    ? (store.stories ?? []).filter((s) => s.sessionId === sessionId)
-    : store.stories ?? []
+  // 5-1. Stories and meanings
+  const stories = (
+    sessionId
+      ? (store.stories ?? []).filter((s) => s.sessionId === sessionId)
+      : store.stories ?? []
   ).map(({ rawText, ...rest }) => ({ ...rest, length: rawText.length }));
+
   const meanings = sessionId
     ? (store.meanings ?? []).filter((m) => m.sessionId === sessionId)
     : store.meanings ?? [];
@@ -62,7 +63,32 @@ export async function GET(req: Request) {
         r.status === "running" && (!sessionId || r.sessionId === sessionId)
     ) ?? null;
 
-  // 7. Return unified state
+  // 7. Active persona object
+  const persona = getActivePersona(store);
+
+  // 8. remSuggest calculation
+  const sessionRuns = sessionId
+    ? (store.runs ?? []).filter((r) => r.sessionId === sessionId)
+    : store.runs ?? [];
+
+  const lastRun =
+    sessionRuns.length > 0
+      ? sessionRuns.reduce(
+          (latest, r) =>
+            new Date(r.startedAt) > new Date(latest.startedAt) ? r : latest,
+          sessionRuns[0]
+        )
+      : null;
+
+  const threshold = Number(process.env.REM_SUGGEST_THRESHOLD ?? 5);
+  const unanalyzedCount = lastRun
+    ? nodes.filter((n) => new Date(n.createdAt) > new Date(lastRun.startedAt))
+        .length
+    : nodes.length;
+
+  const remSuggest = unanalyzedCount >= threshold;
+
+  // 9. Return unified state
   return NextResponse.json(
     {
       nodes,
@@ -70,9 +96,14 @@ export async function GET(req: Request) {
       personas: store.personas,
       proposals,
       activePersona: store.activePersona,
+      persona,
       activeRun,
+      run: activeRun,
       stories,
       meanings,
+      comparisons: store.comparisons ?? [],
+      remSuggest,
+      mode: (sessionId && store.sessionModes?.[sessionId]) || "personal",
     },
     { status: 200 }
   );

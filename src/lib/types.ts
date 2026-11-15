@@ -67,11 +67,31 @@ export interface Insight {
   createdAt: string;
 }
 
+// --- Persona Scope & 3-Layer Persona Architecture ---
+export type PersonaScope = "school" | `session:${string}`;
+
+export interface PersonaStyle {
+  warmth: number;     // 0.2 ~ 0.8 (seed: 0.5)
+  empathy: number;    // 0.2 ~ 0.8 (seed: 0.5)
+  brevity: number;    // 0.2 ~ 0.8 (seed: 0.5)
+  curiosity: number;  // 0.2 ~ 0.8 (seed: 0.5)
+}
+export type StyleAxis = keyof PersonaStyle;
+
+export interface PersonaNote {
+  id: number;
+  text: string;               // 8~80 Korean chars, 해요체
+  cues: string[];             // max 5 keywords
+  sourceMeaningIds?: number[];
+  sourceInsightIds?: number[];
+  addedInVersion: number;
+}
+
 /** 인격 버전 = 사람이 승인한 시스템 프롬프트 한 벌 */
 export interface PersonaVersion {
   /** 버전 번호 (1부터) */
   version: number;
-  /** 시스템 프롬프트 전문 */
+  /** 시스템 프롬프트 전문 (① Base identity + ② Style summary) */
   systemPrompt: string;
   /** 근거 통찰 번호들 (처음 인격은 빈 배열) */
   sourceInsightIds: number[];
@@ -81,6 +101,31 @@ export interface PersonaVersion {
   parentVersion: number | null;
   /** 이 인격을 만든 의미 파일들 (없으면 빈 배열 또는 생략) */
   sourceMeaningIds?: number[];
+  /** 인격 스코프 (전교생 'school' 또는 특정 세션) */
+  scope?: PersonaScope;
+  /** 4축 말투 수치 */
+  style?: PersonaStyle;
+  /** 학습된 관찰 노트 목록 */
+  notes?: PersonaNote[];
+  /** 승인 주체 */
+  appliedBy?: "human" | "auto";
+  createdAt?: string;
+}
+
+export type PersonaChange =
+  | { id: number; kind: "addNote"; text: string; cues: string[] }
+  | { id: number; kind: "editNote"; noteId: number; text: string; cues: string[] }
+  | { id: number; kind: "removeNote"; noteId: number }
+  | { id: number; kind: "moveStyle"; axis: StyleAxis; delta: number };
+
+export interface PersonaChangeItem {
+  id: number;
+  change: PersonaChange;
+  reason: string;
+  evidenceNodeIds: number[];
+  sourceInsightIds: number[];
+  sourceMeaningIds: number[];
+  status: "pending" | "approved" | "rejected";
 }
 
 /**
@@ -120,6 +165,10 @@ export interface RemRun {
   /** 완료 후 만들어진 수정 제안 번호 (없으면 null) */
   proposalId: number | null;
   error: string | null;
+  scope?: PersonaScope;
+  source?: "model" | "replay";
+  steps?: { total: number; done: number };
+  currentMeaningIds?: number[];
 }
 
 /** 인격 수정 제안. 승인 전에는 PersonaVersion이 아니다 */
@@ -127,15 +176,36 @@ export interface PersonaProposal {
   id: number;
   runId: string;
   /** 근거 통찰 */
-  sourceInsightIds: number[];
-  /** 제안하는 시스템 프롬프트 전문 */
-  proposedPrompt: string;
+  sourceInsightIds?: number[];
+  /** 제안하는 시스템 프롬프트 전문 (하위 호환 필드) */
+  proposedPrompt?: string;
+  /** 제안 변경 항목 목록 (M2 세분화) */
+  items?: PersonaChangeItem[];
   /** 사람에게 보여 줄 한두 줄 요약 ("자는 동안 이렇게 바뀌려 해요") */
   summary: string;
   baseVersion: number;
-  status: "pending" | "approved" | "rejected";
+  status: "pending" | "done" | "approved" | "rejected";
   createdAt: string;
   decidedAt: string | null;
+}
+
+export interface SchoolMeaning {
+  id: number;
+  title: string;
+  essence: string;
+  keywords: string[];
+  count: number;
+  sourceTags: string[];
+  createdAt: string;
+}
+
+export interface Comparison {
+  id: number;
+  runId: string;
+  scope: PersonaScope;
+  question: string;
+  before: { version: number; answer: string; at: string };
+  after: { version: number; answer: string; at: string } | null;
 }
 
 /** 모델을 부른 목적 */
@@ -220,6 +290,8 @@ export interface Store {
   personas: PersonaVersion[];
   /** 지금 쓰는 인격 버전 번호 (되돌리기를 하면 이 값만 바뀐다) */
   activePersona: number;
+  /** 스코프별 인격 버전 매핑 */
+  activePersonas?: Record<string, number>;
   /** 인격 수정 제안 목록 */
   proposals: PersonaProposal[];
   /** REM 실행 기록 */
@@ -230,9 +302,14 @@ export interface Store {
   stories: Story[];
   /** 의미 파일(별) 목록 */
   meanings: Meaning[];
+  /** 전교생 의미 파일 목록 */
+  schoolMeanings?: SchoolMeaning[];
+  /** REM 전후 답변 비교 목록 */
+  comparisons?: Comparison[];
+  /** 세션별 모드 ('personal' | 'school') */
+  sessionModes?: Record<string, "personal" | "school">;
   /** "내 AI" 프로필 (없으면 생략) */
   profiles?: Profile[];
   /** 메일 보낸 기록 (없으면 생략) */
   mails?: MailLog[];
 }
-

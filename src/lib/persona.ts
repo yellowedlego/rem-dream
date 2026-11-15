@@ -73,7 +73,7 @@ export async function approveProposal(
 
     const newPersona: PersonaVersion = {
       version: nextVersion,
-      systemPrompt: proposal.proposedPrompt,
+      systemPrompt: proposal.proposedPrompt ?? "",
       sourceInsightIds: Array.isArray(proposal.sourceInsightIds) ? [...proposal.sourceInsightIds] : [],
       approvedAt: now,
       parentVersion: proposal.baseVersion ?? store.activePersona ?? null,
