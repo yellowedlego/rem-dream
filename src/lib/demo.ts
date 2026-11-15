@@ -1,5 +1,6 @@
 import "server-only";
 import { updateStore } from "@/lib/store";
+import { pushToSchoolPoolSync } from "@/lib/school/pool";
 import type { Meaning, MemoryNode, Story } from "@/lib/types";
 
 // 예시 기억: 모델 없이(인터넷·키 없이) 세션 하나에 이야기·노드·의미(별)를 채운다.
@@ -93,6 +94,7 @@ export async function addDemo(sessionId: string): Promise<{ nodes: number; meani
       createdAt: now,
     }));
     store.meanings.push(...made);
+    pushToSchoolPoolSync(store, made, `demo_${sessionId.slice(0, 6)}`);
     return { nodes: created.length, meanings: made.length };
   });
 }

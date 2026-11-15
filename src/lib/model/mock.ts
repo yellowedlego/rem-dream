@@ -63,6 +63,23 @@ export async function generateMockResponse(opts: MockModelOptions): Promise<Mock
         text = "말씀해 주셔서 감사해요. 당신의 오늘 이야기를 귀담아듣고 있어요.";
       }
     }
+  } else if (opts.purpose === "school-chat") {
+    text = "우리 학교 친구들에게서 자주 들은 이야기인데, 혹시 비슷한 기분인가요? 언제든 편하게 이야기해 줘요.";
+  } else if (opts.purpose === "rem-compare") {
+    // Before/After REM compare probe
+    let version = 1;
+    const verMatch = sysPrompt.match(/\[버전\s*(\d+)\]/i) || prompt.match(/버전\s*(\d+)/i);
+    if (verMatch) {
+      version = parseInt(verMatch[1], 10);
+    } else if (sysPrompt.includes("[참고사항]") || sysPrompt.includes("[말투]")) {
+      version = 2;
+    }
+
+    if (version >= 2) {
+      text = `[v${version}] 목표를 향해 부지런히 달리면서도 가끔은 벅차 보이는 사람이야. 해야 할 일이 많을 땐 우선순위를 정해서 하나씩 작게 나눠 해결해 나가면 좋겠어.`;
+    } else {
+      text = `[v1] 오늘 하루를 열심히 살아가는 따뜻한 사람이라고 생각해. 이야기 들려줘서 고마워.`;
+    }
   } else if (opts.purpose === "compare") {
     // 비교 체험: 사전 프롬프트가 있는 쪽(내 AI)은 찾은 위키 칸을 꺼내 말하고, 기본 AI는 무난하게 답한다
     if (sysPrompt.includes("[나와 말이 잘 통하는 AI")) {
@@ -80,11 +97,19 @@ export async function generateMockResponse(opts: MockModelOptions): Promise<Mock
     }
   } else if (opts.purpose === "rem-step") {
     // Generate deterministic insight strings
-    if (prompt.includes("dream") || prompt.includes("짝") || (opts.temperature && opts.temperature >= 1.0)) {
+    if (prompt.includes("dream") || prompt.includes("짝") || prompt.includes("의미") || (opts.temperature && opts.temperature >= 1.0)) {
       if (prompt.includes("음식") || prompt.includes("떡볶이") || prompt.includes("급식") || prompt.includes("김치찌개")) {
-        text = "음식 이야기를 할 때마다 하루의 기분이 눈에 띄게 밝아지며 활력을 얻는다.";
+        text = JSON.stringify({
+          content: "음식 이야기를 할 때마다 하루의 기분이 눈에 띄게 밝아지며 활력을 얻는다.",
+          strength: 0.88,
+          sourceNodeIds: [1, 2],
+        });
       } else {
-        text = "일상의 소소한 순간들 속에서 예상치 못한 긍정적인 반전을 이끌어낸다.";
+        text = JSON.stringify({
+          content: "일상의 소소한 순간들 속에서 예상치 못한 긍정적인 반전을 이끌어낸다.",
+          strength: 0.85,
+          sourceNodeIds: [1, 2],
+        });
       }
     } else {
       // Consolidate mode
@@ -97,16 +122,79 @@ export async function generateMockResponse(opts: MockModelOptions): Promise<Mock
       }
     }
   } else if (opts.purpose === "rem-proposal") {
-    // Generate deterministic persona proposals in JSON format
+    // Extract available session node IDs from prompt if present
+    const nodeMatch = prompt.match(/<사용 가능한 기억 노드 번호>([\s\S]*?)<\/사용 가능한 기억 노드 번호>/);
+    let mockEvidenceNodeIds = [1, 2];
+    if (nodeMatch) {
+      const parsedIds = nodeMatch[1]
+        .split(/[,;\s]+/)
+        .map((s) => parseInt(s.trim(), 10))
+        .filter((n) => !Number.isNaN(n) && n > 0);
+      if (parsedIds.length >= 2) {
+        mockEvidenceNodeIds = [parsedIds[0], parsedIds[1]];
+      }
+    }
+
+    // Generate deterministic persona proposals in 3-tier JSON format
     if (prompt.includes("음식") || prompt.includes("기운") || prompt.includes("dream") || prompt.includes("좋아하는")) {
       text = JSON.stringify({
         summary: "친구가 지치거나 힘들어할 때 좋아하는 음식 이야기를 자연스럽게 꺼내며 기분을 북돋우려 합니다.",
-        proposedPrompt: "너는 관람객의 하루 이야기를 들어 주는 친절한 대화 상대야. 짧고 따뜻하게 답한다.\n상대가 급해 보이면 먼저 할 일을 작게 나눠 준다.\n맛있는 음식이나 좋아하는 것을 언급하며 기운을 북돋운다."
+        proposedPrompt: "너는 관람객의 하루 이야기를 들어 주는 친절한 대화 상대야. 짧고 따뜻하게 답한다.\n상대가 급해 보이면 먼저 할 일을 작게 나눠 준다.\n맛있는 음식이나 좋아하는 것을 언급하며 기운을 북돋운다.",
+        items: [
+          {
+            id: 1,
+            change: { id: 1, kind: "moveStyle", axis: "curiosity", delta: 0.05 },
+            reason: "관람객의 일상에 호기심 어린 관심을 표현합니다.",
+            evidenceNodeIds: mockEvidenceNodeIds,
+            sourceInsightIds: [1],
+            sourceMeaningIds: [],
+            status: "pending",
+          },
+          {
+            id: 2,
+            change: {
+              id: 2,
+              kind: "addNote",
+              text: "친구와의 일이나 좋아하는 음식 이야기를 자연스럽게 꺼내며 기운을 북돋워 줘요.",
+              cues: ["음식", "기운", "친구", "좋아하는"],
+            },
+            reason: "좋아하는 음식과 기분 전환에 대해 부드럽게 묻습니다.",
+            evidenceNodeIds: mockEvidenceNodeIds,
+            sourceInsightIds: [1],
+            sourceMeaningIds: [],
+            status: "pending",
+          },
+        ],
       });
     } else {
       text = JSON.stringify({
         summary: "상대가 시험이나 과제로 급해 보일 때 먼저 범위를 묻고 작게 쪼개어 정리해 주도록 바뀝니다.",
-        proposedPrompt: "너는 관람객의 하루 이야기를 들어 주는 친절한 대화 상대야. 짧고 따뜻하게 답한다.\n상대가 급해 보이면 먼저 할 일을 작게 나눠 준다."
+        proposedPrompt: "너는 관람객의 하루 이야기를 들어 주는 친절한 대화 상대야. 짧고 따뜻하게 답한다.\n상대가 급해 보이면 먼저 할 일을 작게 나눠 준다.",
+        items: [
+          {
+            id: 1,
+            change: { id: 1, kind: "moveStyle", axis: "warmth", delta: 0.05 },
+            reason: "대화에서 따뜻한 위로가 필요해 보여 온기를 조금 더합니다.",
+            evidenceNodeIds: mockEvidenceNodeIds,
+            sourceInsightIds: [1],
+            sourceMeaningIds: [],
+            status: "pending",
+          },
+          {
+            id: 2,
+            change: {
+              id: 2,
+              kind: "addNote",
+              text: "할 일이 많아 벅찰 때는 가장 먼저 할 수 있는 작은 일 하나를 제안해요.",
+              cues: ["시험", "과제", "바빠", "급해"],
+            },
+            reason: "과제나 시험 상황에서 차근차근 나누어 대처하도록 돕습니다.",
+            evidenceNodeIds: mockEvidenceNodeIds,
+            sourceInsightIds: [1],
+            sourceMeaningIds: [],
+            status: "pending",
+          },
+        ],
       });
     }
   }

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { readStore, addNode, getActivePersona } from "@/lib/store";
 import { callModel, ModelCallError, type ChatTurn } from "@/lib/model/client";
 import { buildChatSystemPrompt } from "@/lib/prompts/safety";
+import { assemblePersonaPrompt } from "@/lib/persona/assemble";
+import { assembleSchoolPrompt } from "@/lib/school/chat";
 import { PHOTO_ONLY_TEXT, checkImages } from "@/lib/images";
 import { deleteImages, saveImages } from "@/lib/uploads";
 
@@ -71,9 +73,30 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "REM is in progress. Input is blocked." }, { status: 409 });
   }
 
-  // 6. 시스템 프롬프트 = 고정 안전 규칙 + 지금 쓰는 인격
-  const activePersona = await getActivePersona(store);
-  const systemInstruction = buildChatSystemPrompt(activePersona.systemPrompt);
+  // 6. 시스템 프롬프트 = 고정 안전 규칙 + 지금 쓰는 인격 (3계층 조립 또는 학교 AI)
+  const isSchoolMode = store.sessionModes?.[sessionId] === "school";
+  const recentUserMessages = store.nodes
+    .filter((n) => n.sessionId === sessionId)
+    .sort((a, b) => a.order - b.order)
+    .slice(-3)
+    .map((n) => n.user);
+
+  let systemInstruction: string;
+  let chatPurpose: "chat" | "school-chat" = "chat";
+
+  if (isSchoolMode) {
+    const schoolRes = await assembleSchoolPrompt(hasText ? message : "", recentUserMessages);
+    systemInstruction = schoolRes.systemPrompt;
+    chatPurpose = "school-chat";
+  } else {
+    const activePersona = await getActivePersona(store);
+    const assembled = assemblePersonaPrompt({
+      persona: activePersona,
+      recentUserMessages,
+      currentMessage: hasText ? message : "",
+    });
+    systemInstruction = assembled.systemPrompt;
+  }
 
   // 7. 같은 세션의 최근 대화를 기록으로 넣어 앞의 이야기를 기억하게 한다
   const history: ChatTurn[] = store.nodes
@@ -95,7 +118,7 @@ export async function POST(req: Request) {
       systemInstruction,
       history,
       temperature: 0.8,
-      purpose: "chat",
+      purpose: chatPurpose,
       ...(typeof body.model === "string" && body.model.trim() ? { model: body.model.trim() } : {}),
     });
     modelResponseText = modelRes.text;

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { updateStore } from "@/lib/store";
+import { pushToSchoolPoolSync } from "@/lib/school/pool";
 import { extractMeanings, splitWithModel } from "@/lib/story/preprocess";
 import { pieceText, type MeaningDraft, type Piece } from "@/lib/story/groups";
 import type { Meaning, MemoryNode, SplitMethod, Story } from "@/lib/types";
@@ -109,6 +110,7 @@ export async function POST(req: Request) {
         createdAt: now,
       }));
       store.meanings.push(...createdMeanings);
+      pushToSchoolPoolSync(store, createdMeanings, `story_${storyId}_${sessionId.slice(0, 6)}`);
 
       return { story, nodes: createdNodes, meanings: createdMeanings, method };
     });
