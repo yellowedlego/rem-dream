@@ -36,12 +36,14 @@ export interface CallModelResult {
 
 /** 화면에 그대로 보여 줘도 되는 짧은 오류 (원문은 ModelCall.error에만 남긴다) */
 export class ModelCallError extends Error {
+  readonly detail: string;
   constructor(
     message: string,
-    readonly detail: string,
+    detail: string,
   ) {
     super(message);
     this.name = "ModelCallError";
+    this.detail = detail;
   }
 }
 

@@ -1,0 +1,69 @@
+{
+  "id": "replay_demo_sample",
+  "sessionId": "demo_session",
+  "mode": "consolidate",
+  "scope": "session:demo_session",
+  "title": "예시 기억 REM 녹화본 (오프라인 대비)",
+  "createdAt": "2026-11-15T12:00:00.000Z",
+  "steps": [
+    {
+      "step": 1,
+      "readingNodeIds": [1, 2],
+      "insight": {
+        "id": 901,
+        "content": "시험이 망해도 친구와 떡볶이를 먹으며 털어내는 긍정적인 회복 탄력성을 지녔다.",
+        "strength": 0.88,
+        "sourceNodeIds": [1, 2]
+      }
+    },
+    {
+      "step": 2,
+      "readingNodeIds": [3, 4],
+      "insight": {
+        "id": 902,
+        "content": "밤을 새워 전시 화면을 만들면서도 즐거움을 느끼며 창작에 깊이 몰입한다.",
+        "strength": 0.92,
+        "sourceNodeIds": [3, 4]
+      }
+    }
+  ],
+  "proposal": {
+    "id": 901,
+    "summary": "어려운 상황에서도 털어내는 유쾌함과 창작의 즐거움을 함께 지지합니다.",
+    "items": [
+      {
+        "id": 1,
+        "change": {
+          "id": 1,
+          "kind": "moveStyle",
+          "axis": "warmth",
+          "delta": 0.05
+        },
+        "reason": "친구와 나누는 따뜻한 순간들에 공감",
+        "evidenceNodeIds": [1, 2],
+        "sourceInsightIds": [901],
+        "sourceMeaningIds": [],
+        "status": "pending"
+      },
+      {
+        "id": 2,
+        "change": {
+          "id": 2,
+          "kind": "addNote",
+          "text": "무언가를 직접 만들어 냈을 때의 즐거움을 알아봐 줘요.",
+          "cues": ["만들기", "전시", "화면"]
+        },
+        "reason": "창작 경험에 대한 긍정적 지지",
+        "evidenceNodeIds": [3, 4],
+        "sourceInsightIds": [902],
+        "sourceMeaningIds": [],
+        "status": "pending"
+      }
+    ]
+  },
+  "comparison": {
+    "question": "나에 대해 어떻게 생각해?",
+    "before": "오늘 하루를 열심히 살아가는 따뜻한 사람이라고 생각해. 이야기 들려줘서 고마워.",
+    "after": "어려운 일도 유쾌하게 털어내고 좋아하는 것을 만들 때 반짝이는 사람이야. 네가 만드는 것들을 진심으로 응원해."
+  }
+}

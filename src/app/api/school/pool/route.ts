@@ -41,7 +41,12 @@ export async function POST(req: Request) {
       createdAt: new Date().toISOString(),
     };
 
-    const added = await addMeaningToSchoolPool(dummyMeaning, "api_direct");
+    const sourceTag =
+      typeof body.sourceTag === "string" && body.sourceTag.trim()
+        ? body.sourceTag.trim()
+        : `tag_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+
+    const added = await addMeaningToSchoolPool(dummyMeaning, sourceTag);
     if (added) {
       (added as any).key = key;
       (added as any).meaning = essence;
