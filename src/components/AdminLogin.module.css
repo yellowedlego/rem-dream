@@ -1,0 +1,62 @@
+.shell {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+  background: var(--bg);
+}
+.card {
+  display: grid;
+  gap: 14px;
+  width: min(360px, 100%);
+  padding: 28px 28px 24px;
+  background: var(--surface);
+  box-shadow: inset 0 2px 0 var(--accent);
+}
+.card h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+.help {
+  margin: 0 0 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.card label {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.card input {
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--line, rgb(255 255 255 / 0.12));
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+}
+.card input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.error {
+  margin: 0;
+  font-size: 13px;
+  color: #ff9b9b;
+}
+.card button {
+  height: 42px;
+  border: 0;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.card button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

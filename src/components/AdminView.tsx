@@ -56,6 +56,16 @@ export default function AdminView() {
       <header className={styles.header}>
         <h1>꿈 시스템</h1>
         <AppNav />
+        <button
+          type="button"
+          className={styles.logout}
+          onClick={async () => {
+            await api.adminLogout().catch(() => {});
+            window.location.href = "/login";
+          }}
+        >
+          로그아웃
+        </button>
       </header>
 
       <main className={styles.main}>

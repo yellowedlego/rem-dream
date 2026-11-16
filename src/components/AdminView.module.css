@@ -8,6 +8,20 @@
   gap: 24px;
   padding: 14px 24px;
 }
+.logout {
+  margin-left: auto;
+  height: 30px;
+  padding: 0 12px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.logout:hover {
+  color: var(--text);
+}
 .header h1 {
   margin: 0;
   font-size: 20px;

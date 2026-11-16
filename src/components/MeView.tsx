@@ -267,7 +267,7 @@ export default function MeView() {
     if (!sessionId) return;
     if (!window.confirm("이 자리의 대화·이야기·내 AI 기록을 모두 지울까요? 되돌릴 수 없어요.")) return;
     try {
-      await api.deleteSession(sessionId);
+      await api.forgetMe(sessionId);
       const sid = startNewSession();
       setSessionId(sid);
       setProfile(null);

@@ -1,6 +1,19 @@
 // 화면이 서버와 이야기하는 곳은 여기 하나. 주소·응답 모양은 docs/backend-plan.md 5절과 같다.
 // 서버는 src/app/api/ (진짜 백엔드). 모양이 다른 곳은 아래 api 객체 안에서 화면이 쓰던 모양으로 맞춘다.
-import type { Insight, MailLog, Meaning, MemoryNode, PersonaVersion, Profile, Relation, SplitMethod, Story } from "@/lib/types";
+import type {
+  Comparison,
+  Insight,
+  MailLog,
+  Meaning,
+  MemoryNode,
+  PersonaProposal,
+  PersonaVersion,
+  Profile,
+  Relation,
+  RemRun,
+  SplitMethod,
+  Story,
+} from "@/lib/types";
 
 const BASE = process.env.NEXT_PUBLIC_API_BASE ?? "/api";
 
@@ -18,18 +31,35 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
   try {
     res = await fetch(`${BASE}${path}`, {
       ...init,
-      headers: init?.body ? { "Content-Type": "application/json" } : undefined,
+      headers: { ...(init?.body ? { "Content-Type": "application/json" } : {}), ...(init?.headers as Record<string, string> | undefined) },
       cache: "no-store",
     });
   } catch {
     throw new ApiError("서버에 닿지 않아요. 연결을 확인해 주세요.", 0);
   }
   const data = (await res.json().catch(() => null)) as (T & { error?: string }) | null;
+  // 잠긴 관리 기능: 로그인 화면으로 가는 길을 알려 준다
+  if (res.status === 401 && path !== "/admin/login")
+    throw new ApiError("운영자 로그인이 필요해요. /login 에서 로그인해 주세요.", 401);
   if (!res.ok) throw new ApiError(data?.error ?? `요청에 실패했어요 (${res.status})`, res.status);
   return data as T;
 }
 
-export type { Meaning, Profile, Relation, SplitMethod, MailLog };
+export type { Meaning, Profile, Relation, SplitMethod, MailLog, RemRun, PersonaProposal, Comparison, PersonaVersion };
+
+export type ChatMode = "personal" | "school";
+
+/** 한 세션의 잠(REM) 관련 상태: GET /api/state?sessionId= */
+export interface SleepState {
+  persona: PersonaVersion;
+  run: RemRun | null;
+  proposals: PersonaProposal[];
+  comparisons: Comparison[];
+  remSuggest: boolean;
+  mode: ChatMode;
+  meanings: Meaning[];
+  nodes: MemoryNode[];
+}
 
 export interface ChatTurn {
   role: "user" | "model";
@@ -132,8 +162,15 @@ export const api = {
     call<{ nodes: number; meanings: number }>("/demo", { method: "POST", body: JSON.stringify({ sessionId }) }),
   deleteNode: (id: number) => call<{ ok: true }>(`/nodes/${id}`, { method: "DELETE" }),
   deleteStory: (id: number) => call<{ ok: true }>(`/stories/${id}`, { method: "DELETE" }),
+  /** 관리 화면에서 남의 세션 지우기 (로그인 필요) */
   deleteSession: (sessionId: string) =>
     call<{ ok: true }>(`/sessions/${encodeURIComponent(sessionId)}`, { method: "DELETE" }),
+  /** 관람객이 자기 기록 지우기 ("나 잊기", 로그인 없이) */
+  forgetMe: (sessionId: string) =>
+    call<{ ok: true }>(`/sessions/${encodeURIComponent(sessionId)}`, {
+      method: "DELETE",
+      headers: { "x-rem-session": sessionId },
+    }),
   deleteInsight: (id: number) => call<{ ok: true }>(`/insights/${id}`, { method: "DELETE" }),
   resetAll: () => call<{ ok: true }>("/debug/reset-all", { method: "POST" }),
 
@@ -153,6 +190,27 @@ export const api = {
   prune: (olderThanHours: number) =>
     call<{ ok: true; removed: string[] }>("/admin/prune", { method: "POST", body: JSON.stringify({ olderThanHours }) }),
   clearMails: () => call<{ ok: true }>("/admin/mails", { method: "DELETE" }),
+
+  // ── 잠(REM)·제안·학교 AI ──
+  sleepState: (sessionId: string) => call<SleepState>(`/state${qs({ sessionId })}`),
+  remStart: (sessionId: string, mode: string) =>
+    call<{ runId: string }>("/rem/start", { method: "POST", body: JSON.stringify({ sessionId, mode }) }),
+  remStatus: (runId: string) => call<RemRun>(`/rem/status${qs({ runId })}`),
+  remStop: (runId: string) => call<{ ok: true }>("/rem/stop", { method: "POST", body: JSON.stringify({ runId }) }),
+  decide: (proposalId: number, approve: number[], reject: number[]) =>
+    call<{ ok: true; activePersona: number }>(`/proposals/${proposalId}/decide`, {
+      method: "POST",
+      body: JSON.stringify({ approve, reject }),
+    }),
+  setMode: (sessionId: string, mode: ChatMode) =>
+    call<{ ok: true }>("/session/mode", { method: "POST", body: JSON.stringify({ sessionId, mode }) }),
+  school: () =>
+    call<{ version: number; poolCount: number; notes: { id: number; text: string }[]; style: Record<string, number> }>("/school"),
+
+  // ── 운영자 로그인 (비밀번호는 보내기만 하고 화면은 저장하지 않는다. 토큰은 HttpOnly 쿠키라 화면이 못 본다) ──
+  adminLogin: (username: string, password: string) =>
+    call<{ ok: true }>("/admin/login", { method: "POST", body: JSON.stringify({ username, password }) }),
+  adminLogout: () => call<{ ok: true }>("/admin/logout", { method: "POST" }),
 };
 
 // ── 브라우저에 기억해 두는 세션 번호 (관람객·사용자 한 명 = 한 세션) ──
