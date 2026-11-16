@@ -8,7 +8,21 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Meaning, MemoryNode } from "@/lib/types";
 import { api } from "./api";
 import { byTime } from "./MoonPlane";
-import { CONVERGE, convergePos, domeStars, easeInOut, orbitSlots, orbitSpeed, phase, polarisKick, type Pt } from "./sky";
+import {
+  CONVERGE,
+  convergePos,
+  domeStars,
+  easeInOut,
+  netLinks,
+  orbitSlots,
+  orbitSpeed,
+  phase,
+  polarisKick,
+  sphereProject,
+  VIEW_TILT,
+  type OrbitSlot,
+  type Pt,
+} from "./sky";
 import styles from "./MeaningSky.module.css";
 
 const POLL_MS = 5000;
@@ -69,13 +83,15 @@ export default function MeaningSky() {
   const bg = useMemo(() => (size.w ? domeStars(Math.round((size.w * size.h) / 9000), size.w, size.h * 2, 23) : []), [size]);
   const sessions = useMemo(() => new Set([...nodes.map((n) => n.sessionId), ...meanings.map((m) => m.sessionId)]).size, [nodes, meanings]);
   const latest = useMemo(() => [...nodes].sort(byTime).at(-1) ?? null, [nodes]);
+  const links = useMemo(() => netLinks(meanings), [meanings]);
+  const linkRefs = useRef(new Map<string, SVGLineElement>());
 
   // ── 움직임: rAF가 transform만 바꾼다 (React는 다시 그리지 않는다) ──
   const starRefs = useRef(new Map<number, SVGGElement>());
   const polarisRef = useRef<SVGGElement>(null);
   const ringRef = useRef<SVGEllipseElement>(null);
   const flashRef = useRef<SVGCircleElement>(null);
-  const play = useRef<{ start: number; homes: Map<number, Pt> } | null>(null);
+  const play = useRef<{ start: number; homes: Map<number, Pt & { z: number; s: number }> } | null>(null);
   const clock = useRef({ orbit: 0, last: 0 });
   const talkShown = useRef(false);
   const live = useRef({ slots, unit, latest });
@@ -83,10 +99,11 @@ export default function MeaningSky() {
     live.current = { slots, unit, latest };
   }, [slots, unit, latest]);
 
-  const homeOf = useCallback((s: { id: number; r: number; angle: number }, orbitT: number): Pt => {
+  // 3D 구 공전: 세션마다 다르게 기운 궤도면 위를 돌고, 앞(z+)은 크고 밝게, 뒤는 작고 흐리게
+  const homeOf = useCallback((s: OrbitSlot, orbitT: number): Pt & { z: number; s: number } => {
     const a = s.angle + orbitT * orbitSpeed(s.r, 0.05, live.current.unit * 0.3);
-    const bob = Math.sin(orbitT * 0.7 + s.id) * 4;
-    return { x: Math.cos(a) * s.r + bob, y: Math.sin(a) * s.r + Math.cos(orbitT * 0.5 + s.id * 1.7) * 3 };
+    const p = sphereProject(s.r, a, s.incl, s.node, live.current.unit * 1.6);
+    return { ...p, x: p.x + Math.sin(orbitT * 0.7 + s.id) * 2, y: p.y + Math.cos(orbitT * 0.5 + s.id * 1.7) * 2 };
   }, []);
 
   const startConverge = useCallback(() => {
@@ -97,7 +114,7 @@ export default function MeaningSky() {
       window.setTimeout(() => setTalk(null), 6000);
       return;
     }
-    const homes = new Map<number, Pt>();
+    const homes = new Map<number, Pt & { z: number; s: number }>();
     for (const s of live.current.slots) homes.set(s.id, homeOf(s, clock.current.orbit));
     play.current = { start: performance.now(), homes };
     setPlaying(true);
@@ -115,20 +132,44 @@ export default function MeaningSky() {
       const t = p ? (now - p.start) / 1000 : 0;
       const R = u * 0.3;
 
+      const placed = new Map<number, { pos: Pt; op: number }>();
       list.forEach((s, i) => {
         const el = starRefs.current.get(s.id);
         if (!el) return;
         let pos: Pt;
         let op = 1;
+        let sc: number;
         if (p) {
           const home = p.homes.get(s.id) ?? homeOf(s, c.orbit);
           pos = convergePos(t, i, list.length, home, R);
+          // 모이는 동안은 기운 원(평면) 위라 원근을 풀었다가, 돌아오면서 다시 입는다
+          const flat = Math.max(easeInOut(phase(t, 0, CONVERGE.gather)) - easeInOut(phase(t, CONVERGE.talk, CONVERGE.end)), 0);
+          sc = home.s + (1 - home.s) * flat;
           if (t >= CONVERGE.plunge && t < CONVERGE.talk) op = 0;
           else if (t >= CONVERGE.talk) op = easeInOut(phase(t, CONVERGE.talk, CONVERGE.end));
           else if (t > CONVERGE.flatten) op = 1 - phase(t, CONVERGE.flatten, CONVERGE.plunge) * 0.6;
-        } else pos = homeOf(s, c.orbit);
-        el.setAttribute("transform", `translate(${pos.x.toFixed(1)} ${pos.y.toFixed(1)})`);
+        } else {
+          const h = homeOf(s, c.orbit);
+          pos = h;
+          sc = h.s;
+        }
+        // 뒤쪽(작은 sc) 별은 흐리게
+        op *= Math.min(1, Math.max(0.35, 0.35 + (sc - 0.78) * 1.1));
+        el.setAttribute("transform", `translate(${pos.x.toFixed(1)} ${pos.y.toFixed(1)}) scale(${sc.toFixed(3)})`);
         el.style.opacity = String(op);
+        placed.set(s.id, { pos, op });
+      });
+      // 그물 선: 두 별을 따라가고, 별이 사라지면 같이 사라진다
+      linkRefs.current.forEach((ln, key) => {
+        const [a, b] = key.split("-").map(Number);
+        const pa = placed.get(a);
+        const pb = placed.get(b);
+        if (!pa || !pb) return;
+        ln.setAttribute("x1", pa.pos.x.toFixed(1));
+        ln.setAttribute("y1", pa.pos.y.toFixed(1));
+        ln.setAttribute("x2", pb.pos.x.toFixed(1));
+        ln.setAttribute("y2", pb.pos.y.toFixed(1));
+        ln.style.opacity = String(Math.min(pa.op, pb.op));
       });
 
       // 북극성: 관성 + 흡수 순간 번쩍
@@ -234,13 +275,29 @@ export default function MeaningSky() {
             <circle key={i} className={styles.bgStar} cx={s.x} cy={s.y / 2} r={s.r * 0.8} style={{ animationDelay: `${(i * 0.53) % 5}s` }} />
           ))}
           <g transform={`translate(${cx} ${cy})`}>
-            {[0.22, 0.32, 0.42].map((k) => (
-              <circle key={k} className={styles.orbitRing} r={unit * k} />
+            {/* 구 껍질: 외곽 원 + 기운 대원 두 개 (지구본처럼) */}
+            <circle className={styles.orbitRing} r={unit * 0.42} />
+            {[
+              { rot: 18, k: Math.sin(VIEW_TILT) },
+              { rot: -38, k: 0.42 },
+            ].map(({ rot, k }) => (
+              <ellipse key={rot} className={styles.orbitRing} rx={unit * 0.42} ry={unit * 0.42 * k} transform={`rotate(${rot})`} />
             ))}
             <ellipse ref={ringRef} className={styles.tiltRing} rx={1} ry={1} transform="rotate(-45)" style={{ opacity: 0 }} />
 
+            {links.map(([a, b]) => (
+              <line
+                key={`${a}-${b}`}
+                ref={(el) => {
+                  if (el) linkRefs.current.set(`${a}-${b}`, el);
+                  else linkRefs.current.delete(`${a}-${b}`);
+                }}
+                className={styles.net}
+              />
+            ))}
+
             {slots.map((s) => {
-              const m = meanings.find((x) => x.id === s.id)!;
+              const m =meanings.find((x) => x.id === s.id)!;
               return (
                 <g
                   key={s.id}

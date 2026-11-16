@@ -9,10 +9,13 @@ import {
   domeY,
   glowAt,
   namedStars,
+  netLinks,
   orbitSlots,
   orbitSpeed,
   polarisKick,
   rippleDelay,
+  sphereProject,
+  VIEW_TILT,
 } from "../../src/components/sky.ts";
 
 const near = (a: number, b: number, eps = 1e-6) => assert.ok(Math.abs(a - b) <= eps, `${a} ≈ ${b}`);
@@ -80,6 +83,36 @@ test("모이는 연출: 처음엔 집, 원이 납작해지면 한 줄(45도 위)
   const end = convergePos(CONVERGE.end, 2, 5, home, 150);
   near(end.x, home.x);
   near(end.y, home.y);
+});
+
+test("그물: 시간순으로 다음 별과 잇고, 한 칸 건너는 선은 기간 안일 때만", () => {
+  const t = (min: number) => new Date(Date.UTC(2026, 0, 1, 0, min)).toISOString();
+  const ms = [
+    { id: 3, createdAt: t(20) },
+    { id: 1, createdAt: t(0) },
+    { id: 2, createdAt: t(10) },
+    { id: 4, createdAt: t(300) },
+  ];
+  assert.deepEqual(netLinks(ms), [
+    [1, 2],
+    [1, 3],
+    [2, 3],
+    [3, 4],
+  ]);
+  assert.deepEqual(netLinks([{ id: 1, createdAt: t(0) }]), []);
+});
+
+test("구 공전: 3D 거리는 반지름 그대로, 앞은 크고 뒤는 작다", () => {
+  const D = 900;
+  for (const a of [0, 0.7, 1.9, 3.3, 5]) {
+    const p = sphereProject(200, a, 0.8, 1.1, D);
+    // 원근을 걷어 낸 3D 거리 = 궤도 반지름
+    near(Math.hypot(p.x / p.s, p.y / p.s, p.z), 200, 1e-6);
+    assert.ok((p.z > 0) === (p.s > 1));
+  }
+  // 기울기 0이면 위에서 본 원을 VIEW_TILT만큼 눕힌 타원이다
+  const top = sphereProject(100, Math.PI / 2, 0, 0, 1e9);
+  near(top.y, 100 * Math.cos(VIEW_TILT), 1e-3);
 });
 
 test("북극성 관성: 빨려 들기 전엔 0, 뒤에는 흔들리다 잦아든다", () => {

@@ -85,7 +85,7 @@ export function orbitSlots(
   meanings: { sessionId: string; id: number }[],
   minR: number,
   maxR: number,
-): { id: number; r: number; angle: number }[] {
+): OrbitSlot[] {
   const sessions = [...new Set(meanings.map((m) => m.sessionId))];
   const golden = Math.PI * (3 - Math.sqrt(5));
   return meanings.map((m) => {
@@ -94,8 +94,62 @@ export function orbitSlots(
     const band = sessions.length <= 1 ? 0.5 : (si % 5) / 4; // 0~1
     const r = minR + (maxR - minR) * (0.15 + band * 0.7) + (rnd() - 0.5) * (maxR - minR) * 0.18;
     const angle = si * golden + (rnd() - 0.5) * 0.9;
-    return { id: m.id, r, angle };
+    // 궤도면: 세션마다 기울기·방향이 달라서 별들이 한 원판이 아니라 구 껍질 위를 돈다
+    const incl = (0.25 + ((si * 0.618) % 1) * 1.1) * (si % 2 ? -1 : 1) + (rnd() - 0.5) * 0.3;
+    // 주의: angle과 node가 거의 더해지므로 둘의 합이 2π의 배수 근처가 되면 세션들이 한쪽에 몰린다
+    const node = si * golden * 0.5 + (rnd() - 0.5) * 0.6;
+    return { id: m.id, r, angle, incl, node };
   });
+}
+
+export interface OrbitSlot {
+  id: number;
+  r: number;
+  /** 궤도 위 처음 각도 */
+  angle: number;
+  /** 궤도면 기울기(라디안) */
+  incl: number;
+  /** 궤도면이 도는 방향(라디안) */
+  node: number;
+}
+
+/** 구를 바라보는 각도: 위에서 조금 내려다본다 */
+export const VIEW_TILT = 0.38;
+
+/**
+ * 궤도 위 각도 a에서 별의 3D 자리를 화면에 비춘 값.
+ * x·y는 화면 좌표(북극성 기준), z는 앞(+)·뒤(-), s는 원근 크기(앞일수록 큼).
+ */
+export function sphereProject(r: number, a: number, incl: number, node: number, depth: number): Pt & { z: number; s: number } {
+  // 궤도면 위 → x축으로 incl만큼 기울이고 → z축으로 node만큼 돌린다
+  const px = r * Math.cos(a);
+  const py = r * Math.sin(a) * Math.cos(incl);
+  const pz = r * Math.sin(a) * Math.sin(incl);
+  const x1 = px * Math.cos(node) - py * Math.sin(node);
+  const y1 = px * Math.sin(node) + py * Math.cos(node);
+  // 보는 각도: 화면 y는 위아래, z는 깊이
+  const y = y1 * Math.cos(VIEW_TILT) - pz * Math.sin(VIEW_TILT);
+  const z = y1 * Math.sin(VIEW_TILT) + pz * Math.cos(VIEW_TILT);
+  const s = depth / (depth - z);
+  return { x: x1 * s, y: y * s, z, s };
+}
+
+/**
+ * 의미(별)들을 생성 시간순으로 잇는 옅은 그물. 바로 다음 별과는 늘, 한 칸 건너 별과는 둘의 간격이 가까울 때만(기간 안) 잇는다.
+ * 그래서 별 하나에서 앞으로 많아야 두 줄 — 촘촘해지지 않고 시간이 가까운 별끼리 그물이 짜인다.
+ */
+export function netLinks(
+  meanings: { id: number; createdAt: string }[],
+  skipWithinMs = 30 * 60 * 1000,
+): [number, number][] {
+  const sorted = [...meanings].sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id - b.id);
+  const at = (i: number) => Date.parse(sorted[i].createdAt);
+  const out: [number, number][] = [];
+  for (let i = 0; i < sorted.length; i++) {
+    if (i + 1 < sorted.length) out.push([sorted[i].id, sorted[i + 1].id]);
+    if (i + 2 < sorted.length && at(i + 2) - at(i) <= skipWithinMs) out.push([sorted[i].id, sorted[i + 2].id]);
+  }
+  return out;
 }
 
 /** 모이는 연출의 시간표(초). 각 구간의 끝 시각 */
