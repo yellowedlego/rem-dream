@@ -390,11 +390,12 @@ test.describe("Challenger M2-2: REM-Compare, Mode 2 Dream, & Concurrency Stress"
         if (s.status !== "running") break;
       }
 
-      const state = await request.get("/api/state").then((r) => r.json());
+      const state = await request.get(`/api/state?sessionId=${sessionId}`).then((r) => r.json());
       const proposal = state.proposals.find((p: PersonaProposal) => p.runId === runId);
       expect(proposal).toBeDefined();
 
       const prevVersion = state.activePersona || 1;
+      const prevCount = state.personas.length;
 
       // Two simultaneous approval requests on the SAME item (Item 1)
       const [resA, resB] = await Promise.all([
@@ -407,9 +408,12 @@ test.describe("Challenger M2-2: REM-Compare, Mode 2 Dream, & Concurrency Stress"
       expect(statuses).toContain(200);
       expect(statuses).toContain(400);
 
-      // Verify activePersona incremented exactly once (+1, not +2)
-      const finalState = await request.get("/api/state").then((r) => r.json());
-      expect(finalState.activePersona).toBe(prevVersion + 1);
+      // 새 인격 버전은 정확히 하나만 생긴다 (+1, not +2). 버전 번호는 모든 세션이 함께 쓰므로 "번호+1" 대신 개수로 본다
+      const finalState = await request.get(`/api/state?sessionId=${sessionId}`).then((r) => r.json());
+      expect(finalState.personas.length).toBe(prevCount + 1);
+      expect(finalState.activePersona).toBeGreaterThan(prevVersion);
+      const winner = resA.status() === 200 ? resA : resB;
+      expect(finalState.activePersona).toBe((await winner.json()).activePersona);
     });
 
     test("Concurrent batch decide on same proposal: one succeeds, subsequent fails", async ({ request }) => {

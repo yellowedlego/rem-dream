@@ -73,8 +73,9 @@ test.describe("Milestone 2 Deliverables: B-05, B-06, B-07, B-08 Integration", ()
     expect(comparison).toBeDefined();
     expect(comparison.question).toBe("나에 대해 어떻게 생각해?");
     expect(comparison.before).toBeDefined();
-    expect(comparison.before.version).toBe(1);
-    expect(comparison.before.answer).toContain("[v1]");
+    // 잠들기 전 = 이 세션이 아직 아무것도 승인하지 않았으므로 기본 인격 버전
+    expect(comparison.before.version).toBe(state.defaultPersona);
+    expect(comparison.before.answer).toContain(`[v${state.defaultPersona}]`);
     expect(comparison.after).toBeNull();
   });
 
@@ -100,7 +101,7 @@ test.describe("Milestone 2 Deliverables: B-05, B-06, B-07, B-08 Integration", ()
       if (s.status !== "running") break;
     }
 
-    const state1 = await request.get("/api/state").then((r) => r.json());
+    const state1 = await request.get(`/api/state?sessionId=${sessionId}`).then((r) => r.json());
     const proposal = state1.proposals.find((p: PersonaProposal) => p.runId === runId);
     expect(proposal).toBeDefined();
     expect(proposal.items.length).toBeGreaterThanOrEqual(2);
@@ -119,7 +120,7 @@ test.describe("Milestone 2 Deliverables: B-05, B-06, B-07, B-08 Integration", ()
     expect(approveItemData.proposalStatus).toBe("pending");
 
     // 3. Verify B-07: After-comparison probe was populated upon version increment
-    const state2 = await request.get("/api/state").then((r) => r.json());
+    const state2 = await request.get(`/api/state?sessionId=${sessionId}`).then((r) => r.json());
     const compAfter = state2.comparisons.find((c: Comparison) => c.runId === runId);
     expect(compAfter).toBeDefined();
     expect(compAfter.after).not.toBeNull();
@@ -139,7 +140,7 @@ test.describe("Milestone 2 Deliverables: B-05, B-06, B-07, B-08 Integration", ()
     expect(rejectItemData.proposalStatus).toBe("done");
 
     // Persona remains at current active version (not incremented on rejection)
-    const state3 = await request.get("/api/state").then((r) => r.json());
+    const state3 = await request.get(`/api/state?sessionId=${sessionId}`).then((r) => r.json());
     expect(state3.activePersona).toBe(approveItemData.activePersona);
     const finalProp = state3.proposals.find((p: PersonaProposal) => p.id === proposal.id);
     expect(finalProp.status).toBe("done");

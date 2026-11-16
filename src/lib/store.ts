@@ -276,6 +276,12 @@ export async function resetStore(): Promise<Store> {
     store.meanings = seed.meanings ?? [];
     store.profiles = [];
     store.mails = [];
+    // 인격 목록이 시드로 돌아가므로, 세션·학교 인격 가리킴과 전후 비교·학교 풀·대화 상대 설정도 함께 비운다
+    // (남겨 두면 지워진 버전 번호를 가리키다가 새로 생긴 버전과 엉킨다)
+    store.activePersonas = seed.activePersonas ?? {};
+    store.comparisons = seed.comparisons ?? [];
+    store.schoolMeanings = seed.schoolMeanings ?? [];
+    store.sessionModes = {};
     return store;
   });
 }

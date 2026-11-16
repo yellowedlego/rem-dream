@@ -19,7 +19,8 @@ test.describe("B-12 Admin Authentication", () => {
     if (res.ok()) {
       const body = await res.json();
       expect(body.ok).toBe(true);
-      expect(body.token).toBeDefined();
+      // 토큰은 응답 본문에 없고 HttpOnly 쿠키로만 온다
+      expect(body.token).toBeUndefined();
 
       const setCookie = res.headers()["set-cookie"];
       expect(setCookie).toBeDefined();
@@ -29,7 +30,7 @@ test.describe("B-12 Admin Authentication", () => {
 
       // Logout
       const logoutRes = await request.post("/api/admin/logout", {
-        headers: { Cookie: `admin_token=${body.token}` },
+        headers: { Cookie: (res.headers()["set-cookie"] ?? "").split(";")[0] },
       });
       expect(logoutRes.ok()).toBeTruthy();
     }

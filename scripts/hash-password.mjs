@@ -18,6 +18,6 @@ rl.question("관리자 비밀번호: ", (pw) => {
   }
   const salt = randomBytes(16);
   const hash = scryptSync(pw.normalize("NFC"), salt, 32, { N: 16384, r: 8, p: 1 });
-  // 모양: scrypt$N$r$p$소금(base64url)$해시(base64url) — 서버(B-12)는 같은 값으로 다시 계산해 timingSafeEqual로 비교한다
-  console.log(`ADMIN_PASSWORD_HASH=scrypt$16384$8$1$${salt.toString("base64url")}$${hash.toString("base64url")}`);
+  // 모양: scrypt:N:r:p:소금(base64url):해시(base64url) — $를 쓰면 Next.js가 .env에서 변수로 풀어 값이 망가진다. 서버(B-12)는 같은 값으로 다시 계산해 timingSafeEqual로 비교한다
+  console.log(`ADMIN_PASSWORD_HASH=scrypt:16384:8:1:${salt.toString("base64url")}:${hash.toString("base64url")}`);
 });

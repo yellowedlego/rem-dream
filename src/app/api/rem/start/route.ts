@@ -86,6 +86,8 @@ export async function POST(req: Request) {
     insightIds: [],
     proposalId: null,
     error: null,
+    // 관람객 REM은 그 관람객의 개인 인격만 바꾼다
+    scope: `session:${trimmedSessionId}`,
   };
 
   await updateStore((s) => {

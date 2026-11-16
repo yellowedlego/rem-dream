@@ -1,6 +1,6 @@
 import { connection, NextResponse } from "next/server";
 import { readStore } from "@/lib/store";
-import { getActivePersona } from "@/lib/persona";
+import { resolvePersona, sessionScope } from "@/lib/persona";
 
 export async function GET(req: Request) {
   // 1. Next.js 16 cache compliance: assert request-time dynamic execution
@@ -64,7 +64,7 @@ export async function GET(req: Request) {
     ) ?? null;
 
   // 7. Active persona object
-  const persona = getActivePersona(store);
+  const persona = resolvePersona(store, sessionId ? sessionScope(sessionId) : null);
 
   // 8. remSuggest calculation
   const sessionRuns = sessionId
@@ -95,13 +95,18 @@ export async function GET(req: Request) {
       insights,
       personas: store.personas,
       proposals,
-      activePersona: store.activePersona,
+      // 세션을 주면 그 관람객이 지금 쓰는 인격 버전, 안 주면 기본 인격 버전
+      activePersona: sessionId ? persona.version : store.activePersona,
+      defaultPersona: store.activePersona,
       persona,
       activeRun,
       run: activeRun,
       stories,
       meanings,
-      comparisons: store.comparisons ?? [],
+      // 다른 관람객의 전후 답은 보이지 않게 그 세션의 실행 것만
+      comparisons: sessionId
+        ? (store.comparisons ?? []).filter((c) => sessionRuns.some((r) => r.id === c.runId))
+        : store.comparisons ?? [],
       remSuggest,
       mode: (sessionId && store.sessionModes?.[sessionId]) || "personal",
     },

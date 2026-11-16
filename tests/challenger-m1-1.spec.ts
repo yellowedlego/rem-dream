@@ -539,9 +539,9 @@ test.describe("Challenger M1-1: Empirical Adversarial Stress Harness", () => {
       const body = await res.json();
       expect(body).toEqual({ ok: true });
 
-      // Verify activePersona was reset to 1
-      const stateAfter = await (await request.get("/api/state")).json();
-      expect(stateAfter.activePersona).toBe(1);
+      // 초기화된 세션은 기본 인격으로 돌아간다 (다른 관람객이 쓰는 기본 인격은 건드리지 않는다)
+      const stateAfter = await (await request.get(`/api/state?sessionId=${nonExistentId}`)).json();
+      expect(stateAfter.activePersona).toBe(stateAfter.defaultPersona);
     });
   });
 
@@ -640,8 +640,9 @@ test.describe("Challenger M1-1: Empirical Adversarial Stress Harness", () => {
       const keepNodesAfter = postState.nodes.filter((n: { sessionId: string }) => n.sessionId === "adv-session-keep");
       expect(keepNodesAfter.length).toBe(1);
 
-      // activePersona must be reset to 1
-      expect(postState.activePersona).toBe(1);
+      // 초기화된 세션은 기본 인격으로 돌아간다 (기본 인격 자체는 그대로)
+      const wipedState = await (await request.get("/api/state?sessionId=adv-session-wipe")).json();
+      expect(wipedState.activePersona).toBe(wipedState.defaultPersona);
     });
   });
 

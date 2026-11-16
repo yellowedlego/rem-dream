@@ -1,7 +1,7 @@
 import "server-only";
 import { readStore, updateStore } from "../store.ts";
 import { callModel } from "../model/client.ts";
-import { getActivePersona } from "../persona.ts";
+import { resolvePersona, sessionScope } from "../persona.ts";
 import { getMode } from "./registry.ts";
 import { createComparisonBefore } from "./compare.ts";
 import { generateProposal } from "./proposal.ts";
@@ -147,7 +147,7 @@ export async function startRemRun(run: RemRun): Promise<void> {
       }
 
       // 2. Generate 3-tier structured proposal outside updateStore
-      const activePersona = await getActivePersona(initialStore);
+      const activePersona = resolvePersona(initialStore, run.scope ?? sessionScope(run.sessionId));
       const generatedProposal = await generateProposal({
         runId: run.id,
         sessionId: run.sessionId,

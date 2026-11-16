@@ -21,6 +21,9 @@ export default defineConfig({
       REM_RUNTIME_DIR: "data/runtime-test",
       // 테스트는 절대 실제 메일을 보내지 않는다 (outbox 폴더에 파일로만 남긴다)
       MAIL_MOCK: "1",
+      // 테스트 서버는 관리자 잠금을 끈다 (.env.local의 진짜 비밀번호 해시를 테스트가 쓰지 않게).
+      // 잠금 동작(로그인 뒤 쿠키로 통과, 없으면 401)은 개발 서버에서 따로 확인한다
+      ADMIN_PASSWORD_HASH: "",
     },
   },
 });
