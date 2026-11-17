@@ -222,7 +222,7 @@ test.describe("Challenger M2-2: REM-Compare, Mode 2 Dream, & Concurrency Stress"
   // Section 2: REM-Compare Probes & Proposal Decision Lifecycle
   // =========================================================================
   test.describe("Section 2: REM-Compare Probes & Proposal Decision Lifecycle", () => {
-    test("createComparisonBefore records probe with default question and after: null before sleep", async ({ request }) => {
+    test("createComparisonBefore records probe with the visitor's last question and after: null before sleep", async ({ request }) => {
       const sessionId = `compare-probe-session-${Date.now()}`;
 
       await request.post("/api/chat", {
@@ -252,7 +252,7 @@ test.describe("Challenger M2-2: REM-Compare, Mode 2 Dream, & Concurrency Stress"
       const comp = (state.comparisons || []).find((c: Comparison) => c.runId === runId);
 
       expect(comp).toBeDefined();
-      expect(comp.question).toBe("나에 대해 어떻게 생각해?");
+      expect(comp.question).toBe("내일도 힘내서 잘 해보자.");
       expect(comp.scope).toBe(`session:${sessionId}`);
       expect(comp.before).toBeDefined();
       expect(comp.before.version).toBe(expectedVersion);

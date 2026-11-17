@@ -52,8 +52,15 @@ const SAMPLES: Sample[] = [
 
 let cursor = 0;
 
-/** 세션 하나에 예시 기억을 채운다. 몇 번째 예시인지 돌려 쓴다. 만든 별(의미) 수를 돌려준다 */
-export async function addDemo(sessionId: string): Promise<{ nodes: number; meanings: number }> {
+/**
+ * 세션 하나에 예시 기억을 채운다. 몇 번째 예시인지 돌려 쓴다. 만든 별(의미) 수를 돌려준다.
+ * 관람객이 누른 예시는 그 세션에만 들어간다. 학교 AI 풀에는 운영자(또는 잠금이 꺼진 개발 환경)만 넣는다:
+ * 같은 예시를 여러 관람객이 누르면 풀의 count가 부풀어 "학교 평균"이 예시 쪽으로 쏠리기 때문.
+ */
+export async function addDemo(
+  sessionId: string,
+  opts: { toSchoolPool?: boolean } = {},
+): Promise<{ nodes: number; meanings: number }> {
   const sample = SAMPLES[cursor++ % SAMPLES.length];
   return updateStore((store) => {
     const now = new Date().toISOString();
@@ -94,7 +101,7 @@ export async function addDemo(sessionId: string): Promise<{ nodes: number; meani
       createdAt: now,
     }));
     store.meanings.push(...made);
-    pushToSchoolPoolSync(store, made, `demo_${sessionId.slice(0, 6)}`);
+    if (opts.toSchoolPool) pushToSchoolPoolSync(store, made, `demo_${sessionId.slice(0, 6)}`);
     return { nodes: created.length, meanings: made.length };
   });
 }

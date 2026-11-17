@@ -71,7 +71,9 @@ test.describe("Milestone 2 Deliverables: B-05, B-06, B-07, B-08 Integration", ()
       (c: Comparison) => c.runId === runId
     );
     expect(comparison).toBeDefined();
-    expect(comparison.question).toBe("나에 대해 어떻게 생각해?");
+    // 비교 질문 = 관람객이 마지막으로 한 말, 맥락 = 그 앞의 대화
+    expect(comparison.question).toBe("내일도 해야 할 과제가 산더미처럼 많아서 막막해.");
+    expect(comparison.historyNodeIds).toHaveLength(1);
     expect(comparison.before).toBeDefined();
     // 잠들기 전 = 이 세션이 아직 아무것도 승인하지 않았으므로 기본 인격 버전
     expect(comparison.before.version).toBe(state.defaultPersona);

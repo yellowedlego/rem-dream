@@ -7,7 +7,8 @@ import { createComparisonBefore } from "./compare.ts";
 import { generateProposal } from "./proposal.ts";
 import { loadAllReplays } from "./replay.ts";
 import type {
-  Insight,
+  MemoryNode,
+  PersonaChangeItem,
   PersonaProposal,
   RemRun,
 } from "../types.ts";
@@ -56,6 +57,11 @@ export async function startRemRun(run: RemRun): Promise<void> {
   // Run in background without awaiting caller
   (async () => {
     const readNodeIds = new Set<number>();
+    // 진행 단계: [잠들기 전 답 1] + [모드 단계들] + [제안 만들기 1]
+    let modeSteps = 0;
+    let marks = 0;
+    let nodesToProcess: MemoryNode[] = [];
+    const stepsAt = (done: number) => ({ total: modeSteps + 2, done: Math.min(done, modeSteps + 2) });
 
     try {
       const mode = getMode(run.mode);
@@ -69,7 +75,7 @@ export async function startRemRun(run: RemRun): Promise<void> {
       );
 
       // Max 12 nodes per specification
-      const nodesToProcess = sessionNodes.slice(-12);
+      nodesToProcess = sessionNodes.slice(-12);
       const sessionMeanings = (initialStore.meanings || []).filter(
         (m) => m.sessionId === run.sessionId
       );
@@ -91,19 +97,30 @@ export async function startRemRun(run: RemRun): Promise<void> {
           for (const id of nodeIds) {
             readNodeIds.add(id);
           }
+          marks++;
           await updateStore((s) => {
             const r = s.runs?.find((item) => item.id === run.id);
             if (r && r.status === "running") {
               r.currentNodeIds = [...nodeIds];
+              r.steps = stepsAt(marks); // 기준 답 1 + 앞서 끝난 단계 (marks - 1)
             }
           });
         },
         async markMeaning(meaningIds: number[]): Promise<void> {
+          marks++;
           await updateStore((s) => {
             const r = s.runs?.find((item) => item.id === run.id);
             if (r && r.status === "running") {
               r.currentMeaningIds = [...meaningIds];
+              r.steps = stepsAt(marks);
             }
+          });
+        },
+        async setTotal(steps: number): Promise<void> {
+          modeSteps = Math.max(0, Math.floor(steps));
+          await updateStore((s) => {
+            const r = s.runs?.find((item) => item.id === run.id);
+            if (r && r.status === "running") r.steps = stepsAt(1);
           });
         },
         async ask(prompt, opts) {
@@ -134,6 +151,10 @@ export async function startRemRun(run: RemRun): Promise<void> {
 
       // 1. Execute mode logic outside updateStore
       const insights = await mode.run(ctx);
+      await updateStore((s) => {
+        const r = s.runs?.find((item) => item.id === run.id);
+        if (r && r.status === "running") r.steps = stepsAt(modeSteps + 1);
+      });
 
       if (ctx.shouldStop()) {
         await updateStore((s) => {
@@ -197,12 +218,14 @@ export async function startRemRun(run: RemRun): Promise<void> {
         r.status = "done";
         r.finishedAt = now;
         r.error = null;
+        r.steps = stepsAt(modeSteps + 2);
         r.insightIds = createdInsightIds;
         r.proposalId = nextProposalId;
         // Keep read node IDs populated for test assertions
         r.currentNodeIds = Array.from(readNodeIds);
       });
-    } catch (err: any) {
+    } catch (caught) {
+      const err = caught as { message?: string; name?: string };
       const isStopped = activeRuns.get(run.id)?.stopped;
       if (!isStopped) {
         const isNetworkErr =
@@ -216,14 +239,61 @@ export async function startRemRun(run: RemRun): Promise<void> {
             const replays = await loadAllReplays();
             const replay = replays[0];
             if (replay && replay.proposal) {
+              // 인터넷이 끊겨도 관람객이 제안 카드까지 볼 수 있게, 녹화본 제안을 이 세션의 제안으로 만든다.
+              // 근거 노드는 녹화본의 번호가 아니라 이 관람객의 대화 노드로 바꾼다 (승인 검증이 세션 노드를 본다)
+              const evidence = nodesToProcess.slice(0, 2).map((n) => n.id);
               await updateStore((s) => {
                 const r = s.runs?.find((item) => item.id === run.id);
-                if (r) {
-                  r.status = "done";
-                  r.source = "replay";
-                  r.finishedAt = new Date().toISOString();
-                  r.error = null;
+                if (!r || r.status !== "running") return;
+                const now = new Date().toISOString();
+                if (!Array.isArray(s.insights)) s.insights = [];
+                let insightId = s.insights.reduce((max, i) => Math.max(max, i.id), 0) + 1;
+                const insightIds: number[] = [];
+                for (const step of replay.steps || []) {
+                  s.insights.push({
+                    id: insightId,
+                    mode: run.mode,
+                    sourceNodeIds: evidence,
+                    content: step.insight.content,
+                    createdAt: now,
+                  });
+                  insightIds.push(insightId++);
                 }
+                const base = resolvePersona(s, run.scope ?? sessionScope(run.sessionId));
+                const items: PersonaChangeItem[] =
+                  evidence.length >= 2
+                    ? (replay.proposal.items || []).map((item, idx) => ({
+                        ...item,
+                        id: idx + 1,
+                        change: { ...item.change, id: idx + 1 },
+                        evidenceNodeIds: evidence,
+                        sourceInsightIds: insightIds,
+                        sourceMeaningIds: [],
+                        status: "pending" as const,
+                      }))
+                    : [];
+                if (!Array.isArray(s.proposals)) s.proposals = [];
+                const proposalId = s.proposals.reduce((max, p) => Math.max(max, p.id), 0) + 1;
+                if (items.length > 0) {
+                  s.proposals.push({
+                    id: proposalId,
+                    runId: run.id,
+                    summary: replay.proposal.summary || "자는 동안 이렇게 바뀌려 해요.",
+                    items,
+                    sourceInsightIds: insightIds,
+                    baseVersion: base.version,
+                    status: "pending",
+                    createdAt: now,
+                    decidedAt: null,
+                  });
+                }
+                r.status = "done";
+                r.source = "replay";
+                r.finishedAt = now;
+                r.error = null;
+                r.insightIds = insightIds;
+                r.proposalId = items.length > 0 ? proposalId : null;
+                r.steps = stepsAt(modeSteps + 2);
               });
               return;
             }

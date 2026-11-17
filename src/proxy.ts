@@ -8,7 +8,6 @@ import { isValidToken } from "@/lib/admin-auth";
  * - /admin, /debug
  * - /api/admin/** (except /api/admin/login)
  * - /api/debug/**
- * - /api/demo
  * - DELETE /api/sessions/* (deleting others' sessions)
  */
 /**
@@ -37,7 +36,6 @@ export function proxy(request: NextRequest) {
   const isLockedApi =
     pathname.startsWith("/api/admin/") ||
     pathname.startsWith("/api/debug/") ||
-    pathname === "/api/demo" ||
     (request.method === "DELETE" && pathname.startsWith("/api/sessions/") && !isOwnSession(request, pathname));
 
   const isLockedPage =
@@ -79,7 +77,6 @@ export const config = {
     "/debug/:path*",
     "/api/admin/:path*",
     "/api/debug/:path*",
-    "/api/demo",
     "/api/sessions/:path*",
   ],
 };

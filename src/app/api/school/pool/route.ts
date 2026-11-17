@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { getSchoolPool, addMeaningToSchoolPool } from "@/lib/school/pool";
-import type { Meaning } from "@/lib/types";
+import type { Meaning, SchoolMeaning } from "@/lib/types";
 
 export async function GET() {
   const pool = await getSchoolPool();
   // Ensure both standard SchoolMeaning fields and test compatibility fields (key, meaning) are present
-  const result = pool.map((m: any) => ({
+  const result = pool.map((m: SchoolMeaning & { key?: string; meaning?: string }) => ({
     ...m,
     key: m.key || m.title,
     meaning: m.meaning || m.essence,
@@ -48,15 +48,14 @@ export async function POST(req: Request) {
 
     const added = await addMeaningToSchoolPool(dummyMeaning, sourceTag);
     if (added) {
-      (added as any).key = key;
-      (added as any).meaning = essence;
+      Object.assign(added, { key, meaning: essence });
     }
 
     return NextResponse.json(
       { ok: true, item: added, key, meaning: essence },
       { status: 200 }
     );
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: "Failed to store meaning" }, { status: 500 });
   }
 }

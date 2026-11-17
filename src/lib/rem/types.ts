@@ -24,6 +24,8 @@ export interface RemContext {
   ): Promise<{ text: string }>;
   markReading(nodeIds: number[]): Promise<void>;
   markMeaning(meaningIds: number[]): Promise<void>;
+  /** 이 모드가 몇 단계로 돌지 알린다 (화면 진행 막대용). markReading/markMeaning 한 번 = 한 단계 */
+  setTotal?(steps: number): Promise<void>;
   shouldStop(): boolean;
   signal?: AbortSignal;
 }

@@ -18,7 +18,7 @@ export async function POST(
       return NextResponse.json({ error: "Invalid item ID" }, { status: 400 });
     }
 
-    let scope: any = undefined;
+    let scope: Parameters<typeof approveProposalItem>[2] = undefined;
     try {
       const body = await req.json();
       if (body && body.scope) {

@@ -141,7 +141,7 @@ export function validateProposalItem(
       valid: false,
       ruleIndex: 1,
       ruleName: "Kind Whitelist",
-      error: `Invalid change kind: '${(change as any).kind}'`,
+      error: `Invalid change kind: '${(change as { kind?: unknown }).kind}'`,
     };
   }
 
@@ -154,7 +154,7 @@ export function validateProposalItem(
         valid: false,
         ruleIndex: 2,
         ruleName: "Axis Whitelist",
-        error: `Invalid style axis: '${(change as any).axis}'`,
+        error: `Invalid style axis: '${(change as { axis?: unknown }).axis}'`,
       };
     }
 
@@ -442,11 +442,12 @@ export function validateProposalItem(
  * Validate a batch of items or full proposal, retaining up to maxItems valid items
  */
 export function validateProposal(
-  proposal: { summary?: string; items?: PersonaChangeItem[] | any[] },
+  proposal: { summary?: string; items?: PersonaChangeItem[] | Record<string, unknown>[] },
   ctx: ValidationContext = {},
   maxItems: number = 4
 ): ValidationResult {
-  const items = proposal.items || [];
+  // 모델이 만든 날것의 항목도 받는다. 아래 규칙 검사를 통과한 것만 PersonaChangeItem으로 남긴다
+  const items = (proposal.items || []) as PersonaChangeItem[];
   const validItems: PersonaChangeItem[] = [];
   const invalidItems: { item: PersonaChangeItem; error: string; ruleIndex: number }[] = [];
 

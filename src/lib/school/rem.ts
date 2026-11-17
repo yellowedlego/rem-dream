@@ -167,7 +167,8 @@ export async function runSchoolRem(trigger: "count" | "manual" = "manual"): Prom
       appliedCount: approvedItems.length,
       newVersion: approvedItems.length > 0 ? newVersionNum : undefined,
     };
-  } catch (err: any) {
+  } catch (caught) {
+    const err = caught as { message?: string; name?: string };
     run.status = "error";
     run.error = err.message || "Failed to execute school REM";
     run.finishedAt = new Date().toISOString();
