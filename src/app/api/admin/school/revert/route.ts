@@ -7,7 +7,8 @@ export async function POST(req: Request) {
     const version = typeof body?.version === "number" ? body.version : undefined;
     const result = await revertSchoolPersona(version);
     return NextResponse.json({ ok: true, version: result.version }, { status: 200 });
-  } catch (err: any) {
+  } catch (caught) {
+    const err = caught as { message?: string; name?: string };
     return NextResponse.json({ error: err.message || "Failed to revert school persona" }, { status: 500 });
   }
 }

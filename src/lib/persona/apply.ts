@@ -26,6 +26,37 @@ function parseNumericId(val: number | string, name: string): number {
   return num;
 }
 
+/**
+ * 제안이 어느 인격(스코프)을 바꾸는지: 명시값 → 실행(run)의 scope → 실행 세션의 개인 인격.
+ * 개인 AI 승인은 그 세션 인격만 바꾸고, 다른 관람객이 쓰는 기본 인격(store.activePersona)은 건드리지 않는다.
+ */
+function resolveScope(store: Store, proposal: PersonaProposal, explicit?: PersonaScope): PersonaScope | undefined {
+  if (explicit) return explicit;
+  const run = (store.runs || []).find((r) => r.id === proposal.runId);
+  if (run?.scope) return run.scope;
+  if (run?.sessionId) return `session:${run.sessionId}`;
+  return undefined;
+}
+
+/** 그 스코프가 지금 쓰는 인격. 스코프에 버전이 없으면 기본 인격(store.activePersona) */
+function scopedBase(store: Store, scope: PersonaScope | undefined): PersonaVersion | undefined {
+  const v = scope ? store.activePersonas?.[scope] : undefined;
+  return (
+    (v ? store.personas.find((p) => p.version === v) : undefined) ||
+    store.personas.find((p) => p.version === store.activePersona)
+  );
+}
+
+/** 새 버전을 그 스코프의 활성 버전으로. 스코프가 없을 때(예전 방식)만 기본 인격을 바꾼다 */
+function activate(store: Store, scope: PersonaScope | undefined, version: number): void {
+  if (!scope) {
+    store.activePersona = version;
+    return;
+  }
+  if (!store.activePersonas) store.activePersonas = {};
+  store.activePersonas[scope] = version;
+}
+
 export interface ItemDecisionResult {
   ok: boolean;
   activePersona: number;
@@ -121,11 +152,12 @@ function applyChangesToPersona(
 export async function approveProposalItem(
   proposalId: number | string,
   itemId: number | string,
-  scope?: PersonaScope
+  scopeArg?: PersonaScope
 ): Promise<ItemDecisionResult> {
   const pId = parseNumericId(proposalId, "proposal ID");
   const iId = parseNumericId(itemId, "item ID");
 
+  let scope: PersonaScope | undefined = scopeArg;
   let createdVersion: PersonaVersion | null = null;
   let runIdForCompare: string | null = null;
 
@@ -133,6 +165,7 @@ export async function approveProposalItem(
     if (!Array.isArray(store.proposals)) store.proposals = [];
     const proposal = store.proposals.find((p) => p.id === pId);
     if (!proposal) throw new PersonaApplyError("Proposal not found", 404);
+    scope = resolveScope(store, proposal, scopeArg);
     if (proposal.status !== "pending") {
       throw new PersonaApplyError("Proposal is not pending", 400);
     }
@@ -151,7 +184,7 @@ export async function approveProposalItem(
     const nextVersion =
       (store.personas.reduce((max, p) => Math.max(max, p.version), 0) ?? 0) + 1;
     const basePersona =
-      store.personas.find((p) => p.version === store.activePersona) ||
+      scopedBase(store, scope) ||
       store.personas[store.personas.length - 1] || {
         version: 1,
         systemPrompt: "너는 관람객의 하루 이야기를 들어 주는 친절한 대화 상대야. 짧고 따뜻하게 답한다.",
@@ -182,14 +215,10 @@ export async function approveProposalItem(
       appliedBy: "human",
       scope,
     };
-    (newPersona as any).createdAt = now;
+    newPersona.createdAt = now;
 
     store.personas.push(newPersona);
-    store.activePersona = nextVersion;
-    if (scope) {
-      if (!store.activePersonas) store.activePersonas = {};
-      store.activePersonas[scope] = nextVersion;
-    }
+    activate(store, scope, nextVersion);
 
     // Check if all items in proposal are decided
     const allDecided = proposal.items.every((i) => i.status !== "pending");
@@ -255,6 +284,8 @@ export async function rejectProposalItem(
 
     item.status = "rejected";
     const now = new Date().toISOString();
+    // 거절은 새 버전을 만들지 않는다. 돌려주는 값은 그 제안이 바꾸려던 인격(세션)의 지금 버전
+    const current = scopedBase(store, resolveScope(store, proposal, scope));
 
     const allDecided = proposal.items.every((i) => i.status !== "pending");
     if (allDecided) {
@@ -265,7 +296,7 @@ export async function rejectProposalItem(
 
     return {
       ok: true,
-      activePersona: store.activePersona || 1,
+      activePersona: current?.version ?? store.activePersona ?? 1,
       itemStatus: "rejected" as const,
       proposalStatus: proposal.status,
     };
@@ -287,6 +318,7 @@ export async function decideProposal(
     throw new PersonaApplyError("At least one approve or reject itemId must be provided", 400);
   }
 
+  let scope: PersonaScope | undefined = decision.scope;
   let createdVersion: PersonaVersion | null = null;
   let runIdForCompare: string | null = null;
 
@@ -294,6 +326,7 @@ export async function decideProposal(
     if (!Array.isArray(store.proposals)) store.proposals = [];
     const proposal = store.proposals.find((p) => p.id === pId);
     if (!proposal) throw new PersonaApplyError("Proposal not found", 404);
+    scope = resolveScope(store, proposal, decision.scope);
     if (proposal.status !== "pending") {
       throw new PersonaApplyError("Proposal is not pending", 400);
     }
@@ -332,7 +365,7 @@ export async function decideProposal(
       const nextVersion =
         (store.personas.reduce((max, p) => Math.max(max, p.version), 0) ?? 0) + 1;
       const basePersona =
-        store.personas.find((p) => p.version === store.activePersona) ||
+        scopedBase(store, scope) ||
         store.personas[store.personas.length - 1] || {
           version: 1,
           systemPrompt: "너는 관람객의 하루 이야기를 들어 주는 친절한 대화 상대야. 짧고 따뜻하게 답한다.",
@@ -340,7 +373,7 @@ export async function decideProposal(
           parentVersion: null,
         };
 
-      const isSchool = decision.scope === "school";
+      const isSchool = scope === "school";
       const { style, notes, newSystemPrompt } = applyChangesToPersona(
         basePersona,
         approvedItems,
@@ -365,16 +398,12 @@ export async function decideProposal(
         style,
         notes,
         appliedBy: "human",
-        scope: decision.scope,
+        scope,
       };
-      (newPersona as any).createdAt = now;
+      newPersona.createdAt = now;
 
       store.personas.push(newPersona);
-      store.activePersona = nextVersion;
-      if (decision.scope) {
-        if (!store.activePersonas) store.activePersonas = {};
-        store.activePersonas[decision.scope] = nextVersion;
-      }
+      activate(store, scope, nextVersion);
 
       currentActive = nextVersion;
       createdVersion = newPersona;
@@ -399,7 +428,7 @@ export async function decideProposal(
     try {
       await updateComparisonAfter({
         runId: runIdForCompare,
-        scope: decision.scope,
+        scope,
         newPersona: createdVersion,
       });
     } catch (err) {
@@ -415,10 +444,11 @@ export async function decideProposal(
  */
 export async function approveProposal(
   proposalId: number | string,
-  scope?: PersonaScope
+  scopeArg?: PersonaScope
 ): Promise<{ ok: boolean; activePersona: number }> {
   const pId = parseNumericId(proposalId, "proposal ID");
 
+  let scope: PersonaScope | undefined = scopeArg;
   let createdVersion: PersonaVersion | null = null;
   let runIdForCompare: string | null = null;
 
@@ -426,6 +456,7 @@ export async function approveProposal(
     if (!Array.isArray(store.proposals)) store.proposals = [];
     const proposal = store.proposals.find((p) => p.id === pId);
     if (!proposal) throw new PersonaApplyError("Proposal not found", 404);
+    scope = resolveScope(store, proposal, scopeArg);
     if (proposal.status !== "pending") {
       throw new PersonaApplyError("Proposal is not pending", 400);
     }
@@ -436,7 +467,8 @@ export async function approveProposal(
     const now = new Date().toISOString();
 
     const basePersona =
-      store.personas.find((p) => p.version === (proposal.baseVersion || store.activePersona)) ||
+      (proposal.baseVersion ? store.personas.find((p) => p.version === proposal.baseVersion) : undefined) ||
+      scopedBase(store, scope) ||
       store.personas[store.personas.length - 1] || {
         version: 1,
         systemPrompt: "너는 관람객의 하루 이야기를 들어 주는 친절한 대화 상대야. 짧고 따뜻하게 답한다.",
@@ -483,14 +515,10 @@ export async function approveProposal(
       appliedBy: "human",
       scope,
     };
-    (newPersona as any).createdAt = now;
+    newPersona.createdAt = now;
 
     store.personas.push(newPersona);
-    store.activePersona = nextVersion;
-    if (scope) {
-      if (!store.activePersonas) store.activePersonas = {};
-      store.activePersonas[scope] = nextVersion;
-    }
+    activate(store, scope, nextVersion);
 
     createdVersion = newPersona;
     runIdForCompare = proposal.runId;

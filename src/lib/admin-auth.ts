@@ -1,9 +1,6 @@
 import "server-only";
-import { randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
-import { promises as fs } from "node:fs";
-import path from "node:path";
+import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 
-const SESSION_FILE = path.join(process.cwd(), "data", "admin_sessions.json");
 const LOCKOUT_MS = 10 * 60 * 1000; // 10 minutes
 const MAX_ATTEMPTS = 5;
 const SESSION_TTL_MS = 12 * 60 * 60 * 1000; // 12 hours
@@ -16,14 +13,6 @@ interface FailedAttempt {
 
 const failedAttempts = new Map<string, FailedAttempt>();
 
-// In-memory token cache (backed by disk if needed)
-interface SessionRecord {
-  token: string;
-  createdAt: number;
-  expiresAt: number;
-}
-
-const activeTokens = new Map<string, SessionRecord>();
 
 // Warn once if ADMIN_PASSWORD_HASH is unset
 let hasWarnedEmptyHash = false;
@@ -92,8 +81,9 @@ export function verifyPassword(password: string): boolean {
     return true;
   }
 
-  // Format: scrypt$N$r$p$salt(base64url)$hash(base64url)
-  const parts = expectedHashStr.trim().split("$");
+  // Format: scrypt:N:r:p:salt(base64url):hash(base64url)
+  // ($로 나눈 예전 모양도 받는다. 단, .env 파일에서는 $가 변수로 풀려 값이 망가지므로 : 모양을 쓴다)
+  const parts = expectedHashStr.trim().split(/[:$]/);
   if (parts.length !== 6 || parts[0] !== "scrypt") {
     console.error("[admin-auth] Malformed ADMIN_PASSWORD_HASH format.");
     return false;
@@ -127,17 +117,26 @@ export function verifyUsername(username: string): boolean {
 }
 
 /**
- * Generate cryptographically secure session token.
+ * 서명 키: ADMIN_SESSION_SECRET. 비어 있으면 비밀번호 해시에서 끌어낸다(해시는 서버 .env.local에만 있으므로 밖에서 알 수 없다).
+ * 토큰을 메모리 표에 두지 않는다 — proxy와 라우트 핸들러는 서로 다른 모듈 사본이라 메모리를 함께 쓰지 못한다.
+ */
+function signingKey(): Buffer {
+  const secret = process.env.ADMIN_SESSION_SECRET?.trim();
+  if (secret) return Buffer.from(secret, "utf8");
+  return createHmac("sha256", "rem-dream-admin").update(process.env.ADMIN_PASSWORD_HASH?.trim() ?? "").digest();
+}
+
+function sign(payload: string): string {
+  return createHmac("sha256", signingKey()).update(payload).digest("base64url");
+}
+
+/**
+ * 세션 토큰 = 만료시각.무작위값.서명. 서명이 맞고 만료 전이면 유효하다.
+ * 비밀번호·해시는 토큰에 담기지 않는다.
  */
 export function createSession(): string {
-  const token = randomBytes(32).toString("base64url");
-  const now = Date.now();
-  activeTokens.set(token, {
-    token,
-    createdAt: now,
-    expiresAt: now + SESSION_TTL_MS,
-  });
-  return token;
+  const payload = `${Date.now() + SESSION_TTL_MS}.${randomBytes(16).toString("base64url")}`;
+  return `${payload}.${sign(payload)}`;
 }
 
 /**
@@ -150,23 +149,20 @@ export function isValidToken(token: string | undefined | null): boolean {
     return true;
   }
   if (!token) return false;
-
-  const session = activeTokens.get(token);
-  if (!session) return false;
-
-  if (Date.now() > session.expiresAt) {
-    activeTokens.delete(token);
-    return false;
-  }
-
-  return true;
+  const parts = token.split(".");
+  if (parts.length !== 3) return false;
+  const [exp, nonce, sig] = parts;
+  const expected = Buffer.from(sign(`${exp}.${nonce}`), "utf8");
+  const given = Buffer.from(sig, "utf8");
+  if (expected.length !== given.length || !timingSafeEqual(expected, given)) return false;
+  const expiresAt = Number(exp);
+  return Number.isFinite(expiresAt) && Date.now() < expiresAt;
 }
 
 /**
- * Revoke session token.
+ * 로그아웃: 서명 토큰은 서버에 목록이 없으므로 쿠키를 지우는 것으로 끝난다(라우트가 Max-Age=0 쿠키를 보냄).
+ * 모든 세션을 한꺼번에 끊으려면 ADMIN_SESSION_SECRET을 바꾸고 서버를 다시 켠다.
  */
 export function revokeSession(token: string | undefined | null): void {
-  if (token) {
-    activeTokens.delete(token);
-  }
+  void token;
 }

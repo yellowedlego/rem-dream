@@ -164,16 +164,20 @@ export async function createComparisonBefore(opts: {
       sourceInsightIds: [],
     };
 
-  const sessionNodes = (store.nodes || []).filter(
-    (n) => n.sessionId === opts.sessionId
-  );
+  const sessionNodes = (store.nodes || [])
+    .filter((n) => n.sessionId === opts.sessionId)
+    .sort((a, b) => a.order - b.order);
 
-  const question = opts.question || DEFAULT_PROBE_QUESTION;
+  // 비교 질문 = 관람객이 마지막으로 한 말. 그 말은 질문으로 쓰고, 그 앞의 대화만 맥락으로 넣는다
+  const last = sessionNodes[sessionNodes.length - 1];
+  const lastAsk = last?.user?.trim();
+  const question = opts.question || lastAsk || DEFAULT_PROBE_QUESTION;
+  const history = !opts.question && lastAsk ? sessionNodes.slice(0, -1) : sessionNodes;
 
   // Probe persona OUTSIDE updateStore
   const beforeAnswer = await probePersona({
     persona: activePersona,
-    nodes: sessionNodes,
+    nodes: history,
     question,
     runId: opts.runId,
   });
@@ -192,6 +196,7 @@ export async function createComparisonBefore(opts: {
       runId: opts.runId,
       scope: sessionScope,
       question,
+      historyNodeIds: history.map((n) => n.id),
       before: {
         version: activePersona.version,
         answer: beforeAnswer,
@@ -225,9 +230,13 @@ export async function updateComparisonAfter(opts: {
     return null;
   }
 
-  const sessionNodes = opts.sessionId
-    ? (store.nodes || []).filter((n) => n.sessionId === opts.sessionId)
-    : [];
+  // 잠들기 전과 똑같은 대화 맥락으로 묻는다 (예전 기록에 historyNodeIds가 없으면 그 세션 대화 전체)
+  const run = (store.runs || []).find((r) => r.id === opts.runId);
+  const sessionId = opts.sessionId ?? run?.sessionId;
+  const ids = pendingComparison.historyNodeIds ? new Set(pendingComparison.historyNodeIds) : null;
+  const sessionNodes = (store.nodes || [])
+    .filter((n) => (ids ? ids.has(n.id) : !!sessionId && n.sessionId === sessionId))
+    .sort((a, b) => a.order - b.order);
 
   // Probe new persona OUTSIDE updateStore
   const afterAnswer = await probePersona({

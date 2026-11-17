@@ -59,7 +59,7 @@ test.describe("Stage 4: Persona Proposals & Versioning API", () => {
   // =========================================================================
   test.describe("Tier 1: Feature Coverage", () => {
     test("POST /api/proposals/[id]/approve approves pending proposal and increments activePersona", async ({ request }) => {
-      const { proposalId } = await getOrCreatePendingProposal(request);
+      const { proposalId, sessionId } = await getOrCreatePendingProposal(request);
 
       const approveRes = await request.post(`/api/proposals/${proposalId}/approve`);
       expect(approveRes.status(), `Approve failed with status ${approveRes.status()}`).toBe(200);
@@ -69,8 +69,8 @@ test.describe("Stage 4: Persona Proposals & Versioning API", () => {
       expect(typeof approveBody.activePersona).toBe("number");
       expect(approveBody.activePersona).toBeGreaterThanOrEqual(2);
 
-      // Verify state reflects approved proposal and updated active persona
-      const stateRes = await request.get("/api/state");
+      // Verify state reflects approved proposal and updated active persona (그 세션의 인격)
+      const stateRes = await request.get(`/api/state?sessionId=${sessionId}`);
       const state = await stateRes.json();
 
       const approvedProp = state.proposals.find((p: PersonaProposal) => p.id === proposalId);
@@ -216,19 +216,17 @@ test.describe("Stage 4: Persona Proposals & Versioning API", () => {
   // =========================================================================
   test.describe("Tier 3: Cross-Feature Combinations", () => {
     test("Persona approval immediately propagates new persona prompt to subsequent chat", async ({ request }) => {
-      const sessionId = makeSessionId("persona-propagation");
+      // 1. Obtain a pending proposal. 개인 AI 승인은 그 제안을 만든 세션의 인격만 바꾸므로 같은 세션으로 대화한다
+      const { proposalId, sessionId } = await getOrCreatePendingProposal(request);
 
-      // 1. Establish baseline chat
+      // 2. Establish baseline chat
       const beforeChat = await request.post("/api/chat", {
         data: { sessionId, message: "안녕, 오늘 날씨가 참 좋다." },
       });
       expect(beforeChat.status()).toBe(200);
 
-      // 2. Obtain a pending proposal
-      const { proposalId } = await getOrCreatePendingProposal(request);
-
       // Read proposal's proposedPrompt
-      const stateBefore = await (await request.get("/api/state")).json();
+      const stateBefore = await (await request.get(`/api/state?sessionId=${sessionId}`)).json();
       const targetProposal = stateBefore.proposals.find((p: PersonaProposal) => p.id === proposalId);
       expect(targetProposal).toBeDefined();
 
@@ -246,7 +244,7 @@ test.describe("Stage 4: Persona Proposals & Versioning API", () => {
       expect(afterBody.node.ai.length).toBeGreaterThan(0);
 
       // Verify active persona in state is indeed the new version
-      const stateAfter = await (await request.get("/api/state")).json();
+      const stateAfter = await (await request.get(`/api/state?sessionId=${sessionId}`)).json();
       expect(stateAfter.activePersona).toBe(newVersion);
       const activePersonaObj = stateAfter.personas.find((p: PersonaVersion) => p.version === newVersion);
       expect(activePersonaObj).toBeDefined();

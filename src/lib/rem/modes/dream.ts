@@ -64,6 +64,8 @@ export const dreamMode: RemMode = {
         }
       }
 
+      await ctx.setTotal?.(pairs.length);
+
       // Execute dream synthesis per pair
       for (const [m1, m2] of pairs) {
         if (ctx.shouldStop()) break;
@@ -106,6 +108,7 @@ export const dreamMode: RemMode = {
       }
     } else if (nodes.length >= 2) {
       // Fallback to node pairing for legacy test compatibility
+      await ctx.setTotal?.(Math.min(Math.floor(nodes.length / 2), MAX_PAIRS));
       for (let i = 0; i < nodes.length - 1; i += 2) {
         if (ctx.shouldStop()) break;
         const a = nodes[i];

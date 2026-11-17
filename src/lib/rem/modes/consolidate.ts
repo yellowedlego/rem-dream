@@ -10,6 +10,7 @@ export const consolidateMode: RemMode = {
   defaultTemperature: 0.7,
   async run(ctx: RemContext): Promise<Insight[]> {
     const accumulated: { content: string; sourceNodeIds: number[] }[] = [];
+    await ctx.setTotal?.(ctx.nodes.length);
 
     for (const node of ctx.nodes) {
       if (ctx.shouldStop()) break;

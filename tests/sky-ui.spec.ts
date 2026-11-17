@@ -86,7 +86,7 @@ test.describe("의미성 별자리", () => {
     await expect(page.locator("[data-meaning]").first()).toBeAttached();
     await page.getByRole("button", { name: /북극성/ }).click();
 
-    const ring = page.locator("ellipse");
+    const ring = page.locator("ellipse[class*=tiltRing]");
     await expect.poll(async () => Number(await ring.evaluate((e) => e.style.opacity)), { timeout: 3000 }).toBeGreaterThan(0.3);
     // 빨려 든 뒤 북극성이 관성으로 흔들린다
     await expect

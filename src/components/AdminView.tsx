@@ -3,6 +3,7 @@
 // 기록 관리 (운영하는 사람용): 관람객 기록을 세션 단위로 보고 지운다.
 // 세션을 지우면 대화·이야기·의미·내 AI·사진 파일·메일 기록(가린 주소)까지 함께 지워진다.
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { api, type MailLog, type SessionRecord } from "./api";
 import AppNav from "./AppNav";
 import styles from "./AdminView.module.css";
@@ -18,6 +19,7 @@ const when = (iso: string) =>
   new Date(iso).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" });
 
 export default function AdminView() {
+  const router = useRouter();
   const [sessions, setSessions] = useState<SessionRecord[] | null>(null);
   const [mails, setMails] = useState<MailLog[]>([]);
   const [hours, setHours] = useState(3);
@@ -56,6 +58,16 @@ export default function AdminView() {
       <header className={styles.header}>
         <h1>꿈 시스템</h1>
         <AppNav />
+        <button
+          type="button"
+          className={styles.logout}
+          onClick={async () => {
+            await api.adminLogout().catch(() => {});
+            router.replace("/login");
+          }}
+        >
+          로그아웃
+        </button>
       </header>
 
       <main className={styles.main}>

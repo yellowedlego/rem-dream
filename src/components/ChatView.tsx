@@ -9,6 +9,7 @@ import { api, currentSessionId, startNewSession, switchSession, type SessionSumm
 import Link from "next/link";
 import AppNav from "./AppNav";
 import MicButton from "./MicButton";
+import SleepPanel from "./SleepPanel";
 import { MAX_IMAGES, PHOTO_ONLY_TEXT } from "@/lib/images";
 import { MoonPlaneBeams, MoonPlaneTrack, chargeLit, useMoonPlane, type Birth } from "./MoonPlane";
 import { hasFiles, imageFilesOf, prepareImage, revokeAttachment, type Attachment } from "./imageFiles";
@@ -108,6 +109,8 @@ export default function ChatView() {
   const [focused, setFocused] = useState(false);
   // 보내기 별똥별
   const [meteors, setMeteors] = useState<Meteor[]>([]);
+  // AI가 잠든(REM) 동안은 입력을 막는다 (서버도 409로 막는다)
+  const [sleeping, setSleeping] = useState(false);
   const meteorSeq = useRef(0);
 
   const glowToCaret = () => {
@@ -292,7 +295,7 @@ export default function ChatView() {
   const send = async () => {
     const msg = text.trim();
     const sending = attachments;
-    if ((!msg && sending.length === 0) || !sessionId || pending || attachBusy > 0) return;
+    if ((!msg && sending.length === 0) || !sessionId || pending || sleeping || attachBusy > 0) return;
     // 별똥별: 보내기 버튼 가운데(버튼 뒤)에서 떠서 수직으로 올라간다 (움직임 줄이기 설정이면 생략)
     const btn = sendRef.current;
     if (btn && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -491,6 +494,7 @@ export default function ChatView() {
               void send();
             }}
           >
+            <SleepPanel sessionId={sessionId} nodeCount={nodes.length} onSleepingChange={setSleeping} />
             {error && (
               <p className={styles.error} role="alert">
                 {error}
@@ -502,7 +506,7 @@ export default function ChatView() {
                 className={styles.clip}
                 aria-label="사진 붙이기"
                 title={`사진 붙이기 (최대 ${MAX_IMAGES}장, Ctrl+V·끌어 놓기도 돼요)`}
-                disabled={!!pending || attachFull}
+                disabled={!!pending || sleeping || attachFull}
                 onClick={() => fileRef.current?.click()}
               >
                 <svg width="18" height="16" viewBox="0 0 18 16" aria-hidden="true">
@@ -525,7 +529,7 @@ export default function ChatView() {
               />
               <MicButton
                 className={styles.clip}
-                disabled={!!pending}
+                disabled={!!pending || sleeping}
                 onStart={() => {
                   micBase.current = text && !/\s$/.test(text) ? `${text} ` : text;
                 }}
@@ -564,7 +568,8 @@ export default function ChatView() {
                   aria-label="메시지"
                   value={text}
                   rows={1}
-                  placeholder="메시지를 입력하세요 (Enter 보내기, Shift+Enter 줄바꿈)"
+                  disabled={sleeping}
+                  placeholder={sleeping ? "AI가 자는 중이에요. 깨면 다시 이야기해요" : "메시지를 입력하세요 (Enter 보내기, Shift+Enter 줄바꿈)"}
                   onChange={(e) => {
                     setText(e.target.value);
                     setGlow(caretXY(e.target)); // 타이핑하면 빛이 글 쓰는 자리(커서)를 따라간다
@@ -599,7 +604,7 @@ export default function ChatView() {
                   <option value="flash">Gemini Flash</option>
                 </select>
               </label>
-              <button ref={sendRef} type="submit" className={styles.send} disabled={(!text.trim() && attachments.length === 0) || !!pending || attachBusy > 0}>
+              <button ref={sendRef} type="submit" className={styles.send} disabled={(!text.trim() && attachments.length === 0) || !!pending || sleeping || attachBusy > 0}>
                 보내기
               </button>
               {meteors.map((m) => (

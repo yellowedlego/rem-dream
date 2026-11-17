@@ -1,17 +1,18 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Admin auth and replay integration', () => {
-  test('admin login returns token', async ({ request }) => {
+  test('admin login sets HttpOnly cookie (no token in body)', async ({ request }) => {
     const response = await request.post('/api/admin/login', {
       data: { username: process.env.ADMIN_USER || 'admin', password: process.env.ADMIN_PASSWORD || 'password' },
     });
     expect(response.ok()).toBeTruthy();
     const body = await response.json();
-    expect(body).toHaveProperty('token');
-    const token = body.token;
+    expect(body).not.toHaveProperty('token');
+    const cookie = (response.headers()['set-cookie'] ?? '').split(';')[0];
+    expect(cookie).toContain('admin_token=');
     // logout using token cookie
     const logoutRes = await request.post('/api/admin/logout', {
-      headers: { Cookie: `admin_token=${token}` },
+      headers: { Cookie: cookie },
     });
     expect(logoutRes.ok()).toBeTruthy();
   });

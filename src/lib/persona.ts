@@ -2,7 +2,7 @@ import "server-only";
 import { readStore, updateStore } from "./store";
 import { removeSession } from "./records";
 import { deleteImages } from "./uploads";
-import type { PersonaVersion, Store } from "./types";
+import type { PersonaScope, PersonaVersion, Store } from "./types";
 
 export class PersonaError extends Error {
   constructor(message: string, public status: number = 400) {
@@ -31,6 +31,19 @@ export function getActivePersona(store?: Store): PersonaVersion | Promise<Person
     };
   }
   return readStore().then((s) => getActivePersona(s));
+}
+
+/**
+ * 세션(관람객) 하나가 지금 쓰는 개인 인격. 그 세션이 승인한 버전이 없으면 기본 인격(store.activePersona)에서 시작한다.
+ * 개인 AI의 변화는 그 세션에만 남고, 다른 관람객의 대화에는 영향을 주지 않는다.
+ */
+export function sessionScope(sessionId: string): PersonaScope {
+  return `session:${sessionId}`;
+}
+export function resolvePersona(store: Store, scope?: PersonaScope | null): PersonaVersion {
+  const v = scope ? store.activePersonas?.[scope] : undefined;
+  const found = v ? store.personas?.find((p) => p.version === v) : undefined;
+  return found ?? getActivePersona(store);
 }
 
 export {
@@ -65,10 +78,12 @@ export async function revertPersona(
       throw new PersonaError("Persona version not found", 404);
     }
 
-    store.activePersona = version;
+    // 세션을 주면 그 세션 인격만, 안 주면 기본 인격을 되돌린다
     if (sessionId) {
       if (!store.activePersonas) store.activePersonas = {};
       store.activePersonas[`session:${sessionId}`] = version;
+    } else {
+      store.activePersona = version;
     }
 
     return { ok: true, activePersona: version };
@@ -92,7 +107,7 @@ export async function resetSession(
   const trimmedSessionId = sessionId.trim();
   const imageIds = await updateStore((store) => {
     const cleanedImageIds = removeSession(store, trimmedSessionId);
-    store.activePersona = 1;
+    // 기본 인격(store.activePersona)은 모든 관람객이 함께 쓰므로 건드리지 않고, 이 세션의 개인 인격만 지운다
     if (store.activePersonas && store.activePersonas[`session:${trimmedSessionId}`]) {
       delete store.activePersonas[`session:${trimmedSessionId}`];
     }

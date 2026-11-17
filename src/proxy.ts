@@ -8,9 +8,18 @@ import { isValidToken } from "@/lib/admin-auth";
  * - /admin, /debug
  * - /api/admin/** (except /api/admin/login)
  * - /api/debug/**
- * - /api/demo
  * - DELETE /api/sessions/* (deleting others' sessions)
  */
+/**
+ * 관람객이 자기 기록을 지우는 "나 잊기": 화면이 자기 세션 번호를 x-rem-session 머리글로 함께 보내면 통과.
+ * 남의 세션을 지우는 것(관리 화면)은 로그인이 필요하다.
+ */
+function isOwnSession(request: NextRequest, pathname: string): boolean {
+  const target = decodeURIComponent(pathname.slice("/api/sessions/".length));
+  const own = request.headers.get("x-rem-session");
+  return !!own && own === target;
+}
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -27,8 +36,7 @@ export function proxy(request: NextRequest) {
   const isLockedApi =
     pathname.startsWith("/api/admin/") ||
     pathname.startsWith("/api/debug/") ||
-    pathname === "/api/demo" ||
-    (request.method === "DELETE" && pathname.startsWith("/api/sessions/"));
+    (request.method === "DELETE" && pathname.startsWith("/api/sessions/") && !isOwnSession(request, pathname));
 
   const isLockedPage =
     pathname === "/admin" ||
@@ -54,9 +62,9 @@ export function proxy(request: NextRequest) {
     return NextResponse.json({ error: "아이디나 비밀번호가 맞지 않아요" }, { status: 401 });
   }
 
-  // For UI pages, redirect to home or return 401
-  const loginUrl = new URL("/admin", request.url);
-  loginUrl.searchParams.set("auth", "required");
+  // 화면은 로그인 페이지로 보낸다 (로그인 페이지는 잠기지 않아서 되돌이 고리가 생기지 않는다)
+  const loginUrl = new URL("/login", request.url);
+  loginUrl.searchParams.set("next", pathname);
   return NextResponse.redirect(loginUrl);
 }
 
@@ -69,7 +77,6 @@ export const config = {
     "/debug/:path*",
     "/api/admin/:path*",
     "/api/debug/:path*",
-    "/api/demo",
     "/api/sessions/:path*",
   ],
 };

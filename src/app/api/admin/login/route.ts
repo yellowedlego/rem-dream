@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     );
   }
 
-  let body: any;
+  let body: { username?: unknown; password?: unknown } | null;
   try {
     body = await req.json();
   } catch {
@@ -50,7 +50,8 @@ export async function POST(req: Request) {
     isHttps ? "; Secure" : ""
   }`;
 
-  const res = NextResponse.json({ ok: true, token }, { status: 200 });
+  // 토큰은 HttpOnly 쿠키로만 준다 (응답 본문에 넣으면 페이지 스크립트가 읽을 수 있다)
+  const res = NextResponse.json({ ok: true }, { status: 200 });
   res.headers.set("Set-Cookie", cookieValue);
   return res;
 }

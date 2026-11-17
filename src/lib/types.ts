@@ -204,6 +204,8 @@ export interface Comparison {
   runId: string;
   scope: PersonaScope;
   question: string;
+  /** 전·후 모두 같은 대화 맥락으로 묻기 위해, 잠들기 전에 본 노드 ID (질문으로 쓴 마지막 노드는 빼고) */
+  historyNodeIds?: number[];
   before: { version: number; answer: string; at: string };
   after: { version: number; answer: string; at: string } | null;
 }

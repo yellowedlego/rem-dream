@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { readStore, addNode, getActivePersona } from "@/lib/store";
+import { readStore, addNode } from "@/lib/store";
+import { resolvePersona, sessionScope } from "@/lib/persona";
 import { callModel, ModelCallError, type ChatTurn } from "@/lib/model/client";
 import { buildChatSystemPrompt } from "@/lib/prompts/safety";
 import { assemblePersonaPrompt } from "@/lib/persona/assemble";
@@ -89,7 +90,7 @@ export async function POST(req: Request) {
     systemInstruction = schoolRes.systemPrompt;
     chatPurpose = "school-chat";
   } else {
-    const activePersona = await getActivePersona(store);
+    const activePersona = resolvePersona(store, sessionScope(sessionId));
     const assembled = assemblePersonaPrompt({
       persona: activePersona,
       recentUserMessages,

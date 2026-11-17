@@ -13,7 +13,7 @@ export async function POST(
       return NextResponse.json({ error: "Invalid proposal ID" }, { status: 400 });
     }
 
-    let scope: any = undefined;
+    let scope: Parameters<typeof approveProposal>[1] = undefined;
     try {
       const body = await req.json();
       if (body && body.scope) {

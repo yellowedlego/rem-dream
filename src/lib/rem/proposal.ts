@@ -133,7 +133,7 @@ export async function generateProposal(
 
   let rawSummary = "자는 동안 대화 방식을 다듬었습니다.";
   let rawProposedPrompt = opts.currentPersona.systemPrompt;
-  let rawItems: any[] = [];
+  let rawItems: Record<string, unknown>[] = [];
 
   if (res && res.text) {
     let cleanText = res.text.trim();

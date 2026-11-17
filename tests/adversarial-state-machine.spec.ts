@@ -40,7 +40,7 @@ test.describe("Adversarial State Transitions, Itemized Decisions & Rollbacks", (
       attempts++;
     }
 
-    const state1 = await request.get("/api/state").then((r) => r.json());
+    const state1 = await request.get(`/api/state?sessionId=${sessionId}`).then((r) => r.json());
     const proposal = state1.proposals.find((p: PersonaProposal) => p.runId === runId);
     expect(proposal).toBeDefined();
     expect(proposal.items.length).toBeGreaterThanOrEqual(2);
@@ -60,7 +60,7 @@ test.describe("Adversarial State Transitions, Itemized Decisions & Rollbacks", (
     expect(approveData.proposalStatus).toBe("pending"); // Because item 2 is still pending
 
     // Verify intermediate state
-    const stateInter = await request.get("/api/state").then((r) => r.json());
+    const stateInter = await request.get(`/api/state?sessionId=${sessionId}`).then((r) => r.json());
     expect(stateInter.activePersona).toBe(expectedNewVersion);
     const propInter = stateInter.proposals.find((p: PersonaProposal) => p.id === proposal.id);
     expect(propInter.status).toBe("pending");
@@ -81,7 +81,7 @@ test.describe("Adversarial State Transitions, Itemized Decisions & Rollbacks", (
     expect(rejectData.activePersona).toBe(expectedNewVersion);
 
     // Final state verification
-    const finalState = await request.get("/api/state").then((r) => r.json());
+    const finalState = await request.get(`/api/state?sessionId=${sessionId}`).then((r) => r.json());
     expect(finalState.activePersona).toBe(expectedNewVersion);
     const finalProp = finalState.proposals.find((p: PersonaProposal) => p.id === proposal.id);
     expect(finalProp.status).toBe("done");
@@ -220,7 +220,7 @@ test.describe("Adversarial State Transitions, Itemized Decisions & Rollbacks", (
       if (s.status !== "running") break;
     }
 
-    const s1 = await request.get("/api/state").then((r) => r.json());
+    const s1 = await request.get(`/api/state?sessionId=${sessionId}`).then((r) => r.json());
     const prop1 = s1.proposals.find((p: PersonaProposal) => p.runId === run1.runId);
 
     const maxExisting = Math.max(...s1.personas.map((p: PersonaVersion) => p.version));
@@ -230,7 +230,7 @@ test.describe("Adversarial State Transitions, Itemized Decisions & Rollbacks", (
     const app1 = await request.post(`/api/proposals/${prop1.id}/approve`);
     expect(app1.status()).toBe(200);
 
-    const s2 = await request.get("/api/state").then((r) => r.json());
+    const s2 = await request.get(`/api/state?sessionId=${sessionId}`).then((r) => r.json());
     expect(s2.activePersona).toBe(newlyCreatedVersion);
     expect(s2.personas.length).toBeGreaterThanOrEqual(2);
 
@@ -256,7 +256,7 @@ test.describe("Adversarial State Transitions, Itemized Decisions & Rollbacks", (
     expect(revMissing.status()).toBe(404);
 
     // F. Revert to version 1 -> 200
-    const rev1 = await request.post("/api/persona/revert", { data: { version: 1 } });
+    const rev1 = await request.post("/api/persona/revert", { data: { sessionId, version: 1 } });
     expect(rev1.status()).toBe(200);
     const revData = await rev1.json();
     expect(revData.ok).toBe(true);
@@ -265,14 +265,14 @@ test.describe("Adversarial State Transitions, Itemized Decisions & Rollbacks", (
     // Verify state after revert to 1:
     // - activePersona is 1
     // - store.personas still contains newlyCreatedVersion (immutable history preserved!)
-    const stateAfterRev = await request.get("/api/state").then((r) => r.json());
+    const stateAfterRev = await request.get(`/api/state?sessionId=${sessionId}`).then((r) => r.json());
     expect(stateAfterRev.activePersona).toBe(1);
     expect(stateAfterRev.personas.some((p: PersonaVersion) => p.version === newlyCreatedVersion)).toBe(true);
 
-    // G. Revert back forward to newlyCreatedVersion -> 200
-    const revForward = await request.post("/api/persona/revert", { data: { version: newlyCreatedVersion } });
+    // G. Revert back forward to newlyCreatedVersion -> 200 (이 세션의 인격만 되돌린다)
+    const revForward = await request.post("/api/persona/revert", { data: { sessionId, version: newlyCreatedVersion } });
     expect(revForward.status()).toBe(200);
-    const stateAfterRevForward = await request.get("/api/state").then((r) => r.json());
+    const stateAfterRevForward = await request.get(`/api/state?sessionId=${sessionId}`).then((r) => r.json());
     expect(stateAfterRevForward.activePersona).toBe(newlyCreatedVersion);
   });
 });

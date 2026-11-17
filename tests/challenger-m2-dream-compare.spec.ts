@@ -222,7 +222,7 @@ test.describe("Challenger M2-2: REM-Compare, Mode 2 Dream, & Concurrency Stress"
   // Section 2: REM-Compare Probes & Proposal Decision Lifecycle
   // =========================================================================
   test.describe("Section 2: REM-Compare Probes & Proposal Decision Lifecycle", () => {
-    test("createComparisonBefore records probe with default question and after: null before sleep", async ({ request }) => {
+    test("createComparisonBefore records probe with the visitor's last question and after: null before sleep", async ({ request }) => {
       const sessionId = `compare-probe-session-${Date.now()}`;
 
       await request.post("/api/chat", {
@@ -252,7 +252,7 @@ test.describe("Challenger M2-2: REM-Compare, Mode 2 Dream, & Concurrency Stress"
       const comp = (state.comparisons || []).find((c: Comparison) => c.runId === runId);
 
       expect(comp).toBeDefined();
-      expect(comp.question).toBe("나에 대해 어떻게 생각해?");
+      expect(comp.question).toBe("내일도 힘내서 잘 해보자.");
       expect(comp.scope).toBe(`session:${sessionId}`);
       expect(comp.before).toBeDefined();
       expect(comp.before.version).toBe(expectedVersion);
@@ -390,11 +390,12 @@ test.describe("Challenger M2-2: REM-Compare, Mode 2 Dream, & Concurrency Stress"
         if (s.status !== "running") break;
       }
 
-      const state = await request.get("/api/state").then((r) => r.json());
+      const state = await request.get(`/api/state?sessionId=${sessionId}`).then((r) => r.json());
       const proposal = state.proposals.find((p: PersonaProposal) => p.runId === runId);
       expect(proposal).toBeDefined();
 
       const prevVersion = state.activePersona || 1;
+      const prevCount = state.personas.length;
 
       // Two simultaneous approval requests on the SAME item (Item 1)
       const [resA, resB] = await Promise.all([
@@ -407,9 +408,12 @@ test.describe("Challenger M2-2: REM-Compare, Mode 2 Dream, & Concurrency Stress"
       expect(statuses).toContain(200);
       expect(statuses).toContain(400);
 
-      // Verify activePersona incremented exactly once (+1, not +2)
-      const finalState = await request.get("/api/state").then((r) => r.json());
-      expect(finalState.activePersona).toBe(prevVersion + 1);
+      // 새 인격 버전은 정확히 하나만 생긴다 (+1, not +2). 버전 번호는 모든 세션이 함께 쓰므로 "번호+1" 대신 개수로 본다
+      const finalState = await request.get(`/api/state?sessionId=${sessionId}`).then((r) => r.json());
+      expect(finalState.personas.length).toBe(prevCount + 1);
+      expect(finalState.activePersona).toBeGreaterThan(prevVersion);
+      const winner = resA.status() === 200 ? resA : resB;
+      expect(finalState.activePersona).toBe((await winner.json()).activePersona);
     });
 
     test("Concurrent batch decide on same proposal: one succeeds, subsequent fails", async ({ request }) => {
